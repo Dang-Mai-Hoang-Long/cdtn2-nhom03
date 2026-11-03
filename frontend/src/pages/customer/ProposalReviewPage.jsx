@@ -1,0 +1,11 @@
+import React from 'react';
+import { Title, Panel, Button, Badge, Note, FooterNote } from '../../components/Ui.jsx';
+import { requests, proposals } from '../../data/demoData.js';
+const request = requests[0];
+export default function ProposalReviewPage() {
+  const item = proposals[0];
+  return <><div className="content-wrap"><Title title={`Đề xuất của ${item.name}`} subtitle={`DX-018 · Cho tin ${request.id} — ${request.title}`} action={<Badge>Chờ xem xét</Badge>} />
+    <div className="two-column"><div className="stack"><Panel title="Đề xuất DX-018"><div className="field-grid"><div><span className="muted-label">Kỹ thuật viên</span><strong>{item.name}</strong></div><div><span className="muted-label">Chi phí đề xuất</span><strong>{item.price}</strong></div><div className="field-wide"><span className="muted-label">Nội dung thực hiện</span><p>{item.summary} Giá đã gồm kiểm tra và vệ sinh; chưa gồm linh kiện hoặc gas nếu cần.</p></div><div><span className="muted-label">Bắt đầu dự kiến</span><strong>22/10/2026 · 09:00</strong></div><div><span className="muted-label">Thời lượng dự kiến</span><strong>90 phút</strong></div><div className="field-wide"><span className="muted-label">Thời gian gửi</span><strong>{item.date}</strong></div></div></Panel><Panel title="Thông tin kỹ thuật viên"><div className="field-grid"><div><span className="muted-label">Họ tên</span><strong>{item.name}</strong></div><div><span className="muted-label">Dịch vụ</span><strong>Sửa máy lạnh</strong></div><div><span className="muted-label">Khu vực</span><strong>Bình Thạnh, TP. Hồ Chí Minh</strong></div><div><span className="muted-label">Đánh giá</span><strong>{item.rating}</strong></div></div></Panel></div>
+      <div className="stack"><Panel title="Chọn kỹ thuật viên này?"><p className="subtle">Yêu cầu: {request.title}</p><div className="price large-price">{item.price}</div><p>22/10/2026 · 09:00 – 11:00</p><Note>Bạn chỉ chọn được một kỹ thuật viên cho tin này. Sau khi chấp nhận, tin không còn được sửa.</Note><Button to="07">Chấp nhận đề xuất</Button><Button to="05" secondary>Quay lại danh sách đề xuất</Button></Panel><p className="small-help">Khi chọn, hệ thống sẽ gửi thông báo cho kỹ thuật viên.</p></div>
+    </div></div><FooterNote>Chấp nhận → 07. Đề xuất khác không còn điều kiện được chọn. Màn hình chỉ trình bày trạng thái mẫu.</FooterNote></>;
+}
