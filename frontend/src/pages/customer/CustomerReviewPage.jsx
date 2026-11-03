@@ -1,6 +1,6 @@
 import React from 'react';
-import { ReviewForm } from '../../components/ReviewForm.jsx';
+import { BieuMauDanhGia } from '../../components/ReviewForm.jsx';
 
-export default function CustomerReviewPage() {
-  return <ReviewForm target="Kỹ thuật viên" />;
+export default function TrangDanhGiaKyThuatVien() {
+  return <BieuMauDanhGia doiTuongDanhGia="Kỹ thuật viên" />;
 }

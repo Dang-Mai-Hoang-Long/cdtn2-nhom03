@@ -1,23 +1,22 @@
-export const screens = [
-  { id: '01', path: 'login', title: 'Đăng nhập', role: 'Tài khoản', group: 'Tài khoản', nav: [] },
-  { id: '02', path: 'register', title: 'Đăng ký', role: 'Tài khoản', group: 'Tài khoản', nav: [] },
-  { id: '03', path: 'customer/requests', title: 'Tin của tôi', role: 'Khách hàng', group: 'Khách hàng', nav: ['Tin của tôi', 'Đăng tin'] },
-  { id: '04', path: 'customer/requests/new', title: 'Đăng tin sửa chữa', role: 'Khách hàng', group: 'Khách hàng', nav: ['Tin của tôi', 'Đăng tin'] },
-  { id: '05', path: 'customer/requests/SC-024', title: 'Tin và đề xuất', role: 'Khách hàng', group: 'Khách hàng', nav: ['Tin của tôi', 'Đăng tin'] },
-  { id: '06', path: 'customer/proposals/DX-018', title: 'Chi tiết đề xuất', role: 'Khách hàng', group: 'Khách hàng', nav: ['Tin của tôi', 'Đăng tin'] },
-  { id: '07', path: 'customer/requests/SC-024/tracking', title: 'Theo dõi công việc', role: 'Khách hàng', group: 'Khách hàng', nav: ['Tin của tôi', 'Đăng tin'] },
-  { id: '08', path: 'customer/requests/SC-024/review', title: 'Đánh giá kỹ thuật viên', role: 'Khách hàng', group: 'Khách hàng', nav: ['Tin của tôi', 'Đăng tin'] },
-  { id: '09', path: 'technician/requests', title: 'Tìm việc sửa chữa', role: 'Kỹ thuật viên', group: 'Kỹ thuật viên', nav: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
-  { id: '10', path: 'technician/requests/SC-024', title: 'Chi tiết tin sửa chữa', role: 'Kỹ thuật viên', group: 'Kỹ thuật viên', nav: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
-  { id: '11', path: 'technician/requests/SC-024/proposal', title: 'Gửi đề xuất', role: 'Kỹ thuật viên', group: 'Kỹ thuật viên', nav: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
-  { id: '12', path: 'technician/proposals', title: 'Đề xuất của tôi', role: 'Kỹ thuật viên', group: 'Kỹ thuật viên', nav: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
-  { id: '13', path: 'technician/work/SC-024', title: 'Công việc được chọn', role: 'Kỹ thuật viên', group: 'Kỹ thuật viên', nav: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
-  { id: '14', path: 'technician/work/SC-024/review', title: 'Đánh giá khách hàng', role: 'Kỹ thuật viên', group: 'Kỹ thuật viên', nav: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
-  { id: '15', path: 'technician/notifications', title: 'Thông báo', role: 'Kỹ thuật viên', group: 'Kỹ thuật viên', nav: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
-  { id: '16', path: 'admin/users', title: 'Quản lý tài khoản', role: 'Quản trị viên', group: 'Quản trị viên', nav: ['Quản lý tài khoản'] },
+export const danhSachManHinh = [
+  { maManHinh: '01', duongDan: 'login', tieuDe: 'Đăng nhập', vaiTro: 'Tài khoản', nhomVaiTro: 'Tài khoản', mucDieuHuong: [] },
+  { maManHinh: '02', duongDan: 'register', tieuDe: 'Đăng ký', vaiTro: 'Tài khoản', nhomVaiTro: 'Tài khoản', mucDieuHuong: [] },
+  { maManHinh: '03', duongDan: 'customer/requests', tieuDe: 'Tin của tôi', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
+  { maManHinh: '04', duongDan: 'customer/requests/new', tieuDe: 'Đăng tin sửa chữa', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
+  { maManHinh: '05', duongDan: 'customer/requests/SC-024', tieuDe: 'Tin và đề xuất', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
+  { maManHinh: '06', duongDan: 'customer/proposals/DX-018', tieuDe: 'Chi tiết đề xuất', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
+  { maManHinh: '07', duongDan: 'customer/requests/SC-024/tracking', tieuDe: 'Theo dõi công việc', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
+  { maManHinh: '08', duongDan: 'customer/requests/SC-024/review', tieuDe: 'Đánh giá kỹ thuật viên', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
+  { maManHinh: '09', duongDan: 'technician/requests', tieuDe: 'Tìm việc sửa chữa', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
+  { maManHinh: '10', duongDan: 'technician/requests/SC-024', tieuDe: 'Chi tiết tin sửa chữa', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
+  { maManHinh: '11', duongDan: 'technician/requests/SC-024/proposal', tieuDe: 'Gửi đề xuất', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
+  { maManHinh: '12', duongDan: 'technician/proposals', tieuDe: 'Đề xuất của tôi', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
+  { maManHinh: '13', duongDan: 'technician/work/SC-024', tieuDe: 'Công việc được chọn', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
+  { maManHinh: '14', duongDan: 'technician/work/SC-024/review', tieuDe: 'Đánh giá khách hàng', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
+  { maManHinh: '16', duongDan: 'admin/users', tieuDe: 'Quản lý tài khoản', vaiTro: 'Quản trị viên', nhomVaiTro: 'Quản trị viên', mucDieuHuong: ['Quản lý tài khoản'] },
 ];
 
-export const menuTarget = {
+export const manHinhTheoMucMenu = {
   'Tin của tôi': '03',
   'Đăng tin': '04',
   'Tìm việc sửa chữa': '09',
@@ -26,7 +25,7 @@ export const menuTarget = {
   'Quản lý tài khoản': '16',
 };
 
-export function hrefFor(id) {
-  const screen = screens.find((item) => item.id === id);
-  return `#/${screen?.path ?? 'login'}`;
+export function layDuongDanManHinh(maManHinh) {
+  const manHinh = danhSachManHinh.find((banGhi) => banGhi.maManHinh === maManHinh);
+  return `#/${manHinh?.duongDan ?? 'login'}`;
 }

@@ -1,60 +1,60 @@
 import React from "react";
 import {
-  Title,
-  Panel,
-  Button,
-  Badge,
-  Note,
-  FooterNote,
-  RequestSummary,
-  Progress,
+  TieuDeTrang,
+  KhungNoiDung,
+  Nut,
+  NhanTrangThai,
+  GhiChu,
+  GhiChuChanTrang,
+  TomTatYeuCau,
+  TienTrinh,
 } from "../../components/Ui.jsx";
-import { requests, proposals } from "../../data/demoData.js";
-const request = requests[0];
-export default function TechnicianDashboardPage() {
+import { danhSachYeuCau, danhSachDeXuat } from "../../data/demoData.js";
+const yeuCau = danhSachYeuCau[0];
+export default function TrangCongViecDuocChon() {
   return (
     <>
-      <div className="content-wrap">
-        <Title
-          title="Công việc được chọn"
-          subtitle={`${request.id} — ${request.title} · Đề xuất DX-018 đã được chấp nhận.`}
-          action={<Badge>Đã chọn kỹ thuật viên</Badge>}
+      <div className="khung-noi-dung">
+        <TieuDeTrang
+          tieuDe="Công việc được chọn"
+          phuDe={`${yeuCau.maYeuCau} — ${yeuCau.tieuDe} · Đề xuất DX-018 đã được chấp nhận.`}
+          hanhDong={<NhanTrangThai>Đã chọn kỹ thuật viên</NhanTrangThai>}
         />
-        <Note>Chờ khách hàng xác nhận hoàn thành công việc.</Note>
-        <div className="two-column">
-          <div className="stack">
-            <Panel title="Yêu cầu sửa chữa">
-              <RequestSummary />
-            </Panel>
-            <Panel title="Đề xuất DX-018">
-              <div className="field-grid">
+        <GhiChu>Chờ khách hàng xác nhận hoàn thành công việc.</GhiChu>
+        <div className="hai-cot">
+          <div className="cot-noi-dung">
+            <KhungNoiDung tieuDe="Yêu cầu sửa chữa">
+              <TomTatYeuCau />
+            </KhungNoiDung>
+            <KhungNoiDung tieuDe="Đề xuất DX-018">
+              <div className="luoi-truong-nhap">
                 <div>
-                  <span className="muted-label">Kỹ thuật viên</span>
+                  <span className="nhan-mo-ta">Kỹ thuật viên</span>
                   <strong>Trần Quốc Huy</strong>
                 </div>
                 <div>
-                  <span className="muted-label">Chi phí đề xuất</span>
+                  <span className="nhan-mo-ta">Chi phí đề xuất</span>
                   <strong>450.000 đ</strong>
                 </div>
-                <div className="field-wide">
-                  <span className="muted-label">Nội dung thực hiện</span>
-                  <p>{proposals[0].summary}</p>
+                <div className="truong-nhap-rong">
+                  <span className="nhan-mo-ta">Nội dung thực hiện</span>
+                  <p>{danhSachDeXuat[0].tomTat}</p>
                 </div>
                 <div>
-                  <span className="muted-label">Ngày dự kiến</span>
+                  <span className="nhan-mo-ta">Ngày dự kiến</span>
                   <strong>22/10/2026 · 09:00</strong>
                 </div>
                 <div>
-                  <span className="muted-label">Thời lượng</span>
+                  <span className="nhan-mo-ta">Thời lượng</span>
                   <strong>90 phút</strong>
                 </div>
               </div>
-            </Panel>
+            </KhungNoiDung>
           </div>
-          <div className="stack">
-            <Panel title="Liên hệ khách hàng">
-              <Badge tone="badge-light">Chỉ hiển thị sau khi được chọn</Badge>
-              <dl className="role-list">
+          <div className="cot-noi-dung">
+            <KhungNoiDung tieuDe="Liên hệ khách hàng">
+              <NhanTrangThai sacThai="nhan-nhat">Chỉ hiển thị sau khi được chọn</NhanTrangThai>
+              <dl className="danh-sach-vai-tro">
                 <dt>Khách hàng</dt>
                 <dd>Nguyễn Minh Anh</dd>
                 <dt>Số điện thoại</dt>
@@ -62,21 +62,21 @@ export default function TechnicianDashboardPage() {
                 <dt>Địa chỉ</dt>
                 <dd>24/8 đường D5, Phường 25, Bình Thạnh</dd>
               </dl>
-              <Note>
+              <GhiChu>
                 Thông tin này chỉ hiển thị cho kỹ thuật viên đã được chọn.
-              </Note>
-            </Panel>
-            <Panel title="Trạng thái công việc">
-              <Progress active={1} />
-              <Button to="14">Xem đánh giá khách hàng</Button>
-            </Panel>
+              </GhiChu>
+            </KhungNoiDung>
+            <KhungNoiDung tieuDe="Trạng thái công việc">
+              <TienTrinh buocHienTai={1} />
+              <Nut maManHinhDich="14">Xem đánh giá khách hàng</Nut>
+            </KhungNoiDung>
           </div>
         </div>
       </div>
-      <FooterNote>
+      <GhiChuChanTrang>
         13 là trang công việc được chọn. Khi khách xác nhận hoàn thành, trạng
         thái sẽ đổi và hai bên có thể đánh giá.
-      </FooterNote>
+      </GhiChuChanTrang>
     </>
   );
 }
