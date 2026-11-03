@@ -1,0 +1,151 @@
+<mxfile host="app.diagrams.net" agent="Grok">
+  <diagram id="layered-nodejs" name="Kiến trúc phân lớp - Node.js">
+    <mxGraphModel dx="2222" dy="1238" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1300" background="light-dark(#ffffff, #121212)" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#1B4F72;" value="KIẾN TRÚC PHÂN LỚP (LAYERED ARCHITECTURE) – NODE.JS" vertex="1">
+          <mxGeometry height="30" width="700" x="50" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontColor=#5F5E5A;" value="Nền tảng kết nối và đặt dịch vụ sửa chữa tại nhà  |  Nhóm 03" vertex="1">
+          <mxGeometry height="24" width="700" x="50" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="layer1" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#D5F5E3;strokeColor=#1E8449;fontColor=#145A32;" value="LỚP TRÌNH BÀY (Presentation Layer)" vertex="1">
+          <mxGeometry height="152" width="720" x="40" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="l1-1" parent="layer1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;fontSize=12;" value="frontend/src/" vertex="1">
+          <mxGeometry height="24" width="720" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="l1-2" parent="layer1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="pages/  →  CustomerPages · TechnicianPages · AdminPages" vertex="1">
+          <mxGeometry height="24" width="720" y="56" as="geometry" />
+        </mxCell>
+        <mxCell id="l1-3" parent="layer1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="components/  →  RequestForm · ProposalList · ReviewForm · UserTable · NotificationBell" vertex="1">
+          <mxGeometry height="24" width="720" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l1-4" parent="layer1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="api/  →  authApi.js · requestApi.js · proposalApi.js · reviewApi.js · adminApi.js" vertex="1">
+          <mxGeometry height="24" width="720" y="104" as="geometry" />
+        </mxCell>
+        <mxCell id="l1-5" parent="layer1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;fontColor=#1E8449;" value="Công nghệ: React + Vite&amp;nbsp;" vertex="1">
+          <mxGeometry height="24" width="720" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow1" edge="1" parent="1" style="endArrow=classic;html=1;strokeWidth=1.5;strokeColor=#5F5E5A;curved=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="255" as="sourcePoint" />
+            <mxPoint x="400" y="285" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="label1" parent="1" style="text;html=1;align=left;fontSize=11;fontColor=#5F5E5A;" value="HTTP + JSON (API Contract)" vertex="1">
+          <mxGeometry height="20" width="180" x="410" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="layer2" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#D6EAF8;strokeColor=#2874A6;fontColor=#1A5276;" value="LỚP ĐIỀU PHỐI (Controller / Routing Layer)" vertex="1">
+          <mxGeometry height="176" width="720" x="40" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="l2-1" parent="layer2" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;fontSize=12;" value="src/routes/  +  src/controllers/" vertex="1">
+          <mxGeometry height="24" width="720" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="l2-2" parent="layer2" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="auth.routes.js · request.routes.js · proposal.routes.js · review.routes.js · admin.routes.js · notification.routes.js" vertex="1">
+          <mxGeometry height="24" width="720" y="56" as="geometry" />
+        </mxCell>
+        <mxCell id="l2-3" parent="layer2" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="auth.controller.js · request.controller.js · proposal.controller.js · review.controller.js · admin.controller.js" vertex="1">
+          <mxGeometry height="24" width="720" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l2-4" parent="layer2" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="middlewares/  →  auth.middleware.js (JWT) · role.middleware.js · validate.middleware.js" vertex="1">
+          <mxGeometry height="24" width="720" y="104" as="geometry" />
+        </mxCell>
+        <mxCell id="l2-5" parent="layer2" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="validators/  →  auth.validator.js · request.validator.js · proposal.validator.js" vertex="1">
+          <mxGeometry height="24" width="720" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="l2-6" parent="layer2" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;fontColor=#2874A6;" value="Công nghệ: Node.js + Express.js (hoặc NestJS), JWT cho xác thực/phân quyền" vertex="1">
+          <mxGeometry height="24" width="720" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow2" edge="1" parent="1" style="endArrow=classic;html=1;strokeWidth=1.5;strokeColor=#5F5E5A;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="465" as="sourcePoint" />
+            <mxPoint x="400" y="495" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="label2" parent="1" style="text;html=1;align=left;fontSize=11;fontColor=#5F5E5A;" value="Gọi Service" vertex="1">
+          <mxGeometry height="20" width="100" x="410" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="layer3" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#FCF3CF;strokeColor=#B7950B;fontColor=#7D6608;" value="LỚP NGHIỆP VỤ (Business / Service Layer)" vertex="1">
+          <mxGeometry height="176" width="720" x="40" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="l3-1" parent="layer3" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;fontSize=12;" value="src/services/" vertex="1">
+          <mxGeometry height="24" width="720" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="l3-2" parent="layer3" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="auth.service.js  →  Đăng ký, đăng nhập, phân quyền, kiểm tra tài khoản bị khóa" vertex="1">
+          <mxGeometry height="24" width="720" y="56" as="geometry" />
+        </mxCell>
+        <mxCell id="l3-3" parent="layer3" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="request.service.js  →  Tạo / đóng / hoàn thành tin sửa chữa, kiểm tra trạng thái (BR)" vertex="1">
+          <mxGeometry height="24" width="720" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l3-4" parent="layer3" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="proposal.service.js  →  Gửi đề xuất, chấp nhận đề xuất, từ chối đề xuất còn lại" vertex="1">
+          <mxGeometry height="24" width="720" y="104" as="geometry" />
+        </mxCell>
+        <mxCell id="l3-5" parent="layer3" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="review.service.js · notification.service.js · admin.service.js" vertex="1">
+          <mxGeometry height="24" width="720" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="l3-6" parent="layer3" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;fontColor=#B7950B;" value="Chứa toàn bộ Business Rules (BR01–BR16)" vertex="1">
+          <mxGeometry height="24" width="720" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow3" edge="1" parent="1" style="endArrow=classic;html=1;strokeWidth=1.5;strokeColor=#5F5E5A;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="675" as="sourcePoint" />
+            <mxPoint x="400" y="705" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="label3" parent="1" style="text;html=1;align=left;fontSize=11;fontColor=#5F5E5A;" value="Gọi Repository" vertex="1">
+          <mxGeometry height="20" width="120" x="410" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="layer4" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#E8DAEF;strokeColor=#7D3C98;fontColor=#5B2C6F;" value="LỚP TRUY CẬP DỮ LIỆU (Data Access / Repository Layer)" vertex="1">
+          <mxGeometry height="104" width="720" x="40" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="l4-1" parent="layer4" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;fontSize=12;" value="src/repositories/  (hoặc dùng Prisma Client trực tiếp)" vertex="1">
+          <mxGeometry height="24" width="720" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="l4-2" parent="layer4" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="user.repository.js · request.repository.js · proposal.repository.js · review.repository.js · notification.repository.js" vertex="1">
+          <mxGeometry height="24" width="720" y="56" as="geometry" />
+        </mxCell>
+        <mxCell id="l4-3" parent="layer4" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="Chỉ chứa các thao tác CRUD và query, không chứa logic nghiệp vụ" vertex="1">
+          <mxGeometry height="24" width="720" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow4" edge="1" parent="1" style="endArrow=classic;html=1;strokeWidth=1.5;strokeColor=#5F5E5A;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="845" as="sourcePoint" />
+            <mxPoint x="400" y="875" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="label4" parent="1" style="text;html=1;align=left;fontSize=11;fontColor=#5F5E5A;" value="SQL / Prisma Query" vertex="1">
+          <mxGeometry height="20" width="140" x="410" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="layer5" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#F5B7B1;strokeColor=#C0392B;fontColor=#922B21;" value="LỚP LƯU TRỮ (Database / Persistence Layer)" vertex="1">
+          <mxGeometry height="104" width="720" x="40" y="880" as="geometry" />
+        </mxCell>
+        <mxCell id="l5-1" parent="layer5" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;fontSize=12;" value="Cơ sở dữ liệu quan hệ (MySQL / PostgreSQL)" vertex="1">
+          <mxGeometry height="24" width="720" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="l5-2" parent="layer5" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;" value="user  ·  repair_request  ·  proposal  ·  review  ·  notification" vertex="1">
+          <mxGeometry height="24" width="720" y="56" as="geometry" />
+        </mxCell>
+        <mxCell id="l5-4" parent="layer5" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=20;fontSize=12;fontColor=#C0392B;" value="Công nghệ: MySQL 8 hoặc PostgreSQL 16" vertex="1">
+          <mxGeometry height="24" width="720" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="outscope" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8F9F9;strokeColor=#888780;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fontSize=11;fontColor=#5F5E5A;" value="&lt;b&gt;NGOÀI PHẠM VI (Won&#39;t have):&lt;/b&gt;&lt;br&gt;Thanh toán / giao dịch tiền thật · Ứng dụng di động native · Chat real-time nâng cao · Tự động phân công kỹ thuật viên bằng AI" vertex="1">
+          <mxGeometry height="70" width="720" x="40" y="1030" as="geometry" />
+        </mxCell>
+        <mxCell id="note" parent="1" style="text;html=1;align=left;fontSize=11;fontColor=#5F5E5A;" value="Chú thích: Mũi tên&amp;nbsp; &amp;nbsp; &amp;nbsp; thể hiện hướng phụ thuộc một chiều (từ trên xuống). Mỗi lớp chỉ được gọi lớp ngay bên dưới." vertex="1">
+          <mxGeometry height="24" width="720" x="40" y="1110" as="geometry" />
+        </mxCell>
+        <mxCell id="note2" parent="1" style="text;html=1;align=left;fontSize=11;fontColor=#5F5E5A;" value="Kiến trúc này phù hợp với cả Express.js lẫn NestJS. Khi dùng NestJS có thể tổ chức thêm theo module nhưng vẫn giữ nguyên các lớp." vertex="1">
+          <mxGeometry height="24" width="720" x="40" y="1134" as="geometry" />
+        </mxCell>
+        <mxCell id="muEl_N9pJfQuHAkuAdP--1" edge="1" parent="1" style="endArrow=classic;html=1;strokeWidth=1;strokeColor=#5F5E5A;fontSize=8;startSize=4;endSize=4;sourcePerimeterSpacing=0;fixedPointSpacing=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="140" y="1112" as="sourcePoint" />
+            <mxPoint x="140" y="1132" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
