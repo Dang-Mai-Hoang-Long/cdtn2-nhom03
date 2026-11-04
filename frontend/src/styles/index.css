@@ -888,3 +888,12 @@ main {
 .dong-yeu-cau .lien-ket-van-ban {
   white-space: nowrap;
 }
+
+button.nut-loc {
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+button.nut-loc.dang-duoc-chon {
+  color: white;
+}
