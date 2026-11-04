@@ -28,3 +28,24 @@ async function taoTaiKhoan(role = 'CUSTOMER', { isLocked = false, fullName } = {
 }
 
 module.exports = { app, request, truyVan, dongKetNoi, datLaiCoSoDuLieu, taoTaiKhoan };
+
+function voiToken(yeuCauHttp, token) {
+  return yeuCauHttp.set('Authorization', `Bearer ${token}`);
+}
+
+const duLieuTinMau = {
+  title: 'Sửa máy lạnh không lạnh',
+  description: 'Máy lạnh chạy nhưng không làm lạnh',
+  category: 'Điện lạnh',
+  location: 'Quận 7, TP.HCM',
+  preferredTime: '2026-11-05T09:00:00Z',
+};
+
+async function taoTin(token, duLieu = {}) {
+  const res = await voiToken(request(app).post('/api/requests'), token).send({ ...duLieuTinMau, ...duLieu });
+  return res.body.data;
+}
+
+module.exports.voiToken = voiToken;
+module.exports.duLieuTinMau = duLieuTinMau;
+module.exports.taoTin = taoTin;
