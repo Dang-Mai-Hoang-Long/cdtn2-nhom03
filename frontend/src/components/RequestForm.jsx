@@ -1,19 +1,19 @@
 import React from 'react';
-import { Button, Field, Note } from './Ui.jsx';
-import { requests } from '../data/demoData.js';
+import { Nut, TruongNhap, GhiChu } from './Ui.jsx';
+import { danhSachYeuCau } from '../data/demoData.js';
 
-export default function RequestForm() {
+export default function BieuMauYeuCau() {
   return <>
-    <Field label="Loại dịch vụ" value="Sửa máy lạnh" type="select" options={['Sửa máy lạnh', 'Sửa máy giặt', 'Sửa ống nước', 'Sửa điện']} required />
-    <Field label="Mô tả sự cố" value={requests[0].description} required wide area />
-    <div className="field-grid">
-      <Field label="Ngày mong muốn" value="2026-10-22" type="date" required />
-      <Field label="Khung giờ mong muốn" value="09:00 – 11:00" required />
-      <Field label="Tỉnh / Thành phố" value="TP. Hồ Chí Minh" required />
-      <Field label="Quận / Huyện" value="Bình Thạnh" required />
-      <Field label="Địa chỉ chi tiết" value="24/8 đường D5, Phường 25" required wide />
+    <TruongNhap nhan="Loại dịch vụ" giaTri="Sửa máy lạnh" loaiTruong="select" cacLuaChon={['Sửa máy lạnh', 'Sửa máy giặt', 'Sửa ống nước', 'Sửa điện']} batBuoc />
+    <TruongNhap nhan="Mô tả sự cố" giaTri={danhSachYeuCau[0].moTa} batBuoc rong laVungVanBan />
+    <div className="luoi-truong-nhap">
+      <TruongNhap nhan="Ngày mong muốn" giaTri="2026-10-22" loaiTruong="date" batBuoc />
+      <TruongNhap nhan="Khung giờ mong muốn" giaTri="09:00 – 11:00" batBuoc />
+      <TruongNhap nhan="Tỉnh / Thành phố" giaTri="TP. Hồ Chí Minh" batBuoc />
+      <TruongNhap nhan="Quận / Huyện" giaTri="Bình Thạnh" batBuoc />
+      <TruongNhap nhan="Địa chỉ chi tiết" giaTri="24/8 đường D5, Phường 25" batBuoc rong />
     </div>
-    <Note>Số điện thoại và địa chỉ chi tiết chỉ hiển thị cho kỹ thuật viên được bạn chọn.</Note>
-    <div className="button-row"><Button to="03">Đăng tin</Button><Button to="03" secondary>Hủy</Button></div>
+    <GhiChu>Số điện thoại và địa chỉ chi tiết chỉ hiển thị cho kỹ thuật viên được bạn chọn.</GhiChu>
+    <div className="hang-nut"><Nut maManHinhDich="03">Đăng tin</Nut><Nut maManHinhDich="03" laNutPhu>Hủy</Nut></div>
   </>;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
-import { ProposalCards } from './Ui.jsx';
+import { DanhSachTheDeXuat } from './Ui.jsx';
 
-export default function ProposalList({ selectable = false }) {
-  return <ProposalCards selectable={selectable} />;
+export default function DanhSachDeXuat({ coTheChon = false }) {
+  return <DanhSachTheDeXuat coTheChon={coTheChon} />;
 }

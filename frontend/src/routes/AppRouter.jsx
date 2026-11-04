@@ -1,56 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { AppLayout } from '../components/AppLayout.jsx';
-import { screens } from '../navigation/screenRoutes.js';
-import LoginPage from '../pages/shared/LoginPage.jsx';
-import RegisterPage from '../pages/shared/RegisterPage.jsx';
-import MyRequestsPage from '../pages/customer/MyRequestsPage.jsx';
-import RequestCreatePage from '../pages/customer/RequestCreatePage.jsx';
-import RequestDetailPage from '../pages/customer/RequestDetailPage.jsx';
-import ProposalReviewPage from '../pages/customer/ProposalReviewPage.jsx';
-import RequestTrackingPage from '../pages/customer/RequestTrackingPage.jsx';
-import CustomerReviewPage from '../pages/customer/CustomerReviewPage.jsx';
-import RequestSearchPage from '../pages/technician/RequestSearchPage.jsx';
-import TechnicianRequestDetailPage from '../pages/technician/RequestDetailPage.jsx';
-import ProposalCreatePage from '../pages/technician/ProposalCreatePage.jsx';
-import MyProposalsPage from '../pages/technician/MyProposalsPage.jsx';
-import TechnicianDashboardPage from '../pages/technician/TechnicianDashboardPage.jsx';
-import TechnicianReviewPage from '../pages/technician/TechnicianReviewPage.jsx';
-import NotificationsPage from '../pages/technician/NotificationsPage.jsx';
-import UserManagementPage from '../pages/admin/UserManagementPage.jsx';
+import { KhungUngDung } from '../components/AppLayout.jsx';
+import { danhSachManHinh } from '../navigation/screenRoutes.js';
+import TrangDangNhap from '../pages/shared/LoginPage.jsx';
+import TrangDangKy from '../pages/shared/RegisterPage.jsx';
+import TrangTinCuaToi from '../pages/customer/MyRequestsPage.jsx';
+import TrangTaoYeuCau from '../pages/customer/RequestCreatePage.jsx';
+import TrangChiTietYeuCau from '../pages/customer/RequestDetailPage.jsx';
+import TrangXemDeXuat from '../pages/customer/ProposalReviewPage.jsx';
+import TrangTheoDoiYeuCau from '../pages/customer/RequestTrackingPage.jsx';
+import TrangDanhGiaKyThuatVien from '../pages/customer/CustomerReviewPage.jsx';
+import TrangTimYeuCau from '../pages/technician/RequestSearchPage.jsx';
+import TrangChiTietTinKyThuatVien from '../pages/technician/RequestDetailPage.jsx';
+import TrangGuiDeXuat from '../pages/technician/ProposalCreatePage.jsx';
+import TrangDeXuatCuaToi from '../pages/technician/MyProposalsPage.jsx';
+import TrangCongViecDuocChon from '../pages/technician/TechnicianDashboardPage.jsx';
+import TrangDanhGiaKhachHang from '../pages/technician/TechnicianReviewPage.jsx';
+import TrangQuanLyTaiKhoan from '../pages/admin/UserManagementPage.jsx';
 
-const pagesByScreen = {
-  '01': LoginPage,
-  '02': RegisterPage,
-  '03': MyRequestsPage,
-  '04': RequestCreatePage,
-  '05': RequestDetailPage,
-  '06': ProposalReviewPage,
-  '07': RequestTrackingPage,
-  '08': CustomerReviewPage,
-  '09': RequestSearchPage,
-  '10': TechnicianRequestDetailPage,
-  '11': ProposalCreatePage,
-  '12': MyProposalsPage,
-  '13': TechnicianDashboardPage,
-  '14': TechnicianReviewPage,
-  '15': NotificationsPage,
-  '16': UserManagementPage,
+const trangTheoMaManHinh = {
+  '01': TrangDangNhap,
+  '02': TrangDangKy,
+  '03': TrangTinCuaToi,
+  '04': TrangTaoYeuCau,
+  '05': TrangChiTietYeuCau,
+  '06': TrangXemDeXuat,
+  '07': TrangTheoDoiYeuCau,
+  '08': TrangDanhGiaKyThuatVien,
+  '09': TrangTimYeuCau,
+  '10': TrangChiTietTinKyThuatVien,
+  '11': TrangGuiDeXuat,
+  '12': TrangDeXuatCuaToi,
+  '13': TrangCongViecDuocChon,
+  '14': TrangDanhGiaKhachHang,
+  '16': TrangQuanLyTaiKhoan,
 };
 
-function readScreen() {
-  const route = window.location.hash.replace(/^#\/?/, '');
-  return screens.find((screen) => screen.path === route || screen.id === route)?.id ?? '01';
+function docManHinhTheoDuongDan() {
+  const duongDanHienTai = window.location.hash.replace(/^#\/?/, '');
+  return danhSachManHinh.find((manHinh) => manHinh.duongDan === duongDanHienTai || manHinh.maManHinh === duongDanHienTai)?.maManHinh ?? '01';
 }
 
-export function AppRouter() {
-  const [screenId, setScreenId] = useState(readScreen);
+export function DieuHuongUngDung() {
+  const [maManHinh, datMaManHinh] = useState(docManHinhTheoDuongDan);
   useEffect(() => {
-    const syncRoute = () => setScreenId(readScreen());
-    window.addEventListener('hashchange', syncRoute);
-    return () => window.removeEventListener('hashchange', syncRoute);
+    const dongBoManHinhTheoDuongDan = () => datMaManHinh(docManHinhTheoDuongDan());
+    window.addEventListener('hashchange', dongBoManHinhTheoDuongDan);
+    return () => window.removeEventListener('hashchange', dongBoManHinhTheoDuongDan);
   }, []);
 
-  const screen = screens.find((item) => item.id === screenId) ?? screens[0];
-  const Page = pagesByScreen[screen.id] ?? LoginPage;
-  return <AppLayout screen={screen}><Page /></AppLayout>;
+  const manHinh = danhSachManHinh.find((banGhi) => banGhi.maManHinh === maManHinh) ?? danhSachManHinh[0];
+  const TrangHienThi = trangTheoMaManHinh[manHinh.maManHinh] ?? TrangDangNhap;
+  return <KhungUngDung manHinh={manHinh}><TrangHienThi /></KhungUngDung>;
 }
