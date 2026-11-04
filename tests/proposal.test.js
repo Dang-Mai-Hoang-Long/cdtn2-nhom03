@@ -134,6 +134,9 @@ describe('US16 - Chọn kỹ thuật viên', () => {
     const khongDuocChon = await voiToken(request(app).get(`/api/requests/${tin.id}`), kyThuatVienB.token);
     assert.equal(duocChon.body.data.customer.phone, '0901234567');
     assert.equal(khongDuocChon.body.data.customer.phone, undefined);
+    assert.equal(duocChon.body.data.myProposalStatus, 'ACCEPTED');
+    assert.equal(khongDuocChon.body.data.myProposalStatus, 'REJECTED');
+    assert.equal(khongDuocChon.body.data.hasProposed, false);
   });
 
   it('đã chọn rồi thì không chọn đề xuất khác được (BR10)', async () => {

@@ -68,10 +68,11 @@ async function layChiTietYeuCau(nguoiDung, id) {
   // Kỹ thuật viên xem được tin ở mọi trạng thái (theo tiêu chí chấp nhận US12),
   // nhưng chỉ gửi đề xuất được khi tin đang Chờ đề xuất.
   const { rows } = await truyVan(
-    `SELECT EXISTS (SELECT 1 FROM proposal WHERE request_id = $1 AND technician_id = $2 AND status IN ('PENDING', 'ACCEPTED')) AS da_gui`,
+    `SELECT id, status FROM proposal WHERE request_id = $1 AND technician_id = $2 ORDER BY created_at DESC, id DESC LIMIT 1`,
     [yeuCau.id, nguoiDung.id],
   );
-  const hasProposed = rows[0].da_gui;
+  const deXuatCuaToi = rows[0] ?? null;
+  const hasProposed = ['PENDING', 'ACCEPTED'].includes(deXuatCuaToi?.status);
   const duocXemLienHe = await laKyThuatVienDuocChon(yeuCau, nguoiDung.id);
   const customer = { id: khachHang.id, fullName: khachHang.fullName };
   if (duocXemLienHe) customer.phone = khachHang.phone;
@@ -80,6 +81,8 @@ async function layChiTietYeuCau(nguoiDung, id) {
     ...yeuCau,
     customer,
     hasProposed,
+    myProposalId: deXuatCuaToi?.id ?? null,
+    myProposalStatus: deXuatCuaToi?.status ?? null,
     canPropose: yeuCau.status === TRANG_THAI_YEU_CAU.CHO_DE_XUAT && !hasProposed,
   };
 }

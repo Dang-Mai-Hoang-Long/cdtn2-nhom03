@@ -141,6 +141,7 @@ describe('US12 - Kỹ thuật viên xem chi tiết tin', () => {
     assert.equal(res.body.data.customer.phone, undefined);
     assert.equal(res.body.data.canPropose, true);
     assert.equal(res.body.data.hasProposed, false);
+    assert.equal(res.body.data.myProposalStatus, null);
   });
 
   it('tin không còn Chờ đề xuất vẫn xem được nhưng không gửi đề xuất được (BR04)', async () => {
