@@ -37,10 +37,85 @@ Ngoài phạm vi:
 
 ## 2. Yêu cầu môi trường
 
+- Node.js 20 trở lên (đã chạy thử với Node.js 22) và npm.
+- PostgreSQL 16.
+
 ## 3. Hướng dẫn chạy
+
+1. Tạo cơ sở dữ liệu (ví dụ bằng `psql` với quyền quản trị):
+
+   ```sql
+   CREATE USER nhom03 WITH PASSWORD 'nhom03' CREATEDB;
+   CREATE DATABASE suachua_dev OWNER nhom03;
+   CREATE DATABASE suachua_test OWNER nhom03;
+   ```
+
+2. Cài thư viện cho backend và frontend:
+
+   ```bash
+   npm install
+   npm --prefix frontend install
+   ```
+
+3. Tạo file `.env` từ `.env.example`, sửa `DATABASE_URL`, `TEST_DATABASE_URL` và đặt `JWT_SECRET` là một chuỗi ngẫu nhiên.
+
+4. Tạo bảng:
+
+   ```bash
+   npm run migrate
+   ```
+
+5. Chạy backend (cổng 3000) và frontend (cổng 5173) ở hai cửa sổ dòng lệnh:
+
+   ```bash
+   npm run dev
+   npm run frontend
+   ```
+
+   Mở http://localhost:5173. Vite chuyển tiếp các yêu cầu `/api` sang backend.
+
+Tài khoản quản trị viên không đăng ký được qua giao diện (BR01); tạo trực tiếp trong CSDL khi cần.
 
 ## 4. Cấu trúc thư mục
 
+```
+src/                    Backend Express (kiến trúc phân lớp)
+  routes/               Khai báo endpoint theo docs/api-contract.md
+  controllers/          Đọc request, gọi service, trả response chuẩn
+  services/             Quy tắc nghiệp vụ BR01-BR16
+  repositories/         Truy vấn SQL (driver pg), đổi snake_case -> camelCase
+  middlewares/          xacThuc (JWT, BR02), phanQuyen (BR01), kiemTraDuLieu
+  validators/           Kiểm tra dữ liệu đầu vào
+  utils/                Hằng số, response chuẩn, xử lý lỗi
+  db.js, migrate.js     Kết nối PostgreSQL và chạy migration
+migrations/             File SQL thuần, chạy theo thứ tự tên
+tests/                  Kiểm thử API (node:test + supertest)
+frontend/src/
+  api/                  Axios client và các hàm gọi API
+  pages/                Màn hình theo vai trò (customer, technician, admin, shared)
+  components/           Thành phần dùng chung
+  navigation/, routes/  Định tuyến hash và chặn trang theo vai trò
+docs/                   SRS, backlog, API contract, ERD, kiến trúc, quy ước đặt tên
+```
+
 ## 5. Kiểm thử
 
+```bash
+npm test
+```
+
+Bộ kiểm thử xóa và tạo lại toàn bộ bảng trong `TEST_DATABASE_URL` mỗi lần chạy, vì vậy không trỏ biến này vào CSDL đang dùng.
+
 ## 6. Trạng thái hiện tại
+
+Sprint 2 (12 user story) đã có backend, giao diện nối API và kiểm thử:
+
+| US | Chức năng | API |
+|---|---|---|
+| US01-US03 | Đăng ký, đăng nhập, đăng xuất | `/api/auth/register`, `/login`, `/logout`, `/me` |
+| US06, US07, US08 | Đăng tin, tin của tôi, chi tiết tin | `POST /api/requests`, `GET /api/requests/my`, `GET /api/requests/:id` |
+| US10, US12 | Kỹ thuật viên xem danh sách và chi tiết tin | `GET /api/requests`, `GET /api/requests/:id` |
+| US13, US14, US16 | Gửi đề xuất, xem đề xuất, chọn kỹ thuật viên | `POST /api/proposals`, `GET /api/proposals/request/:requestId`, `PATCH /api/proposals/:id/accept` |
+| US17 | Xác nhận hoàn thành | `PATCH /api/requests/:id/complete` |
+
+Các màn hình của Sprint 3 (06 chi tiết đề xuất, 08/14 đánh giá, 12 đề xuất của tôi, 16 quản lý tài khoản, thông báo) vẫn dùng dữ liệu minh họa.
