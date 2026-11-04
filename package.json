@@ -1,10 +1,13 @@
 {
   "name": "cdtn2-nhom03",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Nền tảng kết nối và đặt dịch vụ sửa chữa tại nhà - Nhóm 03",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/migrate.js",
+    "test": "node --test --test-concurrency=1 tests/",
     "frontend": "npm --prefix frontend run dev",
     "frontend:build": "npm --prefix frontend run build"
   },
@@ -12,5 +15,18 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^4.22.3",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }
