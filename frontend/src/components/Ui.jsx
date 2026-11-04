@@ -12,22 +12,41 @@ export function KhungNoiDung({ tieuDe, children, className = '' }) {
   return <section className={`khung-noi-dung ${className}`}>{tieuDe && <h2>{tieuDe}</h2>}{children}</section>;
 }
 
-export function Nut({ children, maManHinhDich, laNutPhu = false }) {
+export function Nut({ children, maManHinhDich, thamSoDich, laNutPhu = false, loaiNut = 'button', onClick, disabled = false }) {
   const className = `nut ${laNutPhu ? 'nut-phu' : ''}`;
-  return maManHinhDich ? <a className={className} href={layDuongDanManHinh(maManHinhDich)}>{children}</a> : <button className={className} type="button">{children}</button>;
+  return maManHinhDich
+    ? <a className={className} href={layDuongDanManHinh(maManHinhDich, thamSoDich)}>{children}</a>
+    : <button className={className} type={loaiNut} onClick={onClick} disabled={disabled}>{children}</button>;
 }
 
 export function NhanTrangThai({ children, sacThai = '' }) {
   return <span className={`nhan-trang-thai ${sacThai}`}>{children}</span>;
 }
 
-export function TruongNhap({ nhan, giaTri, loaiTruong = 'text', rong = false, batBuoc = false, laVungVanBan = false, cacLuaChon = [] }) {
+// ten: thuộc tính name để đọc giá trị bằng FormData khi gửi biểu mẫu; loi: thông báo lỗi của trường.
+export function TruongNhap({ nhan, giaTri, loaiTruong = 'text', rong = false, batBuoc = false, laVungVanBan = false, cacLuaChon = [], ten, loi, ...thuocTinhKhac }) {
+  const thuocTinh = { name: ten, defaultValue: giaTri, 'aria-invalid': loi ? true : undefined, ...thuocTinhKhac };
   const dieuKhien = laVungVanBan
-    ? <textarea defaultValue={giaTri} rows="4" />
+    ? <textarea rows="4" {...thuocTinh} />
     : loaiTruong === 'select'
-      ? <select defaultValue={giaTri}>{cacLuaChon.map((luaChon) => <option key={luaChon}>{luaChon}</option>)}</select>
-      : <input type={loaiTruong} defaultValue={giaTri} />;
-  return <label className={`truong-nhap ${rong ? 'truong-nhap-rong' : ''}`}><span>{nhan}{batBuoc && ' *'}</span>{dieuKhien}</label>;
+      ? <select {...thuocTinh}>{cacLuaChon.map((luaChon) => {
+        const { giaTri: giaTriLuaChon, nhan: nhanLuaChon } = typeof luaChon === 'string' ? { giaTri: luaChon, nhan: luaChon } : luaChon;
+        return <option key={giaTriLuaChon} value={giaTriLuaChon}>{nhanLuaChon}</option>;
+      })}</select>
+      : <input type={loaiTruong} {...thuocTinh} />;
+  return <label className={`truong-nhap ${rong ? 'truong-nhap-rong' : ''} ${loi ? 'truong-nhap-co-loi' : ''}`}>
+    <span>{nhan}{batBuoc && ' *'}</span>{dieuKhien}{loi && <small className="loi-truong-nhap">{loi}</small>}
+  </label>;
+}
+
+// Thông báo hiển thị thật trên trang (GhiChu của wireframe đang bị ẩn).
+export function ThongBao({ loai = 'thong-tin', children }) {
+  if (!children) return null;
+  return <div className={`thong-bao-trang thong-bao-${loai}`} role={loai === 'loi' ? 'alert' : 'status'}>{children}</div>;
+}
+
+export function DangTai({ children = 'Đang tải dữ liệu…' }) {
+  return <p className="dang-tai">{children}</p>;
 }
 
 export function GhiChu() { return null; }
