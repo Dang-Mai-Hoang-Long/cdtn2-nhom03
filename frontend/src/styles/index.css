@@ -897,3 +897,21 @@ button.nut-loc {
 button.nut-loc.dang-duoc-chon {
   color: white;
 }
+
+button.muc-thong-bao {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #ececec;
+  background: white;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.muc-thong-bao.chua-doc {
+  background: #f3f3f3;
+}
+p.muc-thong-bao {
+  margin: 0;
+  color: #6b6b6b;
+}

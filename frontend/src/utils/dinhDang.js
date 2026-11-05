@@ -9,6 +9,7 @@ export const NHAN_TRANG_THAI_DE_XUAT = {
   PENDING: 'Chờ xem xét',
   ACCEPTED: 'Đã chấp nhận',
   REJECTED: 'Không được chọn',
+  WITHDRAWN: 'Đã rút',
 };
 
 export const NHAN_VAI_TRO = {

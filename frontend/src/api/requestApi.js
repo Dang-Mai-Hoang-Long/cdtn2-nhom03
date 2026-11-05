@@ -20,6 +20,16 @@ export async function layChiTietYeuCau(id) {
   return data.data;
 }
 
+export async function suaYeuCau(id, duLieu) {
+  const { data } = await httpClient.patch(`/requests/${id}`, duLieu);
+  return data.data;
+}
+
+export async function dongYeuCau(id) {
+  const { data } = await httpClient.patch(`/requests/${id}/close`);
+  return data.data;
+}
+
 export async function xacNhanHoanThanh(id) {
   const { data } = await httpClient.patch(`/requests/${id}/complete`);
   return data.data;
