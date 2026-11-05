@@ -69,7 +69,7 @@ function chapNhanDeXuat(nguoiDung, id) {
     const deXuatDuocChon = await khoDeXuat.capNhatTrangThai(deXuat.id, TRANG_THAI_DE_XUAT.DA_CHAP_NHAN, { client });
     await khoDeXuat.tuChoiCacDeXuatConLai(yeuCau.id, deXuat.id, { client });
     await khoYeuCau.capNhatTrangThai(yeuCau.id, TRANG_THAI_YEU_CAU.DA_CHON_KY_THUAT_VIEN, { client, selectedProposalId: deXuat.id });
-    await dichVuThongBao.thongBaoDeXuatDuocChapNhan(deXuatDuocChon, { client });
+    await dichVuThongBao.thongBaoDeXuatDuocChapNhan(deXuatDuocChon, yeuCau, { client });
     return deXuatDuocChon;
   });
 }
