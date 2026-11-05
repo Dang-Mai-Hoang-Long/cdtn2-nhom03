@@ -15,6 +15,7 @@ const TRANG_THAI_DE_XUAT = Object.freeze({
   CHO_XU_LY: 'PENDING',
   DA_CHAP_NHAN: 'ACCEPTED',
   BI_TU_CHOI: 'REJECTED',
+  DA_RUT: 'WITHDRAWN',
 });
 
 const LOAI_THONG_BAO = Object.freeze({

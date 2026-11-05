@@ -74,4 +74,85 @@ function chapNhanDeXuat(nguoiDung, id) {
   });
 }
 
-module.exports = { guiDeXuat, layDanhSachDeXuatCuaYeuCau, chapNhanDeXuat };
+const NHAN_TRANG_THAI_DE_XUAT = {
+  PENDING: 'đang chờ xem xét',
+  ACCEPTED: 'đã được chấp nhận',
+  REJECTED: 'không được chọn',
+  WITHDRAWN: 'đã rút',
+};
+
+function docMaDeXuat(id) {
+  return dichVuYeuCau.docMaSo(id, 'PROPOSAL_NOT_FOUND', 'Không tìm thấy đề xuất');
+}
+
+// US15: chủ tin (BR09) hoặc kỹ thuật viên gửi đề xuất xem được chi tiết đề xuất.
+async function layChiTietDeXuat(nguoiDung, id) {
+  const deXuat = await khoDeXuat.timChiTietTheoId(docMaDeXuat(id));
+  if (!deXuat) throw new LoiUngDung(404, 'PROPOSAL_NOT_FOUND', 'Không tìm thấy đề xuất');
+  const laChuTin = deXuat.request.customerId === nguoiDung.id;
+  const laNguoiGui = deXuat.technicianId === nguoiDung.id;
+  if (!laChuTin && !laNguoiGui) throw new LoiUngDung(403, 'NOT_OWNER', 'Bạn không có quyền xem đề xuất này');
+  return deXuat;
+}
+
+// Màn hình 12: kỹ thuật viên xem các đề xuất mình đã gửi.
+function layDanhSachDeXuatCuaToi(nguoiDung, { status, phanTrang }) {
+  return khoDeXuat.timTheoKyThuatVien(nguoiDung.id, { status, ...phanTrang });
+}
+
+// Khóa tin rồi khóa đề xuất (cùng thứ tự với chấp nhận đề xuất) và kiểm tra người gửi.
+async function khoaDeXuatCuaKyThuatVien(client, nguoiDung, id) {
+  const maDeXuat = docMaDeXuat(id);
+  const deXuatBanDau = await khoDeXuat.timTheoId(maDeXuat, { client });
+  if (!deXuatBanDau) throw new LoiUngDung(404, 'PROPOSAL_NOT_FOUND', 'Không tìm thấy đề xuất');
+  const yeuCau = await khoYeuCau.timTheoId(deXuatBanDau.requestId, { client, khoaDong: true });
+  const deXuat = await khoDeXuat.timTheoId(maDeXuat, { client, khoaDong: true });
+  if (deXuat.technicianId !== nguoiDung.id) throw new LoiUngDung(403, 'NOT_OWNER', 'Bạn không phải người gửi đề xuất này');
+  if (deXuat.status === TRANG_THAI_DE_XUAT.DA_CHAP_NHAN) {
+    throw new LoiUngDung(409, 'PROPOSAL_ALREADY_ACCEPTED', 'Đề xuất đã được khách hàng chấp nhận');
+  }
+  return { yeuCau, deXuat };
+}
+
+// US22: chỉ sửa khi đề xuất còn chờ xem xét và tin vẫn đang nhận đề xuất.
+function suaDeXuat(nguoiDung, id, duLieu) {
+  return chayTrongGiaoDich(async (client) => {
+    const { yeuCau, deXuat } = await khoaDeXuatCuaKyThuatVien(client, nguoiDung, id);
+    if (deXuat.status !== TRANG_THAI_DE_XUAT.CHO_XU_LY) {
+      throw new LoiUngDung(409, 'PROPOSAL_NOT_EDITABLE', `Không thể chỉnh sửa vì đề xuất ${NHAN_TRANG_THAI_DE_XUAT[deXuat.status]}`);
+    }
+    if (yeuCau.status === TRANG_THAI_YEU_CAU.DA_CHON_KY_THUAT_VIEN || yeuCau.status === TRANG_THAI_YEU_CAU.HOAN_THANH) {
+      throw new LoiUngDung(400, 'REQUEST_ALREADY_SELECTED', 'Tin đã chọn kỹ thuật viên, không thể chỉnh sửa đề xuất');
+    }
+    if (yeuCau.status !== TRANG_THAI_YEU_CAU.CHO_DE_XUAT) {
+      throw new LoiUngDung(400, 'REQUEST_NOT_WAITING', 'Tin không còn nhận đề xuất');
+    }
+
+    const duLieuMoi = {};
+    if (duLieu.price !== undefined) duLieuMoi.price = duLieu.price;
+    if (duLieu.description !== undefined) duLieuMoi.description = duLieu.description.trim();
+    if (duLieu.estimatedDuration !== undefined) duLieuMoi.estimatedDuration = duLieu.estimatedDuration?.trim() || null;
+    return khoDeXuat.capNhatThongTin(deXuat.id, duLieuMoi, { client });
+  });
+}
+
+// US23: rút đề xuất chưa được chấp nhận; dữ liệu vẫn giữ lại với trạng thái WITHDRAWN.
+function rutDeXuat(nguoiDung, id) {
+  return chayTrongGiaoDich(async (client) => {
+    const { deXuat } = await khoaDeXuatCuaKyThuatVien(client, nguoiDung, id);
+    if (deXuat.status !== TRANG_THAI_DE_XUAT.CHO_XU_LY) {
+      throw new LoiUngDung(400, 'INVALID_STATUS_TRANSITION', `Không thể rút vì đề xuất ${NHAN_TRANG_THAI_DE_XUAT[deXuat.status]}`);
+    }
+    return khoDeXuat.capNhatTrangThai(deXuat.id, TRANG_THAI_DE_XUAT.DA_RUT, { client });
+  });
+}
+
+module.exports = {
+  guiDeXuat,
+  layDanhSachDeXuatCuaYeuCau,
+  chapNhanDeXuat,
+  layChiTietDeXuat,
+  layDanhSachDeXuatCuaToi,
+  suaDeXuat,
+  rutDeXuat,
+};
