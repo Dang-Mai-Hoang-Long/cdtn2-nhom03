@@ -59,10 +59,13 @@ async function laKyThuatVienDuocChon(yeuCau, kyThuatVienId) {
 async function layChiTietYeuCau(nguoiDung, id) {
   const yeuCau = await layYeuCauHoacBaoLoi(id);
   const khachHang = await khoNguoiDung.timTheoId(yeuCau.customerId);
+  // hasReviewed: người đang xem đã gửi đánh giá cho công việc này chưa (US18, US19 - BR14).
+  const { rows: dongDanhGia } = await truyVan('SELECT 1 FROM review WHERE request_id = $1 AND from_user_id = $2', [yeuCau.id, nguoiDung.id]);
+  const hasReviewed = dongDanhGia.length > 0;
 
   if (nguoiDung.role === VAI_TRO.KHACH_HANG) {
     kiemTraChuTin(yeuCau, nguoiDung);
-    return { ...yeuCau, customer: { id: khachHang.id, fullName: khachHang.fullName, phone: khachHang.phone } };
+    return { ...yeuCau, customer: { id: khachHang.id, fullName: khachHang.fullName, phone: khachHang.phone }, hasReviewed };
   }
 
   // Kỹ thuật viên xem được tin ở mọi trạng thái (theo tiêu chí chấp nhận US12),
@@ -84,6 +87,7 @@ async function layChiTietYeuCau(nguoiDung, id) {
     myProposalId: deXuatCuaToi?.id ?? null,
     myProposalStatus: deXuatCuaToi?.status ?? null,
     canPropose: yeuCau.status === TRANG_THAI_YEU_CAU.CHO_DE_XUAT && !hasProposed,
+    hasReviewed,
   };
 }
 
