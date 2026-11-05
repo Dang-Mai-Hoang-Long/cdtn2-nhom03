@@ -99,7 +99,45 @@ function xacNhanHoanThanh(nguoiDung, id) {
   });
 }
 
+// US21: chỉ sửa được khi tin còn Chờ đề xuất (chưa chọn kỹ thuật viên).
+function suaYeuCau(nguoiDung, id, duLieu) {
+  return chayTrongGiaoDich(async (client) => {
+    const yeuCau = await layYeuCauHoacBaoLoi(id, { client, khoaDong: true });
+    kiemTraChuTin(yeuCau, nguoiDung);
+    if (yeuCau.status === TRANG_THAI_YEU_CAU.DA_CHON_KY_THUAT_VIEN || yeuCau.status === TRANG_THAI_YEU_CAU.HOAN_THANH) {
+      throw new LoiUngDung(409, 'REQUEST_NOT_EDITABLE', 'Tin đã chọn kỹ thuật viên, không thể chỉnh sửa');
+    }
+    if (yeuCau.status !== TRANG_THAI_YEU_CAU.CHO_DE_XUAT) {
+      throw new LoiUngDung(409, 'REQUEST_NOT_EDITABLE', 'Tin đã đóng, không thể chỉnh sửa');
+    }
+
+    const duLieuMoi = {};
+    for (const truong of ['title', 'description', 'category', 'location']) {
+      if (duLieu[truong] !== undefined) duLieuMoi[truong] = duLieu[truong].trim();
+    }
+    if (duLieu.preferredTime !== undefined) duLieuMoi.preferredTime = new Date(duLieu.preferredTime);
+    return khoYeuCau.capNhatThongTin(yeuCau.id, duLieuMoi, { client });
+  });
+}
+
+// US09 (BR03 + BR06): chủ tin chỉ đóng được tin chưa chọn kỹ thuật viên.
+function dongYeuCau(nguoiDung, id) {
+  return chayTrongGiaoDich(async (client) => {
+    const yeuCau = await layYeuCauHoacBaoLoi(id, { client, khoaDong: true });
+    kiemTraChuTin(yeuCau, nguoiDung);
+    if (yeuCau.status === TRANG_THAI_YEU_CAU.DA_CHON_KY_THUAT_VIEN || yeuCau.status === TRANG_THAI_YEU_CAU.HOAN_THANH) {
+      throw new LoiUngDung(400, 'REQUEST_ALREADY_SELECTED', 'Không thể đóng tin đã chọn kỹ thuật viên');
+    }
+    if (yeuCau.status !== TRANG_THAI_YEU_CAU.CHO_DE_XUAT) {
+      throw new LoiUngDung(400, 'INVALID_STATUS_TRANSITION', 'Tin đã được đóng trước đó');
+    }
+    return khoYeuCau.capNhatTrangThai(yeuCau.id, TRANG_THAI_YEU_CAU.DA_DONG, { client });
+  });
+}
+
 module.exports = {
+  suaYeuCau,
+  dongYeuCau,
   docMaSo,
   docMaYeuCau,
   layYeuCauHoacBaoLoi,

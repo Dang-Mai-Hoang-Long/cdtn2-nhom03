@@ -73,4 +73,24 @@ async function capNhatTrangThai(id, status, { client, selectedProposalId } = {})
   return chuyenYeuCau(rows[0]);
 }
 
-module.exports = { chuyenYeuCau, tao, timTheoId, timDanhSach, capNhatTrangThai };
+const COT_THEO_TRUONG = {
+  title: 'title',
+  description: 'description',
+  category: 'category',
+  location: 'location',
+  preferredTime: 'preferred_time',
+};
+
+// Chỉ cập nhật các trường có trong duLieu; tên cột lấy từ danh sách cố định nên không bị chèn SQL.
+async function capNhatThongTin(id, duLieu, { client } = {}) {
+  const thucThi = client ?? { query: truyVan };
+  const cacTruong = Object.keys(COT_THEO_TRUONG).filter((truong) => duLieu[truong] !== undefined);
+  const menhDeSet = cacTruong.map((truong, viTri) => `${COT_THEO_TRUONG[truong]} = $${viTri + 2}`).join(', ');
+  const { rows } = await thucThi.query(
+    `UPDATE repair_request SET ${menhDeSet} WHERE id = $1 RETURNING *`,
+    [id, ...cacTruong.map((truong) => duLieu[truong])],
+  );
+  return chuyenYeuCau(rows[0]);
+}
+
+module.exports = { chuyenYeuCau, tao, timTheoId, timDanhSach, capNhatTrangThai, capNhatThongTin };

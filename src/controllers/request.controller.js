@@ -64,4 +64,22 @@ async function xacNhanHoanThanh(req, res, next) {
   }
 }
 
-module.exports = { taoYeuCau, layDanhSachYeuCauCuaToi, layDanhSachYeuCauDangCho, layChiTietYeuCau, xacNhanHoanThanh };
+async function suaYeuCau(req, res, next) {
+  try {
+    const duLieu = await dichVuYeuCau.suaYeuCau(req.nguoiDung, req.params.id, req.body);
+    return traVeThanhCong(res, { duLieu, thongDiep: 'Chỉnh sửa tin thành công' });
+  } catch (loi) {
+    return next(loi);
+  }
+}
+
+async function dongYeuCau(req, res, next) {
+  try {
+    const duLieu = await dichVuYeuCau.dongYeuCau(req.nguoiDung, req.params.id);
+    return traVeThanhCong(res, { duLieu, thongDiep: 'Đóng tin thành công' });
+  } catch (loi) {
+    return next(loi);
+  }
+}
+
+module.exports = { suaYeuCau, dongYeuCau, taoYeuCau, layDanhSachYeuCauCuaToi, layDanhSachYeuCauDangCho, layChiTietYeuCau, xacNhanHoanThanh };
