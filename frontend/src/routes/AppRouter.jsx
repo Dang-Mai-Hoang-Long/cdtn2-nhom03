@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { KhungUngDung } from '../components/AppLayout.jsx';
-import { danhSachManHinh } from '../navigation/screenRoutes.js';
+import TuyenDuocBaoVe from '../components/ProtectedRoute.jsx';
+import { timManHinhTheoDuongDan } from '../navigation/screenRoutes.js';
+import { layPhienDangNhap, theoDoiPhienDangNhap } from '../api/phienDangNhap.js';
 import TrangDangNhap from '../pages/shared/LoginPage.jsx';
 import TrangDangKy from '../pages/shared/RegisterPage.jsx';
+import TrangKhongTimThay from '../pages/shared/NotFoundPage.jsx';
 import TrangTinCuaToi from '../pages/customer/MyRequestsPage.jsx';
 import TrangTaoYeuCau from '../pages/customer/RequestCreatePage.jsx';
 import TrangChiTietYeuCau from '../pages/customer/RequestDetailPage.jsx';
@@ -35,20 +38,35 @@ const trangTheoMaManHinh = {
   '16': TrangQuanLyTaiKhoan,
 };
 
-function docManHinhTheoDuongDan() {
-  const duongDanHienTai = window.location.hash.replace(/^#\/?/, '');
-  return danhSachManHinh.find((manHinh) => manHinh.duongDan === duongDanHienTai || manHinh.maManHinh === duongDanHienTai)?.maManHinh ?? '01';
+function docViTriHienTai() {
+  const duongDan = window.location.hash.replace(/^#\/?/, '');
+  if (duongDan === '') return { manHinh: timManHinhTheoDuongDan('login').manHinh, thamSo: {} };
+  return timManHinhTheoDuongDan(duongDan);
 }
 
 export function DieuHuongUngDung() {
-  const [maManHinh, datMaManHinh] = useState(docManHinhTheoDuongDan);
+  const [viTri, datViTri] = useState(docViTriHienTai);
+  const [phien, datPhien] = useState(layPhienDangNhap);
+
   useEffect(() => {
-    const dongBoManHinhTheoDuongDan = () => datMaManHinh(docManHinhTheoDuongDan());
-    window.addEventListener('hashchange', dongBoManHinhTheoDuongDan);
-    return () => window.removeEventListener('hashchange', dongBoManHinhTheoDuongDan);
+    const dongBoTheoDuongDan = () => {
+      datViTri(docViTriHienTai());
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener('hashchange', dongBoTheoDuongDan);
+    const huyTheoDoi = theoDoiPhienDangNhap(datPhien);
+    return () => {
+      window.removeEventListener('hashchange', dongBoTheoDuongDan);
+      huyTheoDoi();
+    };
   }, []);
 
-  const manHinh = danhSachManHinh.find((banGhi) => banGhi.maManHinh === maManHinh) ?? danhSachManHinh[0];
-  const TrangHienThi = trangTheoMaManHinh[manHinh.maManHinh] ?? TrangDangNhap;
-  return <KhungUngDung manHinh={manHinh}><TrangHienThi /></KhungUngDung>;
+  if (!viTri) return <KhungUngDung phien={phien}><TrangKhongTimThay /></KhungUngDung>;
+  const { manHinh, thamSo } = viTri;
+  const TrangHienThi = trangTheoMaManHinh[manHinh.maManHinh] ?? TrangKhongTimThay;
+  return <KhungUngDung manHinh={manHinh} phien={phien}>
+    <TuyenDuocBaoVe manHinh={manHinh} phien={phien}>
+      <TrangHienThi key={window.location.hash} thamSo={thamSo} phien={phien} />
+    </TuyenDuocBaoVe>
+  </KhungUngDung>;
 }

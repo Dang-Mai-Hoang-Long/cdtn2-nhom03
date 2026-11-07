@@ -843,3 +843,75 @@ main {
     width: min(1344px, calc(100% - 120px));
   }
 }
+
+/* Trạng thái giao diện khi nối API (Sprint 2) */
+.truong-nhap-co-loi input,
+.truong-nhap-co-loi select,
+.truong-nhap-co-loi textarea {
+  border-color: #a12626;
+}
+.loi-truong-nhap {
+  color: #a12626;
+  font-size: 12px;
+  font-weight: 500;
+}
+.thong-bao-trang {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border: 1px solid #dedede;
+  border-radius: 3px;
+  background: #efefef;
+  color: #333;
+  line-height: 1.5;
+}
+.thong-bao-loi {
+  border-color: #e3b4b4;
+  background: #fbeeee;
+  color: #7d1d1d;
+}
+.thong-bao-thanh-cong {
+  border-color: #b9d8bf;
+  background: #eef7ef;
+  color: #1f5a2a;
+}
+.dang-tai {
+  padding: 24px 0;
+  color: #6b6b6b;
+}
+.nut:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.nut-dang-xuat {
+  margin: 0;
+}
+.dong-yeu-cau .lien-ket-van-ban {
+  white-space: nowrap;
+}
+
+button.nut-loc {
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+button.nut-loc.dang-duoc-chon {
+  color: white;
+}
+
+button.muc-thong-bao {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #ececec;
+  background: white;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.muc-thong-bao.chua-doc {
+  background: #f3f3f3;
+}
+p.muc-thong-bao {
+  margin: 0;
+  color: #6b6b6b;
+}
