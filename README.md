@@ -65,6 +65,8 @@ Ngoài phạm vi:
    npm run migrate
    ```
 
+   Muốn có sẵn dữ liệu mẫu và tài khoản demo (mật khẩu `Demo@123`), chạy thêm `npm run seed`. Chi tiết ở `seeds/README.md`.
+
 5. Chạy backend (cổng 3000) và frontend (cổng 5173) ở hai cửa sổ dòng lệnh:
 
    ```bash

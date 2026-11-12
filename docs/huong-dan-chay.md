@@ -121,7 +121,7 @@ npm run frontend   # frontend, cổng 5173
 
 Mở <http://localhost:5173>. Kiểm tra backend: <http://localhost:3000/api/health> trả `"success":true`.
 
-CSDL mới còn trống. Để thử luồng chính:
+CSDL mới còn trống. Cách nhanh nhất là chạy `npm run seed` để có sẵn tài khoản demo và dữ liệu mẫu (danh sách tài khoản và mật khẩu ở `seeds/README.md`). Hoặc tự thử luồng chính:
 
 1. Ở trang Đăng ký, tạo một tài khoản **Khách hàng** và một tài khoản **Kỹ thuật viên**. Phiên đăng nhập lưu trong trình duyệt, nên dùng thêm cửa sổ ẩn danh hoặc trình duyệt thứ hai để đăng nhập hai người cùng lúc.
 2. Khách hàng: *Đăng tin* rồi xem ở *Tin của tôi*.
@@ -144,9 +144,18 @@ npm test
 
 Test dùng `TEST_DATABASE_URL`, xóa và dựng lại bảng ở `suachua_test` mỗi lần chạy, không đụng tới `suachua_dev`. Tất cả test phải qua.
 
-## 4. Chia sẻ dữ liệu mẫu giữa các máy
+## 4. Dữ liệu mẫu và chia sẻ dữ liệu giữa các máy
 
-Cách này dùng khi bạn muốn đồng nghiệp có sẵn dữ liệu (tài khoản, tin, đề xuất...) giống máy bạn.
+### 4.0. Dữ liệu mẫu có sẵn trong dự án (khuyến nghị)
+
+Thư mục `seeds/` tạo dữ liệu mẫu và tài khoản demo bằng chính các service của ứng dụng, nên mọi người có dữ liệu giống nhau mà không cần gửi file:
+
+```powershell
+npm run seed          # tạo dữ liệu mẫu; dừng nếu đã có tài khoản demo
+npm run seed:reset    # xóa TOÀN BỘ dữ liệu ứng dụng rồi tạo lại
+```
+
+Danh sách tài khoản demo (mật khẩu chung `Demo@123`) và các tin mẫu ở `seeds/README.md`. Phần 4.1 trở đi dùng khi bạn muốn đồng nghiệp có đúng dữ liệu bạn đã tự nhập.
 
 ### 4.1. Người có dữ liệu: xuất ra file
 
