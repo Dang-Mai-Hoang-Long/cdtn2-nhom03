@@ -11,6 +11,7 @@ import TrangTaoYeuCau from '../pages/customer/RequestCreatePage.jsx';
 import TrangChiTietYeuCau from '../pages/customer/RequestDetailPage.jsx';
 import TrangXemDeXuat from '../pages/customer/ProposalReviewPage.jsx';
 import TrangTheoDoiYeuCau from '../pages/customer/RequestTrackingPage.jsx';
+import TrangSuaYeuCau from '../pages/customer/RequestEditPage.jsx';
 import TrangDanhGiaKyThuatVien from '../pages/customer/CustomerReviewPage.jsx';
 import TrangTimYeuCau from '../pages/technician/RequestSearchPage.jsx';
 import TrangChiTietTinKyThuatVien from '../pages/technician/RequestDetailPage.jsx';
@@ -36,6 +37,7 @@ const trangTheoMaManHinh = {
   '13': TrangCongViecDuocChon,
   '14': TrangDanhGiaKhachHang,
   '16': TrangQuanLyTaiKhoan,
+  '17': TrangSuaYeuCau,
 };
 
 function docViTriHienTai() {

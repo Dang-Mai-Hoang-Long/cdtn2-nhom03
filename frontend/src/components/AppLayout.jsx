@@ -25,7 +25,7 @@ export function KhungUngDung({ manHinh, phien, children }) {
   const maManHinh = manHinh?.maManHinh;
   const laTrangTaiKhoan = !manHinh || maManHinh === '01' || maManHinh === '02';
   const mucDieuHuongHienTai = ['04'].includes(maManHinh) ? 'Đăng tin'
-    : ['05', '06', '07', '08'].includes(maManHinh) ? 'Tin của tôi'
+    : ['05', '06', '07', '08', '17'].includes(maManHinh) ? 'Tin của tôi'
       : ['10', '11'].includes(maManHinh) ? 'Tìm việc sửa chữa'
         : maManHinh === '14' ? 'Công việc được chọn' : manHinh?.tieuDe;
   const trangChinh = phien ? MAN_HINH_CHINH_THEO_VAI_TRO[phien.user.role] : '01';

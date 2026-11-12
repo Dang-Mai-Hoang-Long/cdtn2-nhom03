@@ -6,6 +6,7 @@ export const danhSachManHinh = [
   { maManHinh: '04', duongDan: 'customer/requests/new', tieuDe: 'Đăng tin sửa chữa', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
   { maManHinh: '07', duongDan: 'customer/requests/:id/tracking', tieuDe: 'Theo dõi công việc', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
   { maManHinh: '08', duongDan: 'customer/requests/:id/review', tieuDe: 'Đánh giá kỹ thuật viên', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
+  { maManHinh: '17', duongDan: 'customer/requests/:id/edit', tieuDe: 'Sửa tin sửa chữa', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
   { maManHinh: '05', duongDan: 'customer/requests/:id', tieuDe: 'Tin và đề xuất', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
   { maManHinh: '06', duongDan: 'customer/proposals/:id', tieuDe: 'Chi tiết đề xuất', vaiTro: 'Khách hàng', nhomVaiTro: 'Khách hàng', mucDieuHuong: ['Tin của tôi', 'Đăng tin'] },
   { maManHinh: '09', duongDan: 'technician/requests', tieuDe: 'Tìm việc sửa chữa', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
