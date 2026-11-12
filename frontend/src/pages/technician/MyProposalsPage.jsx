@@ -22,6 +22,14 @@ const GHI_CHU_THEO_TRANG_THAI = {
   WITHDRAWN: 'Bạn đã rút đề xuất này. Dữ liệu vẫn được lưu để tra cứu, không khôi phục được.',
 };
 
+// Đề xuất đang chờ nhưng tin đã đóng (BR06 cho đóng tin còn đề xuất chờ): khách hàng không chọn được và không sửa được.
+function ghiChuDeXuat(deXuat) {
+  if (deXuat.status === 'PENDING' && deXuat.request.status !== 'WAITING_PROPOSAL') {
+    return 'Tin không còn nhận đề xuất nên khách hàng không chọn được đề xuất này. Bạn vẫn có thể rút đề xuất.';
+  }
+  return GHI_CHU_THEO_TRANG_THAI[deXuat.status];
+}
+
 function docThongBaoThanhCong() {
   try {
     const thongDiep = sessionStorage.getItem(KHOA_THONG_BAO_DE_XUAT_CUA_TOI);
@@ -96,7 +104,7 @@ export default function TrangDeXuatCuaToi() {
         <p>{deXuat.description}{deXuat.estimatedDuration && ` (dự kiến ${deXuat.estimatedDuration})`}</p>
         <div className="can-deu-hai-ben">
           <NhanTrangThai sacThai={deXuat.status === 'ACCEPTED' ? 'nhan-dam' : ''}>{NHAN_TRANG_THAI_DE_XUAT[deXuat.status]}</NhanTrangThai>
-          <span>{GHI_CHU_THEO_TRANG_THAI[deXuat.status]} Tin: {NHAN_TRANG_THAI_YEU_CAU[deXuat.request.status]}.</span>
+          <span>{ghiChuDeXuat(deXuat)} Tin: {NHAN_TRANG_THAI_YEU_CAU[deXuat.request.status]}.</span>
         </div>
         <div className="hang-nut">
           <a className="nut" href={layDuongDanManHinh(manHinhXemTin, { id: deXuat.request.id })}>Xem công việc</a>
