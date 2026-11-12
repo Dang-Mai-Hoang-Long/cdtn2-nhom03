@@ -112,14 +112,15 @@ Kiểm tra lại: `psql -h localhost -U nhom03 -d suachua_dev -c "\dt"` phải l
 
 ### 3.6. Chạy ứng dụng
 
-Mở hai cửa sổ PowerShell trong thư mục dự án:
+Một lệnh chạy cả backend (cổng 3000) và frontend (cổng 5173) trong cùng cửa sổ PowerShell, thư mục dự án:
 
 ```powershell
-npm run dev        # backend, cổng 3000
-npm run frontend   # frontend, cổng 5173
+npm run dev
 ```
 
-Mở <http://localhost:5173>. Kiểm tra backend: <http://localhost:3000/api/health> trả `"success":true`.
+Log của hai phần có tiền tố `[api]` và `[web]`. Dừng cả hai bằng `Ctrl+C`; nếu một phần thoát thì phần kia cũng tự dừng. Cần chạy riêng thì dùng `npm run dev:backend` hoặc `npm run dev:frontend` (ở hai cửa sổ).
+
+Mở <http://localhost:5173> (**không phải** cổng 3000: đó là API, chỉ có `/api/...`). Kiểm tra backend: <http://localhost:3000/api/health> trả `"success":true`.
 
 CSDL mới còn trống. Cách nhanh nhất là chạy `npm run seed` để có sẵn tài khoản demo và dữ liệu mẫu (danh sách tài khoản và mật khẩu ở `seeds/README.md`). Hoặc tự thử luồng chính:
 

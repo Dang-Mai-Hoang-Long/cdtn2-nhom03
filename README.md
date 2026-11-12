@@ -67,14 +67,13 @@ Ngoài phạm vi:
 
    Muốn có sẵn dữ liệu mẫu và tài khoản demo (mật khẩu `Demo@123`), chạy thêm `npm run seed`. Chi tiết ở `seeds/README.md`.
 
-5. Chạy backend (cổng 3000) và frontend (cổng 5173) ở hai cửa sổ dòng lệnh:
+5. Chạy backend (cổng 3000) và frontend (cổng 5173) cùng lúc bằng một lệnh:
 
    ```bash
    npm run dev
-   npm run frontend
    ```
 
-   Mở http://localhost:5173. Vite chuyển tiếp các yêu cầu `/api` sang backend.
+   Mở http://localhost:5173 (cổng 3000 là API, không có giao diện). Vite chuyển tiếp các yêu cầu `/api` sang backend. Dừng cả hai bằng `Ctrl+C`. Cần chạy riêng từng phần thì dùng `npm run dev:backend` hoặc `npm run dev:frontend`.
 
 Tài khoản quản trị viên không đăng ký được qua giao diện (BR01); tạo trực tiếp trong CSDL khi cần.
 
