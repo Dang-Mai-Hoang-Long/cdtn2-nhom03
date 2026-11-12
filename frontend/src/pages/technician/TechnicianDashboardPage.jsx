@@ -32,7 +32,8 @@ export default function TrangCongViecDuocChon({ thamSo }) {
   return <div className="khung-noi-dung">
     <TieuDeTrang tieuDe="Công việc được chọn" phuDe={`${dinhDangMaTin(yeuCau.id)} — ${yeuCau.title} · Đề xuất của bạn đã được chấp nhận.`} hanhDong={<NhanTrangThaiYeuCau trangThai={yeuCau.status} />} />
     {yeuCau.status === 'SELECTED' && <ThongBao>Chờ khách hàng xác nhận hoàn thành công việc.</ThongBao>}
-    {yeuCau.status === 'COMPLETED' && <ThongBao loai="thanh-cong">Khách hàng đã xác nhận hoàn thành công việc.</ThongBao>}
+    {yeuCau.status === 'COMPLETED' && <ThongBao loai="thanh-cong">{yeuCau.hasReviewed ? 'Khách hàng đã xác nhận hoàn thành công việc. Bạn đã đánh giá khách hàng.' : 'Khách hàng đã xác nhận hoàn thành công việc.'}</ThongBao>}
+    {yeuCau.status === 'COMPLETED' && !yeuCau.hasReviewed && <div className="hang-nut"><Nut maManHinhDich="14" thamSoDich={{ id: yeuCau.id }}>Đánh giá khách hàng</Nut></div>}
     <div className="hai-cot">
       <KhungNoiDung tieuDe="Yêu cầu sửa chữa"><TomTatYeuCau yeuCau={yeuCau} /></KhungNoiDung>
       <div className="cot-noi-dung">
