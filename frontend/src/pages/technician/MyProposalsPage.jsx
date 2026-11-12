@@ -16,7 +16,7 @@ const CAC_BO_LOC = [
 ];
 
 const GHI_CHU_THEO_TRANG_THAI = {
-  PENDING: 'Đang chờ khách hàng xem xét. Bạn có thể rút đề xuất.',
+  PENDING: 'Đang chờ khách hàng xem xét. Bạn có thể sửa hoặc rút đề xuất.',
   ACCEPTED: 'Khách hàng đã chọn đề xuất của bạn. Xem công việc để thấy thông tin liên hệ.',
   REJECTED: 'Khách hàng đã chọn kỹ thuật viên khác cho tin này.',
   WITHDRAWN: 'Bạn đã rút đề xuất này. Dữ liệu vẫn được lưu để tra cứu, không khôi phục được.',
@@ -86,6 +86,7 @@ export default function TrangDeXuatCuaToi() {
     {!ketQua && !loi && <DangTai />}
     {ketQua && ketQua.danhSach.length === 0 && <ThongBao>{boLoc ? 'Không có đề xuất nào ở trạng thái này' : 'Bạn chưa gửi đề xuất nào'}</ThongBao>}
     <div className="cot-noi-dung">{ketQua?.danhSach.map((deXuat) => {
+      const choSua = deXuat.status === 'PENDING' && deXuat.request.status === 'WAITING_PROPOSAL';
       const manHinhXemTin = deXuat.status === 'ACCEPTED' ? '13' : '10';
       return <KhungNoiDung key={deXuat.id} className="de-xuat-cua-toi">
         <div className="dau-the-de-xuat">
@@ -99,6 +100,7 @@ export default function TrangDeXuatCuaToi() {
         </div>
         <div className="hang-nut">
           <a className="nut" href={layDuongDanManHinh(manHinhXemTin, { id: deXuat.request.id })}>Xem công việc</a>
+          {choSua && <a className="nut nut-phu" href={layDuongDanManHinh('18', { id: deXuat.id })}>Sửa đề xuất</a>}
           {deXuat.status === 'PENDING' && <Nut laNutPhu disabled={maDangRut === deXuat.id} onClick={() => xuLyRut(deXuat)}>{maDangRut === deXuat.id ? 'Đang rút…' : 'Rút đề xuất'}</Nut>}
         </div>
       </KhungNoiDung>;
