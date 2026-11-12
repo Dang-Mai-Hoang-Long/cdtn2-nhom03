@@ -19,5 +19,5 @@
 - US15: backend cho cả kỹ thuật viên đã gửi đề xuất xem chi tiết đề xuất (rộng hơn tiêu chí "chỉ chủ tin xem"), vì chuông thông báo cần mở đề xuất để lấy mã tin. Giao diện chỉ có màn hình chi tiết đề xuất cho khách hàng.
 - Danh sách "Công việc được chọn" của kỹ thuật viên lấy từ `GET /api/proposals/my?status=ACCEPTED`, không có API riêng.
 - Thông báo (US20) là chuông trên thanh đầu trang với danh sách thả xuống, không có trang riêng.
-- `frontend/src/data/demoData.js` không còn được import ở đâu; để lại chờ nhóm quyết định xóa.
+- Đã xóa `frontend/src/data/demoData.js` (dữ liệu minh họa của wireframe) vì không còn màn hình nào dùng; dữ liệu mẫu để thử ứng dụng nằm ở `seeds/`.
 - Dữ liệu mẫu và tài khoản demo nằm ở `seeds/`, tạo qua tầng service nên tuân thủ BR01-BR16; `tests/seed.test.js` kiểm tra các bất biến đó.
