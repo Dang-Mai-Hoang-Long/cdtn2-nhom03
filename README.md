@@ -75,7 +75,9 @@ Ngoài phạm vi:
 
    Mở http://localhost:5173 (cổng 3000 là API, không có giao diện). Vite chuyển tiếp các yêu cầu `/api` sang backend. Dừng cả hai bằng `Ctrl+C`. Cần chạy riêng từng phần thì dùng `npm run dev:backend` hoặc `npm run dev:frontend`.
 
-Tài khoản quản trị viên không đăng ký được qua giao diện (BR01); tạo trực tiếp trong CSDL khi cần.
+Tài khoản quản trị viên không đăng ký được qua giao diện (BR01); tạo trực tiếp trong CSDL khi cần (`npm run create-admin`) hoặc dùng tài khoản demo từ `npm run seed`.
+
+Không muốn cài Node.js và PostgreSQL? Chạy cả dự án bằng Docker: `docker compose up --build`, rồi mở http://localhost:5173. Chi tiết ở `docs/huong-dan-docker.md`.
 
 ## 4. Cấu trúc thư mục
 
@@ -91,6 +93,7 @@ src/                    Backend Express (kiến trúc phân lớp)
   db.js, migrate.js     Kết nối PostgreSQL và chạy migration
 migrations/             File SQL thuần, chạy theo thứ tự tên
 seeds/                  Dữ liệu mẫu và tài khoản demo (npm run seed)
+Dockerfile, docker-compose.yml, docker/   Chạy bằng Docker (CSDL + backend + giao diện)
 tests/                  Kiểm thử API (node:test + supertest)
 frontend/src/
   api/                  Axios client và các hàm gọi API

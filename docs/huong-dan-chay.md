@@ -44,7 +44,7 @@ Tài liệu cho các thành viên nhóm 03 dựng dự án trên máy của mìn
 
 ## 2. Yêu cầu
 
-Git, Node.js 20 trở lên (kèm npm), PostgreSQL 16.
+Git, Node.js 20 trở lên (kèm npm), PostgreSQL 16. Nếu không muốn cài Node.js và PostgreSQL, chạy bằng Docker theo `docs/huong-dan-docker.md`.
 
 ## 3. Dựng CSDL và chạy dự án trên máy bạn
 
