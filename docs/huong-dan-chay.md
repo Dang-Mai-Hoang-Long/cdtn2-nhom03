@@ -93,7 +93,18 @@ Copy-Item .env.example .env
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Mở `.env`, dán chuỗi vừa in ra làm giá trị `JWT_SECRET`. Nếu bạn làm đúng mục 3.2 thì `DATABASE_URL` và `TEST_DATABASE_URL` giữ nguyên. Mỗi người có thể dùng `JWT_SECRET` riêng; đổi giá trị thì các phiên đăng nhập cũ hết hiệu lực. Đừng commit `.env`.
+File mẫu `.env.example` để trống mọi giá trị, nên mở `.env` và điền như sau (hai địa chỉ CSDL đúng nếu bạn làm đúng mục 3.2):
+
+```ini
+PORT=3000
+DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_dev
+TEST_DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_test
+JWT_SECRET=<dán chuỗi vừa in ra ở trên>
+JWT_EXPIRES_IN=1d
+CLIENT_URL=http://localhost:5173
+```
+
+Mỗi người có thể dùng `JWT_SECRET` riêng; đổi giá trị thì các phiên đăng nhập cũ hết hiệu lực. Thiếu `DATABASE_URL` hoặc `JWT_SECRET` thì backend không khởi động. Đừng commit `.env`.
 
 ### 3.5. Dựng bảng
 

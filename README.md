@@ -57,7 +57,7 @@ Ngoài phạm vi:
    npm --prefix frontend install
    ```
 
-3. Tạo file `.env` từ `.env.example`, sửa `DATABASE_URL`, `TEST_DATABASE_URL` và đặt `JWT_SECRET` là một chuỗi ngẫu nhiên.
+3. Tạo file `.env` từ `.env.example` (file mẫu để trống) và điền: `PORT=3000`, `DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_dev`, `TEST_DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_test`, `JWT_SECRET` là một chuỗi ngẫu nhiên, `JWT_EXPIRES_IN=1d`, `CLIENT_URL=http://localhost:5173`.
 
 4. Tạo bảng:
 
