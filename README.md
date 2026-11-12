@@ -90,6 +90,7 @@ src/                    Backend Express (kiến trúc phân lớp)
   utils/                Hằng số, response chuẩn, xử lý lỗi
   db.js, migrate.js     Kết nối PostgreSQL và chạy migration
 migrations/             File SQL thuần, chạy theo thứ tự tên
+seeds/                  Dữ liệu mẫu và tài khoản demo (npm run seed)
 tests/                  Kiểm thử API (node:test + supertest)
 frontend/src/
   api/                  Axios client và các hàm gọi API
@@ -119,4 +120,15 @@ Sprint 2 (12 user story) đã có backend, giao diện nối API và kiểm th�
 | US13, US14, US16 | Gửi đề xuất, xem đề xuất, chọn kỹ thuật viên | `POST /api/proposals`, `GET /api/proposals/request/:requestId`, `PATCH /api/proposals/:id/accept` |
 | US17 | Xác nhận hoàn thành | `PATCH /api/requests/:id/complete` |
 
-Các màn hình của Sprint 3 (06 chi tiết đề xuất, 08/14 đánh giá, 12 đề xuất của tôi, 16 quản lý tài khoản, thông báo) vẫn dùng dữ liệu minh họa.
+Sprint 3 (11 user story còn lại) cũng đã có backend, giao diện nối API và kiểm thử:
+
+| US | Chức năng | API |
+|---|---|---|
+| US04, US05 | Xem danh sách, khóa/mở khóa tài khoản | `GET /api/admin/users`, `PATCH /api/admin/users/:id/lock`, `/unlock` |
+| US09, US21 | Đóng tin, sửa tin | `PATCH /api/requests/:id/close`, `PATCH /api/requests/:id` |
+| US11 | Lọc tin theo loại dịch vụ và khu vực | `GET /api/requests?category=&location=` |
+| US15, US22, US23 | Xem chi tiết, sửa, rút đề xuất; danh sách đề xuất của tôi | `GET /api/proposals/:id`, `GET /api/proposals/my`, `PATCH /api/proposals/:id`, `PATCH /api/proposals/:id/close` |
+| US18, US19 | Đánh giá hai chiều | `POST /api/reviews`, `GET /api/reviews/user/:userId` |
+| US20 | Thông báo khi đề xuất được chấp nhận | `GET /api/notifications`, `/unread-count`, `PATCH /api/notifications/:id/read` |
+
+Cả 23 user story đã nối API thật; không còn màn hình dùng dữ liệu minh họa.
