@@ -44,7 +44,7 @@ Tài liệu cho các thành viên nhóm 03 dựng dự án trên máy của mìn
 
 ## 2. Yêu cầu
 
-Git, Node.js 20 trở lên (kèm npm), PostgreSQL 16.
+Git, Node.js 20 trở lên (kèm npm), PostgreSQL 16. Nếu không muốn cài Node.js và PostgreSQL, chạy bằng Docker theo `docs/huong-dan-docker.md`.
 
 ## 3. Dựng CSDL và chạy dự án trên máy bạn
 
@@ -93,7 +93,18 @@ Copy-Item .env.example .env
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Mở `.env`, dán chuỗi vừa in ra làm giá trị `JWT_SECRET`. Nếu bạn làm đúng mục 3.2 thì `DATABASE_URL` và `TEST_DATABASE_URL` giữ nguyên. Mỗi người có thể dùng `JWT_SECRET` riêng; đổi giá trị thì các phiên đăng nhập cũ hết hiệu lực. Đừng commit `.env`.
+File mẫu `.env.example` để trống mọi giá trị, nên mở `.env` và điền như sau (hai địa chỉ CSDL đúng nếu bạn làm đúng mục 3.2):
+
+```ini
+PORT=3000
+DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_dev
+TEST_DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_test
+JWT_SECRET=<dán chuỗi vừa in ra ở trên>
+JWT_EXPIRES_IN=1d
+CLIENT_URL=http://localhost:5173
+```
+
+Mỗi người có thể dùng `JWT_SECRET` riêng; đổi giá trị thì các phiên đăng nhập cũ hết hiệu lực. Thiếu `DATABASE_URL` hoặc `JWT_SECRET` thì backend không khởi động. Đừng commit `.env`.
 
 ### 3.5. Dựng bảng
 
@@ -112,16 +123,17 @@ Kiểm tra lại: `psql -h localhost -U nhom03 -d suachua_dev -c "\dt"` phải l
 
 ### 3.6. Chạy ứng dụng
 
-Mở hai cửa sổ PowerShell trong thư mục dự án:
+Một lệnh chạy cả backend (cổng 3000) và frontend (cổng 5173) trong cùng cửa sổ PowerShell, thư mục dự án:
 
 ```powershell
-npm run dev        # backend, cổng 3000
-npm run frontend   # frontend, cổng 5173
+npm run dev
 ```
 
-Mở <http://localhost:5173>. Kiểm tra backend: <http://localhost:3000/api/health> trả `"success":true`.
+Log của hai phần có tiền tố `[api]` và `[web]`. Dừng cả hai bằng `Ctrl+C`; nếu một phần thoát thì phần kia cũng tự dừng. Cần chạy riêng thì dùng `npm run dev:backend` hoặc `npm run dev:frontend` (ở hai cửa sổ).
 
-CSDL mới còn trống. Để thử luồng chính:
+Mở <http://localhost:5173> (**không phải** cổng 3000: đó là API, chỉ có `/api/...`). Kiểm tra backend: <http://localhost:3000/api/health> trả `"success":true`.
+
+CSDL mới còn trống. Cách nhanh nhất là chạy `npm run seed` để có sẵn tài khoản demo và dữ liệu mẫu (danh sách tài khoản và mật khẩu ở `seeds/README.md`). Hoặc tự thử luồng chính:
 
 1. Ở trang Đăng ký, tạo một tài khoản **Khách hàng** và một tài khoản **Kỹ thuật viên**. Phiên đăng nhập lưu trong trình duyệt, nên dùng thêm cửa sổ ẩn danh hoặc trình duyệt thứ hai để đăng nhập hai người cùng lúc.
 2. Khách hàng: *Đăng tin* rồi xem ở *Tin của tôi*.
@@ -144,9 +156,18 @@ npm test
 
 Test dùng `TEST_DATABASE_URL`, xóa và dựng lại bảng ở `suachua_test` mỗi lần chạy, không đụng tới `suachua_dev`. Tất cả test phải qua.
 
-## 4. Chia sẻ dữ liệu mẫu giữa các máy
+## 4. Dữ liệu mẫu và chia sẻ dữ liệu giữa các máy
 
-Cách này dùng khi bạn muốn đồng nghiệp có sẵn dữ liệu (tài khoản, tin, đề xuất...) giống máy bạn.
+### 4.0. Dữ liệu mẫu có sẵn trong dự án (khuyến nghị)
+
+Thư mục `seeds/` tạo dữ liệu mẫu và tài khoản demo bằng chính các service của ứng dụng, nên mọi người có dữ liệu giống nhau mà không cần gửi file:
+
+```powershell
+npm run seed          # tạo dữ liệu mẫu; dừng nếu đã có tài khoản demo
+npm run seed:reset    # xóa TOÀN BỘ dữ liệu ứng dụng rồi tạo lại
+```
+
+Danh sách tài khoản demo (mật khẩu chung `Demo@123`) và các tin mẫu ở `seeds/README.md`. Phần 4.1 trở đi dùng khi bạn muốn đồng nghiệp có đúng dữ liệu bạn đã tự nhập.
 
 ### 4.1. Người có dữ liệu: xuất ra file
 

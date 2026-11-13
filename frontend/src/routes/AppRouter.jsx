@@ -11,11 +11,13 @@ import TrangTaoYeuCau from '../pages/customer/RequestCreatePage.jsx';
 import TrangChiTietYeuCau from '../pages/customer/RequestDetailPage.jsx';
 import TrangXemDeXuat from '../pages/customer/ProposalReviewPage.jsx';
 import TrangTheoDoiYeuCau from '../pages/customer/RequestTrackingPage.jsx';
+import TrangSuaYeuCau from '../pages/customer/RequestEditPage.jsx';
 import TrangDanhGiaKyThuatVien from '../pages/customer/CustomerReviewPage.jsx';
 import TrangTimYeuCau from '../pages/technician/RequestSearchPage.jsx';
 import TrangChiTietTinKyThuatVien from '../pages/technician/RequestDetailPage.jsx';
 import TrangGuiDeXuat from '../pages/technician/ProposalCreatePage.jsx';
 import TrangDeXuatCuaToi from '../pages/technician/MyProposalsPage.jsx';
+import TrangSuaDeXuat from '../pages/technician/ProposalEditPage.jsx';
 import TrangCongViecDuocChon from '../pages/technician/TechnicianDashboardPage.jsx';
 import TrangDanhGiaKhachHang from '../pages/technician/TechnicianReviewPage.jsx';
 import TrangQuanLyTaiKhoan from '../pages/admin/UserManagementPage.jsx';
@@ -36,6 +38,8 @@ const trangTheoMaManHinh = {
   '13': TrangCongViecDuocChon,
   '14': TrangDanhGiaKhachHang,
   '16': TrangQuanLyTaiKhoan,
+  '17': TrangSuaYeuCau,
+  '18': TrangSuaDeXuat,
 };
 
 function docViTriHienTai() {

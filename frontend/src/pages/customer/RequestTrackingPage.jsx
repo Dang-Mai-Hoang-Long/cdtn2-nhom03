@@ -60,7 +60,8 @@ export default function TrangTheoDoiYeuCau({ thamSo }) {
             <div className="truong-nhap-rong"><span className="nhan-mo-ta">Phạm vi công việc</span><p>{deXuatDuocChon.description}</p></div>
           </div>
           {yeuCau.status === 'SELECTED' && <Nut onClick={xuLyXacNhan} disabled={dangGui}>{dangGui ? 'Đang xác nhận…' : 'Xác nhận hoàn thành'}</Nut>}
-          {yeuCau.status === 'COMPLETED' && <ThongBao loai="thanh-cong">Công việc đã hoàn thành. Chức năng đánh giá kỹ thuật viên sẽ có ở Sprint 3.</ThongBao>}
+          {yeuCau.status === 'COMPLETED' && <ThongBao loai="thanh-cong">{yeuCau.hasReviewed ? 'Công việc đã hoàn thành. Bạn đã đánh giá kỹ thuật viên.' : 'Công việc đã hoàn thành.'}</ThongBao>}
+          {yeuCau.status === 'COMPLETED' && !yeuCau.hasReviewed && <Nut maManHinhDich="08" thamSoDich={{ id: yeuCau.id }}>Đánh giá kỹ thuật viên</Nut>}
         </KhungNoiDung>}
         {cacDeXuatKhac.length > 0 && <KhungNoiDung tieuDe="Các đề xuất khác">{cacDeXuatKhac.map((deXuat) => <div className="de-xuat-thu-gon" key={deXuat.id}><strong>{deXuat.technician.fullName} · {dinhDangTien(deXuat.price)}</strong><NhanTrangThai>{NHAN_TRANG_THAI_DE_XUAT[deXuat.status]}</NhanTrangThai></div>)}</KhungNoiDung>}
       </div>

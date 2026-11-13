@@ -57,7 +57,7 @@ Ngoài phạm vi:
    npm --prefix frontend install
    ```
 
-3. Tạo file `.env` từ `.env.example`, sửa `DATABASE_URL`, `TEST_DATABASE_URL` và đặt `JWT_SECRET` là một chuỗi ngẫu nhiên.
+3. Tạo file `.env` từ `.env.example` (file mẫu để trống) và điền: `PORT=3000`, `DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_dev`, `TEST_DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_test`, `JWT_SECRET` là một chuỗi ngẫu nhiên, `JWT_EXPIRES_IN=1d`, `CLIENT_URL=http://localhost:5173`.
 
 4. Tạo bảng:
 
@@ -65,16 +65,19 @@ Ngoài phạm vi:
    npm run migrate
    ```
 
-5. Chạy backend (cổng 3000) và frontend (cổng 5173) ở hai cửa sổ dòng lệnh:
+   Muốn có sẵn dữ liệu mẫu và tài khoản demo (mật khẩu `Demo@123`), chạy thêm `npm run seed`. Chi tiết ở `seeds/README.md`.
+
+5. Chạy backend (cổng 3000) và frontend (cổng 5173) cùng lúc bằng một lệnh:
 
    ```bash
    npm run dev
-   npm run frontend
    ```
 
-   Mở http://localhost:5173. Vite chuyển tiếp các yêu cầu `/api` sang backend.
+   Mở http://localhost:5173 (cổng 3000 là API, không có giao diện). Vite chuyển tiếp các yêu cầu `/api` sang backend. Dừng cả hai bằng `Ctrl+C`. Cần chạy riêng từng phần thì dùng `npm run dev:backend` hoặc `npm run dev:frontend`.
 
-Tài khoản quản trị viên không đăng ký được qua giao diện (BR01); tạo trực tiếp trong CSDL khi cần.
+Tài khoản quản trị viên không đăng ký được qua giao diện (BR01); tạo trực tiếp trong CSDL khi cần (`npm run create-admin`) hoặc dùng tài khoản demo từ `npm run seed`.
+
+Không muốn cài Node.js và PostgreSQL? Chạy cả dự án bằng Docker: `docker compose up --build`, rồi mở http://localhost:5173. Chi tiết ở `docs/huong-dan-docker.md`.
 
 ## 4. Cấu trúc thư mục
 
@@ -89,6 +92,8 @@ src/                    Backend Express (kiến trúc phân lớp)
   utils/                Hằng số, response chuẩn, xử lý lỗi
   db.js, migrate.js     Kết nối PostgreSQL và chạy migration
 migrations/             File SQL thuần, chạy theo thứ tự tên
+seeds/                  Dữ liệu mẫu và tài khoản demo (npm run seed)
+Dockerfile, docker-compose.yml, docker/   Chạy bằng Docker (CSDL + backend + giao diện)
 tests/                  Kiểm thử API (node:test + supertest)
 frontend/src/
   api/                  Axios client và các hàm gọi API
@@ -118,4 +123,15 @@ Sprint 2 (12 user story) đã có backend, giao diện nối API và kiểm th�
 | US13, US14, US16 | Gửi đề xuất, xem đề xuất, chọn kỹ thuật viên | `POST /api/proposals`, `GET /api/proposals/request/:requestId`, `PATCH /api/proposals/:id/accept` |
 | US17 | Xác nhận hoàn thành | `PATCH /api/requests/:id/complete` |
 
-Các màn hình của Sprint 3 (06 chi tiết đề xuất, 08/14 đánh giá, 12 đề xuất của tôi, 16 quản lý tài khoản, thông báo) vẫn dùng dữ liệu minh họa.
+Sprint 3 (11 user story còn lại) cũng đã có backend, giao diện nối API và kiểm thử:
+
+| US | Chức năng | API |
+|---|---|---|
+| US04, US05 | Xem danh sách, khóa/mở khóa tài khoản | `GET /api/admin/users`, `PATCH /api/admin/users/:id/lock`, `/unlock` |
+| US09, US21 | Đóng tin, sửa tin | `PATCH /api/requests/:id/close`, `PATCH /api/requests/:id` |
+| US11 | Lọc tin theo loại dịch vụ và khu vực | `GET /api/requests?category=&location=` |
+| US15, US22, US23 | Xem chi tiết, sửa, rút đề xuất; danh sách đề xuất của tôi | `GET /api/proposals/:id`, `GET /api/proposals/my`, `PATCH /api/proposals/:id`, `PATCH /api/proposals/:id/close` |
+| US18, US19 | Đánh giá hai chiều | `POST /api/reviews`, `GET /api/reviews/user/:userId` |
+| US20 | Thông báo khi đề xuất được chấp nhận | `GET /api/notifications`, `/unread-count`, `PATCH /api/notifications/:id/read` |
+
+Cả 23 user story đã nối API thật; không còn màn hình dùng dữ liệu minh họa.

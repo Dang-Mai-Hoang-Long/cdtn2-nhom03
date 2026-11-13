@@ -11,3 +11,13 @@
 - Chi tiết tin cho kỹ thuật viên trả thêm `hasProposed`, `canPropose`, `myProposalId`, `myProposalStatus`; danh sách tin trả thêm `proposalCount`. Đây là trường bổ sung ngoài API contract.
 - Đăng xuất (US03): JWT không lưu phiên ở server; API trả 200 và giao diện xóa token. Tài khoản bị khóa bị chặn ngay vì middleware tra lại trạng thái khóa ở mỗi request (BR02).
 - Biểu mẫu đăng tin thêm trường Tiêu đề (API bắt buộc nhưng wireframe chưa có) và bỏ "Địa chỉ chi tiết" vì API chỉ có một trường `location` mà kỹ thuật viên nào cũng thấy. Nếu cần địa chỉ chi tiết chỉ hiện cho kỹ thuật viên được chọn, phải thêm cột mới vào ERD và API.
+
+## Quyết định khi triển khai giao diện Sprint 3
+
+- Thêm hai màn hình ngoài 16 màn hình của wireframe: 17 (Sửa tin, `customer/requests/:id/edit`) và 18 (Sửa đề xuất, `technician/proposals/:id/edit`). Sửa tin dùng lại `RequestForm` ở chế độ sửa; gửi và sửa đề xuất dùng chung `ProposalForm`.
+- Nút và màn hình chỉ hiện khi quy tắc nghiệp vụ cho phép (đóng/sửa tin khi Chờ đề xuất; sửa đề xuất khi còn chờ và tin còn nhận đề xuất; rút đề xuất khi còn chờ; đánh giá khi tin Hoàn thành, đúng bên tham gia và chưa đánh giá). Backend vẫn kiểm tra lại, giao diện hiện thông báo lỗi của backend khi trạng thái đã đổi.
+- US15: backend cho cả kỹ thuật viên đã gửi đề xuất xem chi tiết đề xuất (rộng hơn tiêu chí "chỉ chủ tin xem"), vì chuông thông báo cần mở đề xuất để lấy mã tin. Giao diện chỉ có màn hình chi tiết đề xuất cho khách hàng.
+- Danh sách "Công việc được chọn" của kỹ thuật viên lấy từ `GET /api/proposals/my?status=ACCEPTED`, không có API riêng.
+- Thông báo (US20) là chuông trên thanh đầu trang với danh sách thả xuống, không có trang riêng.
+- Đã xóa `frontend/src/data/demoData.js` (dữ liệu minh họa của wireframe) vì không còn màn hình nào dùng; dữ liệu mẫu để thử ứng dụng nằm ở `seeds/`.
+- Dữ liệu mẫu và tài khoản demo nằm ở `seeds/`, tạo qua tầng service nên tuân thủ BR01-BR16; `tests/seed.test.js` kiểm tra các bất biến đó.

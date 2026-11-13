@@ -1,0 +1,17 @@
+# Thư viện cài lại trong image (bản Windows/macOS không dùng được trên Linux).
+node_modules
+frontend/node_modules
+frontend/dist
+# Cấu hình và bí mật của từng máy.
+.env
+.env.*
+# Không cần trong image.
+.git
+.gitignore
+docs
+docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+*.log
+coverage
