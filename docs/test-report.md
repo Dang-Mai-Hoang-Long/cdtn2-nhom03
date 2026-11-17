@@ -1,7 +1,7 @@
 # Test Report — Nền tảng kết nối và đặt dịch vụ sửa chữa tại nhà (23 user story)
 
 Nhóm 03: Đặng Mai Hoàng Long · 2374802013303 — Lê Tấn Phong · 2374802010384 — Nguyễn Quốc Huy · 2374802010185 · Track SE
-Kế hoạch kiểm thử: [test-plan.md](test-plan.md) · Product Backlog: [product-backlog-nhom03.md](product-backlog-nhom03.md) (`ProductBacklog_Nhom03.xlsx`) · API: [api-contract.md](api-contract.md) · Quyết định thiết kế: [project-notes.md](project-notes.md) · Ảnh chụp: [screenshots/](screenshots/)
+Kế hoạch kiểm thử: [test-plan.md](test-plan.md) · Product Backlog: [product-backlog-nhom03.md](product-backlog-nhom03.md) (`ProductBacklog_Nhom03.xlsx`) · API: [api-contract.md](api-contract.md) · Quyết định thiết kế: [project-notes.md](project-notes.md) · Nhật ký lỗi: [bug-log.md](bug-log.md) · Ảnh chụp: [screenshots/](screenshots/)
 Ngày kiểm: 2026-11-13 · Phiên bản được kiểm: `cdtn2-nhom03-main` (không phải kho git) = `cdtn2-nhom03-main.zip`, SHA-256 `441ABD159AE4FEA8E704BDF7B98F799A4666EB7408531C6EC27E87BBECB011DC`
 Môi trường: Windows 11 Pro · Node.js v24.22.0 · PostgreSQL 18.6 (README ghi 16 — xem §7) · chi tiết ở [test-plan.md](test-plan.md) §4.
 
@@ -112,7 +112,7 @@ Tiền điều kiện chung của các bước *(S-xx)*: CSDL `suachua_dev` mớ
 
 ## 3. Truy vết TC FAIL → Bug, lệch có chủ đích và ghi nhận khác
 
-**Lỗi (BUG)** — nguyên nhân lấy từ log của server thật (`node src/server.js` in lỗi gốc ra stderr). Không sửa mã trong đợt kiểm thử này; tất cả đang **Mở**.
+**Lỗi (BUG)** — nguyên nhân lấy từ log của server thật (`node src/server.js` in lỗi gốc ra stderr). Không sửa mã trong đợt kiểm thử này; tất cả đang **Mở**. Mô tả đầy đủ từng lỗi (bảy dòng, lệnh tái lập chạy được) nằm ở [bug-log.md](bug-log.md).
 
 | Bug | TC (bước) | Tái hiện | Thực tế (mong đợi) | Nguyên nhân | Mức độ | Trạng thái | Đề xuất khắc phục |
 |---|---|---|---|---|---|---|---|

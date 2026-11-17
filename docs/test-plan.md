@@ -64,7 +64,7 @@ Dự án không có tầng unit thuần: các hàm kiểm tra (`src/validators/*
 1. **Phủ:** 23/23 user story có ít nhất một TC; 53/53 kịch bản chấp nhận có ít nhất một bước TC với bằng chứng thực thi ở tầng API; phần giao diện của tiêu chí được rà soát mã và ghi rõ "chưa chạy" (không tính vào PASS).
 2. **Bộ tự động xanh và ổn định:** `npm test` PASS 100% ở lần chạy cuối, **chỉ bằng một lệnh**, và cho cùng kết quả ở lần chạy lặp lại (không test chập chờn).
 3. **Ưu tiên Cao:** mọi TC mức Cao PASS, **ngoại trừ** các lệch có chủ đích đã ghi trước trong [project-notes.md](project-notes.md) (phải được liệt kê ở mục 3 của báo cáo với trạng thái "chấp nhận").
-4. **Mức lỗi:** không còn bug Critical hoặc Major đang mở; mọi bug Minor còn mở phải được liệt kê kèm cách tái hiện, nguyên nhân và đề xuất khắc phục.
+4. **Mức lỗi:** không còn bug Critical hoặc Major đang mở; mọi bug Minor còn mở phải được liệt kê kèm cách tái hiện, nguyên nhân và đề xuất khắc phục (nhật ký lỗi: [bug-log.md](bug-log.md)).
 5. **Độ bền với dữ liệu vào:** ở mọi TC biên / dữ liệu sai / bảo mật — đúng mã HTTP **và** đúng mã lỗi nghiệp vụ theo [api-contract.md](api-contract.md); **không có phản hồi HTTP 500** với dữ liệu người dùng nhập được; thân phản hồi lỗi không chứa stack trace.
 6. **Phân quyền:** ma trận endpoint × vai trò đúng 100% số ô (chưa đăng nhập → 401; sai vai trò hoặc không phải chủ sở hữu → 403).
 7. **Tái lập:** chạy lại migration hoặc `seed:reset` — số bản ghi của mọi bảng không đổi; chạy lại migration không in thêm dòng nào.
