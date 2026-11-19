@@ -160,6 +160,27 @@ describe('US12 - Kỹ thuật viên xem chi tiết tin', () => {
   });
 });
 
+describe('BUG-04 - Tham số page quá lớn', () => {
+  it('page cực lớn trả 200 với danh sách rỗng ở các API danh sách dùng chung, không còn 500', async () => {
+    const cacApi = [['/api/requests/my', khachHang], ['/api/requests', kyThuatVien], ['/api/notifications', kyThuatVien], ['/api/admin/users', quanTriVien]];
+    for (const [duongDan, nguoiGoi] of cacApi) {
+      const res = await voiToken(request(app).get(`${duongDan}?page=9999999999999999999&size=10`), nguoiGoi.token);
+      assert.equal(res.status, 200, duongDan);
+      assert.deepEqual(res.body.data, [], duongDan);
+      assert.equal(res.body.meta.page, 1000000, `${duongDan}: page được kẹp ở mức tối đa`);
+    }
+  });
+
+  it('page ở đúng mức tối đa vẫn trả 200, page 999 không đổi hành vi', async () => {
+    for (const page of [1000000, 999]) {
+      const res = await voiToken(request(app).get(`/api/requests/my?page=${page}&size=100`), khachHang.token);
+      assert.equal(res.status, 200, `page=${page}`);
+      assert.deepEqual(res.body.data, []);
+      assert.equal(res.body.meta.page, page);
+    }
+  });
+});
+
 describe('US17 - Xác nhận hoàn thành', () => {
   it('tin còn Chờ đề xuất thì không xác nhận được (BR12)', async () => {
     const tin = await taoTin(khachHang.token);

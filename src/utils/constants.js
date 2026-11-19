@@ -25,6 +25,6 @@ const LOAI_THONG_BAO = Object.freeze({
 // Mã lớn nhất của cột id kiểu INT (SERIAL) trong PostgreSQL.
 const ID_TOI_DA = 2147483647;
 
-const PHAN_TRANG_MAC_DINH = Object.freeze({ trang: 1, kichThuoc: 10, kichThuocToiDa: 100 });
+const PHAN_TRANG_MAC_DINH = Object.freeze({ trang: 1, trangToiDa: 1000000, kichThuoc: 10, kichThuocToiDa: 100 });
 
 module.exports = { VAI_TRO, TRANG_THAI_YEU_CAU, TRANG_THAI_DE_XUAT, LOAI_THONG_BAO, ID_TOI_DA, PHAN_TRANG_MAC_DINH };
