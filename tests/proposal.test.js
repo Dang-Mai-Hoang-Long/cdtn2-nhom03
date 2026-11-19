@@ -74,6 +74,31 @@ describe('US13 - Gửi đề xuất', () => {
   });
 });
 
+describe('BUG-02 - Giá đề xuất nhỏ hơn độ chính xác của cột price DECIMAL(15,1)', () => {
+  const loiGiaToiThieu = [{ field: 'price', message: 'Giá đề xuất tối thiểu 0,1' }];
+
+  it('gửi giá 0,04 trả 400 VALIDATION_ERROR ở trường price, 0,1 vẫn gửi được', async () => {
+    const tin = await taoTin(khachHang.token);
+    const nho = await guiDeXuat(kyThuatVienA.token, { requestId: tin.id, price: 0.04 });
+    assert.equal(nho.status, 400);
+    assert.equal(nho.body.code, 'VALIDATION_ERROR');
+    assert.deepEqual(nho.body.details, loiGiaToiThieu);
+    const bien = await guiDeXuat(kyThuatVienA.token, { requestId: tin.id, price: 0.1 });
+    assert.equal(bien.status, 201);
+    assert.equal(bien.body.data.price, 0.1);
+  });
+
+  it('sửa đề xuất với giá 0,04 cũng trả 400 và giữ nguyên giá đã lưu (cùng validator)', async () => {
+    const tin = await taoTin(khachHang.token);
+    const deXuat = (await guiDeXuat(kyThuatVienB.token, { requestId: tin.id })).body.data;
+    const res = await voiToken(request(app).patch(`/api/proposals/${deXuat.id}`), kyThuatVienB.token).send({ price: 0.04 });
+    assert.equal(res.status, 400);
+    assert.deepEqual(res.body.details, loiGiaToiThieu);
+    const { rows } = await truyVan('SELECT price FROM proposal WHERE id = $1', [deXuat.id]);
+    assert.equal(rows[0].price, 350000);
+  });
+});
+
 describe('US14 - Xem đề xuất đã nhận', () => {
   it('chủ tin thấy danh sách đề xuất kèm tên kỹ thuật viên', async () => {
     const tin = await taoTin(khachHang.token);

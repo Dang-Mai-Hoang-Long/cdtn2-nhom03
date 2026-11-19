@@ -1,6 +1,8 @@
 const { laChuoiCoNoiDung } = require('./auth.validator');
 
 const GIA_TOI_DA = 1e13;
+// Khớp độ chính xác của cột price DECIMAL(15,1): giá nhỏ hơn 0,1 bị làm tròn về 0 và vi phạm CHECK (price > 0).
+const GIA_TOI_THIEU = 0.1;
 const CAC_TRUONG_CO_THE_SUA = ['price', 'description', 'estimatedDuration'];
 
 // chiKiemTraTruongCoGui: dùng cho PATCH (US22), chỉ kiểm tra các trường được gửi lên.
@@ -11,6 +13,8 @@ function kiemTraTruongDeXuat(duLieu, { chiKiemTraTruongCoGui = false } = {}) {
   if (canKiemTra('price')) {
     if (typeof duLieu.price !== 'number' || !Number.isFinite(duLieu.price) || duLieu.price <= 0) {
       danhSachLoi.push({ field: 'price', message: 'Giá đề xuất phải lớn hơn 0' });
+    } else if (duLieu.price < GIA_TOI_THIEU) {
+      danhSachLoi.push({ field: 'price', message: 'Giá đề xuất tối thiểu 0,1' });
     } else if (duLieu.price >= GIA_TOI_DA) {
       danhSachLoi.push({ field: 'price', message: 'Giá đề xuất quá lớn' });
     }
