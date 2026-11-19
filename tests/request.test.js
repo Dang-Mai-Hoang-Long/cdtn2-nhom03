@@ -181,6 +181,24 @@ describe('BUG-04 - Tham số page quá lớn', () => {
   });
 });
 
+describe('BUG-05 - Thân yêu cầu lớn hơn giới hạn 100 KB', () => {
+  it('mô tả 150.000 ký tự trả 400 VALIDATION_ERROR kèm thông điệp rõ ràng, không còn 500', async () => {
+    const res = await voiToken(request(app).post('/api/requests'), khachHang.token).send({ ...duLieuTinMau, description: 'a'.repeat(150000) });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.code, 'VALIDATION_ERROR');
+    assert.equal(res.body.message, 'Dữ liệu gửi lên quá lớn (tối đa 100 KB)');
+    assert.equal(res.body.path, '/api/requests');
+  });
+
+  it('lỗi áp dụng cho mọi API nhận JSON (ví dụ đăng ký), còn thân 50.000 ký tự vẫn được chấp nhận', async () => {
+    const dangKy = await request(app).post('/api/auth/register').send({ email: 'lon@example.com', password: 'matkhau123', fullName: 'a'.repeat(150000), phone: '0901234567', role: 'CUSTOMER' });
+    assert.equal(dangKy.status, 400);
+    assert.equal(dangKy.body.code, 'VALIDATION_ERROR');
+    const vuaDu = await voiToken(request(app).post('/api/requests'), khachHang.token).send({ ...duLieuTinMau, description: 'a'.repeat(50000) });
+    assert.equal(vuaDu.status, 201);
+  });
+});
+
 describe('US17 - Xác nhận hoàn thành', () => {
   it('tin còn Chờ đề xuất thì không xác nhận được (BR12)', async () => {
     const tin = await taoTin(khachHang.token);
