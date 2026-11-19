@@ -29,6 +29,9 @@ function xuLyLoi(loi, req, res, next) {
   } else if (loi.type === 'entity.too.large') {
     // express.json() giới hạn thân yêu cầu ở 100 KB; dùng 400 (đã có trong API contract) thay vì thêm mã 413.
     loiTraVe = new LoiUngDung(400, 'VALIDATION_ERROR', 'Dữ liệu gửi lên quá lớn (tối đa 100 KB)');
+  } else if (typeof loi.type === 'string' && loi.status >= 400 && loi.status < 500) {
+    // Các lỗi đọc thân yêu cầu khác của body-parser (bảng mã, mã hóa nội dung không được hỗ trợ...) cũng do người gọi gây ra.
+    loiTraVe = new LoiUngDung(400, 'VALIDATION_ERROR', 'Dữ liệu gửi lên không được hỗ trợ hoặc không hợp lệ');
   } else if (!(loi instanceof LoiUngDung)) {
     if (process.env.NODE_ENV !== 'test') console.error(loi);
     loiTraVe = new LoiUngDung(500, 'INTERNAL_ERROR', 'Lỗi hệ thống, vui lòng thử lại sau');

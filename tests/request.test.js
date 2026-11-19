@@ -197,6 +197,15 @@ describe('BUG-05 - Thân yêu cầu lớn hơn giới hạn 100 KB', () => {
     const vuaDu = await voiToken(request(app).post('/api/requests'), khachHang.token).send({ ...duLieuTinMau, description: 'a'.repeat(50000) });
     assert.equal(vuaDu.status, 201);
   });
+
+  it('các lỗi đọc thân khác của body-parser (bảng mã, mã hóa nội dung không hỗ trợ) cũng trả 400, không còn 500', async () => {
+    const bangMa = await voiToken(request(app).post('/api/requests'), khachHang.token).set('Content-Type', 'application/json; charset=latin1').send('{"title":"x"}');
+    assert.equal(bangMa.status, 400);
+    assert.equal(bangMa.body.code, 'VALIDATION_ERROR');
+    const maHoa = await voiToken(request(app).post('/api/requests'), khachHang.token).set('Content-Type', 'application/json').set('Content-Encoding', 'xyz').send('{"title":"x"}');
+    assert.equal(maHoa.status, 400);
+    assert.equal(maHoa.body.code, 'VALIDATION_ERROR');
+  });
 });
 
 describe('US17 - Xác nhận hoàn thành', () => {
