@@ -2,13 +2,8 @@ const { chayTrongGiaoDich, truyVan } = require('../db');
 const khoYeuCau = require('../repositories/request.repository');
 const khoNguoiDung = require('../repositories/user.repository');
 const { LoiUngDung } = require('../utils/error-handler');
+const { docMaSo } = require('../utils/ma-so');
 const { VAI_TRO, TRANG_THAI_YEU_CAU } = require('../utils/constants');
-
-function docMaSo(giaTri, maLoi, thongDiep) {
-  const so = Number(giaTri);
-  if (!Number.isInteger(so) || so <= 0) throw new LoiUngDung(404, maLoi, thongDiep);
-  return so;
-}
 
 function docMaYeuCau(giaTri) {
   return docMaSo(giaTri, 'REQUEST_NOT_FOUND', 'Không tìm thấy tin sửa chữa');
