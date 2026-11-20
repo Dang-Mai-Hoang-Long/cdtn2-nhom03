@@ -48,6 +48,22 @@ describe('US01 - Đăng ký', () => {
   });
 });
 
+describe('BUG-01 - Số điện thoại dài hơn cột users.phone (20 ký tự)', () => {
+  it('đúng 20 ký tự (cả dấu cách) đăng ký được', async () => {
+    const res = await request(app).post('/api/auth/register').send({ ...duLieuDangKy, email: 'bien20@example.com', phone: '+0 9 0 1 2 3 4 5 6 7' });
+    assert.equal(res.status, 201);
+  });
+
+  it('21 hoặc 23 ký tự trả 400 VALIDATION_ERROR ở trường phone, không còn 500', async () => {
+    for (const [email, phone] of [['bien21@example.com', '+0  9 0 1 2 3 4 5 6 7'], ['bien23@example.com', '0 9 0 1 2 3 4 5 6 7 8 9']]) {
+      const res = await request(app).post('/api/auth/register').send({ ...duLieuDangKy, email, phone });
+      assert.equal(res.status, 400, phone);
+      assert.equal(res.body.code, 'VALIDATION_ERROR');
+      assert.deepEqual(res.body.details, [{ field: 'phone', message: 'Số điện thoại tối đa 20 ký tự' }]);
+    }
+  });
+});
+
 describe('US02 - Đăng nhập', () => {
   it('đăng nhập đúng trả token và thông tin người dùng có vai trò', async () => {
     const res = await request(app).post('/api/auth/login').send({ email: 'minh.anh@example.com', password: 'matkhau123' });

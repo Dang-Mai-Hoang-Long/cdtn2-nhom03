@@ -1,5 +1,6 @@
 const khoThongBao = require('../repositories/notification.repository');
 const { LoiUngDung } = require('../utils/error-handler');
+const { docMaSo } = require('../utils/ma-so');
 const { LOAI_THONG_BAO } = require('../utils/constants');
 
 // BR16 / US20: báo cho kỹ thuật viên khi đề xuất được chấp nhận. Chạy trong transaction chấp nhận đề xuất.
@@ -26,8 +27,8 @@ function demThongBaoChuaDoc(nguoiDung) {
 }
 
 async function danhDauDaDoc(nguoiDung, id) {
-  const ma = Number(id);
-  const thongBao = Number.isInteger(ma) && ma > 0 ? await khoThongBao.timTheoId(ma) : null;
+  const ma = docMaSo(id, 'NOTIFICATION_NOT_FOUND', 'Không tìm thấy thông báo');
+  const thongBao = await khoThongBao.timTheoId(ma);
   if (!thongBao) throw new LoiUngDung(404, 'NOTIFICATION_NOT_FOUND', 'Không tìm thấy thông báo');
   if (thongBao.userId !== nguoiDung.id) throw new LoiUngDung(403, 'NOT_OWNER', 'Bạn không có quyền với thông báo này');
   return thongBao.isRead ? thongBao : khoThongBao.danhDauDaDoc(thongBao.id);

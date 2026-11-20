@@ -21,3 +21,13 @@
 - Thông báo (US20) là chuông trên thanh đầu trang với danh sách thả xuống, không có trang riêng.
 - Đã xóa `frontend/src/data/demoData.js` (dữ liệu minh họa của wireframe) vì không còn màn hình nào dùng; dữ liệu mẫu để thử ứng dụng nằm ở `seeds/`.
 - Dữ liệu mẫu và tài khoản demo nằm ở `seeds/`, tạo qua tầng service nên tuân thủ BR01-BR16; `tests/seed.test.js` kiểm tra các bất biến đó.
+
+## Quyết định khi sửa lỗi ở Sprint 4 (theo `docs/bug-log.md`)
+
+- Sprint 4 chỉ gồm việc sửa 5 bug Minor (BUG-01 đến BUG-05) trong bug-log; các mục DEV, UI, TD, OBS chưa làm. Không bug nào đổi quy tắc nghiệp vụ.
+- Mỗi bug được sửa tại nguyên nhân (validator, hàm đọc mã số, hàm phân trang, xử lý lỗi), không thêm lớp ánh xạ chung mã lỗi PostgreSQL sang 4xx vì sẽ che các lỗi máy chủ thật.
+- BUG-01: số điện thoại tối đa 20 ký tự theo chuỗi đã `trim` (gồm dấu cách), khớp cột `users.phone`.
+- BUG-02: giá đề xuất tối thiểu 0,1 (khớp `DECIMAL(15,1)`). Giá có nhiều chữ số thập phân vẫn bị làm tròn thầm lặng (OBS-05 còn mở).
+- BUG-03: mã vượt 2147483647 trả `404` như mã không tồn tại; hàm `docMaSo` nằm ở `src/utils/ma-so.js`. Bug-log liệt kê 10 endpoint nhưng thực tế 15 endpoint bị lỗi, đều đã sửa và có test. Mã dạng hex hoặc thập phân (OBS-04) vẫn được `Number()` chấp nhận.
+- BUG-04: `page` được kẹp tối đa 1.000.000; `page` lớn hơn trả `200` với danh sách rỗng và `meta.page` là mức tối đa.
+- BUG-05: thân yêu cầu lớn hơn 100 KB trả `400 VALIDATION_ERROR` thay vì `413` để không phải thêm mã mới vào API contract.

@@ -7,8 +7,9 @@ function traVeThanhCong(res, { maHttp = 200, duLieu = null, thongDiep = 'Thành 
 }
 
 // Đọc page/size từ query string; trang bắt đầu từ 1 theo ví dụ meta trong API contract.
+// page được kẹp trong [1, trangToiDa] để OFFSET không tràn kiểu bigint của PostgreSQL (lỗi 22003).
 function docThamSoPhanTrang(query) {
-  const trang = Math.max(Number.parseInt(query.page, 10) || PHAN_TRANG_MAC_DINH.trang, 1);
+  const trang = Math.min(Math.max(Number.parseInt(query.page, 10) || PHAN_TRANG_MAC_DINH.trang, 1), PHAN_TRANG_MAC_DINH.trangToiDa);
   const kichThuoc = Math.min(
     Math.max(Number.parseInt(query.size, 10) || PHAN_TRANG_MAC_DINH.kichThuoc, 1),
     PHAN_TRANG_MAC_DINH.kichThuocToiDa,

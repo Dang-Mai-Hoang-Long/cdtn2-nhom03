@@ -3,6 +3,8 @@ const { VAI_TRO } = require('../utils/constants');
 const MAU_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAU_SO_DIEN_THOAI = /^\+?[0-9]{9,15}$/;
 const DO_DAI_MAT_KHAU_TOI_THIEU = 6;
+// Khớp cột users.phone VARCHAR(20); độ dài tính trên chuỗi đã trim, gồm cả dấu cách.
+const DO_DAI_SO_DIEN_THOAI_TOI_DA = 20;
 
 function laChuoiCoNoiDung(giaTri) {
   return typeof giaTri === 'string' && giaTri.trim() !== '';
@@ -26,6 +28,8 @@ function kiemTraDangKy(duLieu) {
   if (!laChuoiCoNoiDung(duLieu.phone)) danhSachLoi.push({ field: 'phone', message: 'Số điện thoại không được để trống' });
   else if (!MAU_SO_DIEN_THOAI.test(duLieu.phone.replace(/[\s.-]/g, ''))) {
     danhSachLoi.push({ field: 'phone', message: 'Số điện thoại không hợp lệ' });
+  } else if (duLieu.phone.trim().length > DO_DAI_SO_DIEN_THOAI_TOI_DA) {
+    danhSachLoi.push({ field: 'phone', message: `Số điện thoại tối đa ${DO_DAI_SO_DIEN_THOAI_TOI_DA} ký tự` });
   }
 
   // BR01: chỉ được tự đăng ký Khách hàng hoặc Kỹ thuật viên.
