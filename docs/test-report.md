@@ -2,8 +2,10 @@
 
 Nhóm 03: Đặng Mai Hoàng Long · 2374802013303 — Lê Tấn Phong · 2374802010384 — Nguyễn Quốc Huy · 2374802010185 · Track SE
 Kế hoạch kiểm thử: [test-plan.md](test-plan.md) · Product Backlog: [product-backlog-nhom03.md](product-backlog-nhom03.md) (`ProductBacklog_Nhom03.xlsx`) · API: [api-contract.md](api-contract.md) · Quyết định thiết kế: [project-notes.md](project-notes.md) · Nhật ký lỗi: [bug-log.md](bug-log.md) · Ảnh chụp: [screenshots/](screenshots/)
-Ngày kiểm: 2026-11-13 · Phiên bản được kiểm: `cdtn2-nhom03-main` (không phải kho git) = `cdtn2-nhom03-main.zip`, SHA-256 `441ABD159AE4FEA8E704BDF7B98F799A4666EB7408531C6EC27E87BBECB011DC`
+Ngày kiểm (lần 1): 2026-11-13 · Phiên bản được kiểm (lần 1): `cdtn2-nhom03-main` (không phải kho git) = `cdtn2-nhom03-main.zip`, SHA-256 `441ABD159AE4FEA8E704BDF7B98F799A4666EB7408531C6EC27E87BBECB011DC`
 Môi trường: Windows 11 Pro · Node.js v24.22.0 · PostgreSQL 18.6 (README ghi 16 — xem §7) · chi tiết ở [test-plan.md](test-plan.md) §4.
+
+> **Cập nhật 2026-11-20 — kiểm thử lại sau khi sửa lỗi.** Các mục §1–§7 ghi kết quả **lần kiểm thử 1** (2026-11-13, bản `2ba0157` = tag `v0.2`, chưa sửa lỗi). Nhánh `fix-bug` sửa 5 bug đã được gộp vào `main` (`76b2752`); bản này được kiểm thử lại độc lập ở **§8**: `npm test` 115/115, TC-24, TC-26, TC-27, TC-28 từ FAIL sang PASS, cả 5 bug đã đóng ([bug-log.md](bug-log.md)) → **31 PASS · 2 FAIL** (TC-03 và TC-15 do DEV-01 và DEV-02, hai quyết định thiết kế).
 
 ## 1. Tổng hợp
 
@@ -17,8 +19,14 @@ Môi trường: Windows 11 Pro · Node.js v24.22.0 · PostgreSQL 18.6 (README gh
 | 6 | 2026-11-13 18:17 | Chạy riêng từng suite: 27 lần `node --test --test-concurrency=1 --test-name-pattern="<suite>" tests/<file>.test.js` | 104 test | 101 | 3 | suite `US02`, `US07`, `US10` — **TD-01** (phụ thuộc thứ tự); chạy cả file hoặc kèm suite tiền đề thì PASS | §4.4 |
 | 7 | 2026-11-13 19:07–19:13 | **Chụp ảnh từng test case**: mỗi TC chạy trong một cửa sổ terminal riêng rồi chụp chính cửa sổ đó (runner tạm theo TC, ngoài repo): chạy đúng lệnh `node --test …` của TC ở §2 và/hoặc các bước bổ sung của TC đó trên CSDL mới | 33 TC | 27 | 6 | TC-03, TC-15, TC-24, TC-26, TC-27, TC-28 — **khớp từng TC với kết luận ở §2** | §4.5 |
 | 8 | 2026-11-13 19:12 | Hai lần chạy để chụp ảnh tổng kết: `npm test` đầy đủ (`npm-test-pass.png`) và toàn bộ bước bổ sung ở chế độ tổng kết (`bo-sung-tong-ket.png`) | 104 test; 129 bước | 104; 109 | 0; 16 | bước bổ sung: cùng 16 bước FAIL như lần 4 | §4.5 |
+| 9 | 2026-11-20 13:36 | **Kiểm thử lại sau khi sửa lỗi** — bản `main@76b2752`: `npm test` | 115 test | **115** | 0 | — | §8.2 |
+| 10 | 2026-11-20 13:36 | `npm test` lần 2 | 115 test | **115** | 0 | — | §8.2 |
+| 11 | 2026-11-20 13:37 | Kiểm tra bổ sung trên server thật (CSDL tạo mới), bản `main@76b2752` | 129 bước | 124 | 1 | `S-03-3` (DEV-01); 4 bước chỉ ghi nhận quan sát | §8.4 |
+| 12 | 2026-11-20 13:37 | Như lần 11, CSDL tạo mới lại — **cùng kết quả từng bước** | 129 bước | 124 | 1 | giống lần 11 | §8.4 |
+| 13 | 2026-11-20 13:40 | Lệnh tái lập của [bug-log.md](bug-log.md): cùng một bộ lệnh trên mã cũ (`2ba0157`) rồi mã mới (`76b2752`) | 23 lệnh | 23 (mã mới) | 0 | mã cũ: 19 lệnh trả `500` (tái hiện lỗi); mã mới: không lệnh nào | §8.3 |
+| 14 | 2026-11-20 13:43–13:46 | **Chụp ảnh kiểm thử lại**: TC-24, TC-26, TC-27, TC-28 (test hồi quy `BUG-0x` + bước bổ sung của TC), `npm test` và tổng kết 129 bước | 4 TC; 115 test; 129 bước | 4 TC; 115; 124 | 0; 0; 1 | bước bổ sung: chỉ `S-03-3` | §8.6 |
 
-Kết quả theo test case (33 TC, bảng ở §2): **27 PASS · 6 FAIL**.
+Kết quả theo test case ở **lần kiểm thử 1** (33 TC, bảng ở §2): **27 PASS · 6 FAIL**. Sau khi sửa lỗi và kiểm thử lại (§8): **31 PASS · 2 FAIL**.
 
 | Loại | Số TC | PASS | FAIL | TC FAIL |
 |---|---:|---:|---:|---|
@@ -30,10 +38,10 @@ Kết quả theo test case (33 TC, bảng ở §2): **27 PASS · 6 FAIL**.
 | **Tổng** | **33** | **27** | **6** | |
 
 Theo ưu tiên: Cao 22 TC (20 PASS, 2 FAIL = TC-03, TC-15) · Trung bình 10 TC (6 PASS, 4 FAIL = TC-24, TC-26, TC-27, TC-28) · Thấp 1 TC (PASS). Theo tầng: tự động thuần 14 TC · tự động + bổ sung 10 TC · chỉ bổ sung 9 TC (khớp [test-plan.md](test-plan.md) §2).
-Cả năm loại test đều có (luồng đúng, giá trị biên, dữ liệu sai, bảo mật, tái lập). Không có lỗi Critical hay Major; có **5 lỗi Minor đang mở** (BUG-01…BUG-05, §3) và **15 phản hồi HTTP 500** ở bước bổ sung, **không phản hồi nào lộ stack trace**.
+Cả năm loại test đều có (luồng đúng, giá trị biên, dữ liệu sai, bảo mật, tái lập). Không có lỗi Critical hay Major; ở lần 1 có **5 lỗi Minor** (BUG-01…BUG-05, §3) và **15 phản hồi HTTP 500** ở bước bổ sung, **không phản hồi nào lộ stack trace**; sau khi sửa, cả 5 lỗi đã đóng và không còn phản hồi 500 nào (§8).
 
 **Lệnh chạy** (đã chạy thật ở các lần trên):
-- Cả bộ tự động bằng **một lệnh**: `npm test` → 104 test (cần PostgreSQL đang chạy và `.env` theo README mục 3).
+- Cả bộ tự động bằng **một lệnh**: `npm test` → 104 test ở lần 1, **115 test** sau khi nhánh `fix-bug` thêm 11 test hồi quy (cần PostgreSQL đang chạy và `.env` theo README mục 3).
 - Chạy riêng nhóm test của một TC: `node --test --test-concurrency=1 --test-name-pattern="<mẫu>" tests/<file>.test.js` (mẫu và file của từng TC ở §2). **Không dùng** `npm test -- --test-name-pattern=...` — lệnh này vẫn chạy cả 104 test (đã thử, lọc không có tác dụng).
 - Các bước bổ sung `S-xx` không nằm trong `npm test`; chạy lại bằng Postman/curl theo cột "Dữ liệu thử" ở §2.
 
@@ -108,19 +116,19 @@ Tiền điều kiện chung của các bước *(S-xx)*: CSDL `suachua_dev` mớ
 | TC-22 | `proposal-sprint3.test.js` | `US22\|Đề xuất của tôi` | 8 | 6 test US22 + 2 test "Đề xuất của tôi" |
 | TC-23 | `proposal-sprint3.test.js` | `US23` | 4 | |
 | TC-32 | `seed.test.js` | `Seed -` | 9 | |
-| **Tổng** | 9 file | | **104** | TC-24…TC-31, TC-33 không có test tự động (chỉ bước bổ sung) |
+| **Tổng** | 9 file | | **104** | TC-24…TC-31, TC-33 không có test tự động (chỉ bước bổ sung) ở lần 1; từ 2026-11-20 TC-24, TC-26, TC-27, TC-28 có thêm 11 test hồi quy `BUG-0x` (§8.5) |
 
 ## 3. Truy vết TC FAIL → Bug, lệch có chủ đích và ghi nhận khác
 
-**Lỗi (BUG)** — nguyên nhân lấy từ log của server thật (`node src/server.js` in lỗi gốc ra stderr). Không sửa mã trong đợt kiểm thử này; tất cả đang **Mở**. Mô tả đầy đủ từng lỗi (bảy dòng, lệnh tái lập chạy được) nằm ở [bug-log.md](bug-log.md).
+**Lỗi (BUG)** — nguyên nhân lấy từ log của server thật (`node src/server.js` in lỗi gốc ra stderr). Lần kiểm thử 1 không sửa mã nên cả 5 lỗi đều **Mở** (các cột dưới đây ghi kết quả lần 1). **Sau khi nhánh `fix-bug` được gộp vào `main` (`76b2752`), cả 5 lỗi đã được sửa và đóng ngày 2026-11-20**; kết quả kiểm thử lại ở §8. Mô tả đầy đủ từng lỗi (bảy dòng, lệnh tái lập chạy được) nằm ở [bug-log.md](bug-log.md).
 
 | Bug | TC (bước) | Tái hiện | Thực tế (mong đợi) | Nguyên nhân | Mức độ | Trạng thái | Đề xuất khắc phục |
 |---|---|---|---|---|---|---|---|
-| BUG-01 — đăng ký với số điện thoại có nhiều dấu cách bị lỗi 500 | TC-24 (S-24-12, S-24-13) | `POST /api/auth/register`, `phone`=`"+0  9 0 1 2 3 4 5 6 7"` (10 chữ số, 21 ký tự) hoặc `"0 9 0 1 2 3 4 5 6 7 8 9"` (12 chữ số, 23 ký tự) | `500 INTERNAL_ERROR` (mong đợi `201` hoặc `400 VALIDATION_ERROR`) | `value too long for type character varying(20)` (mã PG 22001). Validator chỉ kiểm 9–15 chữ số sau khi bỏ khoảng trắng, `.`, `-` (`src/validators/auth.validator.js:26-29`) nhưng chuỗi thô đã `trim` được lưu vào cột `users.phone VARCHAR(20)` (`src/services/auth.service.js:27`, `migrations/001_khoi_tao_csdl.sql:9`) | Minor | Mở | Kiểm tra độ dài chuỗi thô ≤ 20 trong validator, hoặc lưu bản chuẩn hóa (chỉ chữ số và dấu `+`) |
-| BUG-02 — giá đề xuất 0,04 gây lỗi 500 | TC-26 (S-26-3) | `POST /api/proposals`, `price`=`0.04` | `500 INTERNAL_ERROR` (mong đợi `201` hoặc `400`) | `new row for relation "proposal" violates check constraint "proposal_price_check"` (23514). Validator chỉ yêu cầu `price > 0` (`src/validators/proposal.validator.js:12`) nhưng cột `price DECIMAL(15,1)` làm tròn 0,04 thành 0,0 nên vi phạm `CHECK (price > 0)` (`migrations/001_khoi_tao_csdl.sql:34`) | Minor | Mở | Đặt giá tối thiểu 0,1 (hoặc số nguyên VND) trong validator, hoặc đổi kiểu cột; xử lý kèm OBS-05 |
-| BUG-03 — mã định danh vượt `int4` gây lỗi 500 ở 10 endpoint | TC-27 (S-27-2…S-27-11) | Ví dụ `GET /api/requests/2147483648`; cũng `GET /api/proposals/{id}`, `PATCH /api/proposals/{id}/accept`, `GET /api/proposals/request/{id}`, `PATCH /api/admin/users/{id}/lock`, `PATCH /api/notifications/{id}/read`, `GET /api/reviews/user/{id}`, `PATCH /api/requests/{id}/close`, `requestId` trong thân `POST /api/proposals` và `POST /api/reviews` | `500 INTERNAL_ERROR` (mong đợi `404` `*_NOT_FOUND`); mã 2147483647 trả `404` đúng | `value "2147483648" is out of range for type integer` (22003). `docMaSo` chỉ kiểm `Number.isInteger(so) && so > 0` (`src/services/request.service.js:7-11`) rồi truyền thẳng vào `WHERE id = $1` trên cột `INT`; `admin.service.js:13-14`, `notification.service.js:29-30` và validator `proposal.validator.js:31`, `review.validator.js:5` lặp lại cách kiểm tra này | Minor | Mở | Giới hạn mã ≤ 2147483647 ở `docMaSo` và các chỗ tự kiểm; hoặc ánh xạ lỗi PG 22003 thành `404`/`400` trong `xuLyLoi` |
-| BUG-04 — `page` quá lớn gây lỗi 500 | TC-27 (S-27-22) | `GET /api/requests/my?page=9999999999999999999&size=10` | `500 INTERNAL_ERROR` (mong đợi `200` danh sách rỗng hoặc `400`) | `value "100000000000000000000" is out of range for type bigint` (22003). `docThamSoPhanTrang` tính `viTriBatDau = (trang − 1) × kichThuoc` không giới hạn trên (`src/utils/response.js:10-17`) | Minor | Mở | Giới hạn `page` tối đa (ví dụ 10⁶), hoặc ánh xạ 22003 thành `400` |
-| BUG-05 — thân yêu cầu lớn hơn 100 KB trả 500 thay vì 413 | TC-28 (S-28-7) | `POST /api/requests`, `description` 150.000 ký tự | `500 INTERNAL_ERROR` (mong đợi `413` hoặc `400`) | `PayloadTooLargeError: request entity too large` (`type: 'entity.too.large'`) do `express.json()` giới hạn mặc định 100 KB (`src/app.js:10`); `xuLyLoi` chỉ ánh xạ `entity.parse.failed`, mọi lỗi khác → 500 (`src/utils/error-handler.js:27-31`) | Minor | Mở | Thêm nhánh `loi.type === 'entity.too.large'` → `413` trong `xuLyLoi` |
+| BUG-01 — đăng ký với số điện thoại có nhiều dấu cách bị lỗi 500 | TC-24 (S-24-12, S-24-13) | `POST /api/auth/register`, `phone`=`"+0  9 0 1 2 3 4 5 6 7"` (10 chữ số, 21 ký tự) hoặc `"0 9 0 1 2 3 4 5 6 7 8 9"` (12 chữ số, 23 ký tự) | `500 INTERNAL_ERROR` (mong đợi `201` hoặc `400 VALIDATION_ERROR`) | `value too long for type character varying(20)` (mã PG 22001). Validator chỉ kiểm 9–15 chữ số sau khi bỏ khoảng trắng, `.`, `-` (`src/validators/auth.validator.js:26-29`) nhưng chuỗi thô đã `trim` được lưu vào cột `users.phone VARCHAR(20)` (`src/services/auth.service.js:27`, `migrations/001_khoi_tao_csdl.sql:9`) | Minor | Mở → **Đã đóng** 2026-11-20 (§8) | Kiểm tra độ dài chuỗi thô ≤ 20 trong validator, hoặc lưu bản chuẩn hóa (chỉ chữ số và dấu `+`) |
+| BUG-02 — giá đề xuất 0,04 gây lỗi 500 | TC-26 (S-26-3) | `POST /api/proposals`, `price`=`0.04` | `500 INTERNAL_ERROR` (mong đợi `201` hoặc `400`) | `new row for relation "proposal" violates check constraint "proposal_price_check"` (23514). Validator chỉ yêu cầu `price > 0` (`src/validators/proposal.validator.js:12`) nhưng cột `price DECIMAL(15,1)` làm tròn 0,04 thành 0,0 nên vi phạm `CHECK (price > 0)` (`migrations/001_khoi_tao_csdl.sql:34`) | Minor | Mở → **Đã đóng** 2026-11-20 (§8) | Đặt giá tối thiểu 0,1 (hoặc số nguyên VND) trong validator, hoặc đổi kiểu cột; xử lý kèm OBS-05 |
+| BUG-03 — mã định danh vượt `int4` gây lỗi 500 ở 10 endpoint | TC-27 (S-27-2…S-27-11) | Ví dụ `GET /api/requests/2147483648`; cũng `GET /api/proposals/{id}`, `PATCH /api/proposals/{id}/accept`, `GET /api/proposals/request/{id}`, `PATCH /api/admin/users/{id}/lock`, `PATCH /api/notifications/{id}/read`, `GET /api/reviews/user/{id}`, `PATCH /api/requests/{id}/close`, `requestId` trong thân `POST /api/proposals` và `POST /api/reviews` | `500 INTERNAL_ERROR` (mong đợi `404` `*_NOT_FOUND`); mã 2147483647 trả `404` đúng | `value "2147483648" is out of range for type integer` (22003). `docMaSo` chỉ kiểm `Number.isInteger(so) && so > 0` (`src/services/request.service.js:7-11`) rồi truyền thẳng vào `WHERE id = $1` trên cột `INT`; `admin.service.js:13-14`, `notification.service.js:29-30` và validator `proposal.validator.js:31`, `review.validator.js:5` lặp lại cách kiểm tra này | Minor | Mở → **Đã đóng** 2026-11-20 (§8) | Giới hạn mã ≤ 2147483647 ở `docMaSo` và các chỗ tự kiểm; hoặc ánh xạ lỗi PG 22003 thành `404`/`400` trong `xuLyLoi` |
+| BUG-04 — `page` quá lớn gây lỗi 500 | TC-27 (S-27-22) | `GET /api/requests/my?page=9999999999999999999&size=10` | `500 INTERNAL_ERROR` (mong đợi `200` danh sách rỗng hoặc `400`) | `value "100000000000000000000" is out of range for type bigint` (22003). `docThamSoPhanTrang` tính `viTriBatDau = (trang − 1) × kichThuoc` không giới hạn trên (`src/utils/response.js:10-17`) | Minor | Mở → **Đã đóng** 2026-11-20 (§8) | Giới hạn `page` tối đa (ví dụ 10⁶), hoặc ánh xạ 22003 thành `400` |
+| BUG-05 — thân yêu cầu lớn hơn 100 KB trả 500 thay vì 413 | TC-28 (S-28-7) | `POST /api/requests`, `description` 150.000 ký tự | `500 INTERNAL_ERROR` (mong đợi `413` hoặc `400`) | `PayloadTooLargeError: request entity too large` (`type: 'entity.too.large'`) do `express.json()` giới hạn mặc định 100 KB (`src/app.js:10`); `xuLyLoi` chỉ ánh xạ `entity.parse.failed`, mọi lỗi khác → 500 (`src/utils/error-handler.js:27-31`) | Minor | Mở → **Đã đóng** 2026-11-20 (§8) | Thêm nhánh `loi.type === 'entity.too.large'` → `413` trong `xuLyLoi` |
 
 Cả 5 lỗi cùng một họ: lỗi của CSDL (22001, 22003, 23514) hoặc của thư viện đọc thân yêu cầu không được ánh xạ sang mã 4xx. Một nhánh ánh xạ chung trong `xuLyLoi` (PG nhóm `22xxx`/`23514` → 400, `entity.too.large` → 413) sẽ chặn cả 5, nhưng sửa tại validator vẫn tốt hơn vì cho thông báo theo từng trường.
 
@@ -256,7 +264,7 @@ seed.test.js               Seed - chạy lại và chốt chặn                
 
 ### 4.5. Ảnh chụp cửa sổ terminal từng test case (lần chạy 7) và ảnh tổng kết (lần chạy 8)
 
-Thư mục [screenshots/](screenshots/) có **35 ảnh PNG**: 33 ảnh test case (`TC-xx-pass.png` hoặc `TC-xx-fail.png`, đúng kết luận ở §2) và 2 ảnh tổng kết (`npm-test-pass.png`, `bo-sung-tong-ket.png`). Đây là ảnh chụp thật, không qua chỉnh sửa.
+Thư mục [screenshots/](screenshots/) có **35 ảnh PNG**: 33 ảnh test case (`TC-xx-pass.png` hoặc `TC-xx-fail.png`, đúng kết luận ở §2) và 2 ảnh tổng kết (`npm-test-pass.png`, `bo-sung-tong-ket.png`). Đây là ảnh chụp thật, không qua chỉnh sửa. Ảnh của lần kiểm thử lại sau khi sửa lỗi nằm ở thư mục con [screenshots/sau-sua-loi/](screenshots/sau-sua-loi/) (§8.6).
 
 **Cách chụp và giới hạn:**
 - Mỗi test case chạy trong một cửa sổ terminal riêng; chính cửa sổ đó được chụp tự động ngay khi lệnh chạy xong (chỉ chụp cửa sổ chạy lệnh, không chụp toàn màn hình) rồi đóng lại. Việc chạy do một runner tạm theo từng TC thực hiện trên bản sao kiểm thử của dự án; **runner không nằm trong repo**.
@@ -519,11 +527,186 @@ Mỗi dòng là một kịch bản Given/When/Then trong `ProductBacklog_Nhom03.
 | 6 | Ma trận phân quyền đúng 100% | 88/88 ô đúng (TC-30) | **Đạt** |
 | 7 | Tái lập: số bản ghi không đổi sau chạy lại migration / `seed:reset` | TC-32: 8/8 bước bổ sung và 9/9 test seed PASS; hai lần `seed:reset` cho cùng số bản ghi | **Đạt** |
 
+**Sau khi sửa lỗi (lần kiểm thử 2, §8.5):** tiêu chí 2 — 115/115 ở hai lần chạy; tiêu chí 4 — 0 bug mở (5 Minor đã đóng); tiêu chí 5 — **Đạt** (0 phản hồi `500` trong 129 bước, 0 lộ stack trace). Các tiêu chí 1, 3, 6, 7 không đổi.
+
 ## 7. Hạn chế và việc cần làm tiếp
 
 1. **Giao diện chưa chạy trên trình duyệt.** Cột "Giao diện" ở §5 là rà soát mã; UI-01 (US04-S2) cần xác minh bằng cách đăng nhập tài khoản khách hàng rồi vào `#/admin/users`. Nên bổ sung vài luồng chính bằng công cụ kiểm thử trình duyệt (ví dụ Playwright).
-2. **129 bước bổ sung là kịch bản tạm gọi HTTP, chưa nằm trong repo.** Muốn chạy lại thì dùng Postman/curl theo cột "Dữ liệu thử" ở §2. Nên chuyển thành file test trong `tests/` (đặc biệt 15 bước ứng với BUG-01…BUG-05) để làm test hồi quy sau khi sửa lỗi. Runner chụp ảnh từng TC (§4.5) cũng là script tạm ngoài repo; để giảng viên tự chạy lại và chụp lại bất kỳ TC nào bằng một lệnh, nên đưa runner vào repo dưới dạng `npm run tc -- TC-xx`.
+2. **129 bước bổ sung là kịch bản tạm gọi HTTP, chưa nằm trong repo.** Muốn chạy lại thì dùng Postman/curl theo cột "Dữ liệu thử" ở §2. Nhóm đã chuyển phần ứng với BUG-01…BUG-05 thành 11 test hồi quy trong `tests/` (§8); các bước còn lại nên chuyển tiếp để thành test hồi quy. Runner chụp ảnh từng TC (§4.5) cũng là script tạm ngoài repo; để giảng viên tự chạy lại và chụp lại bất kỳ TC nào bằng một lệnh, nên đưa runner vào repo dưới dạng `npm run tc -- TC-xx`.
 3. **PostgreSQL 18.6 thay vì 16.** Tài liệu dự án ghi PostgreSQL 16; cụm tạm dùng 18.6 vì đó là bản có sẵn trên máy, Docker không chạy được. Mã dùng SQL chuẩn nên rủi ro thấp nhưng chưa được kiểm chứng trên PostgreSQL 16 hoặc bằng `docker compose exec api npm test`.
-4. **Không có git** trong thư mục được giao nên phiên bản được xác định bằng SHA-256 của file zip; ngày kiểm 2026-11-13.
+4. **Không có git** trong thư mục được giao nên phiên bản được xác định bằng SHA-256 của file zip; ngày kiểm 2026-11-13. Lần kiểm thử 2 (§8) dùng commit `76b2752` của repo.
 5. **Máy cá nhân, một cấu hình.** Thời gian chạy (~5 giây cho 104 test) chỉ để tham khảo, không phải số đo hiệu năng (NFR1 chủ ý không kiểm).
-6. **Việc nên làm trước khi nộp:** (a) sửa BUG-01…BUG-05 rồi chạy lại `npm test` và các bước bổ sung; (b) chốt cách xử lý DEV-01, DEV-02, DEV-03 — sửa mã hoặc cập nhật tiêu chí trong backlog và [api-contract.md](api-contract.md); (c) sửa TD-01 để từng suite chạy độc lập; (d) sau khi sửa lỗi, chạy lại và chụp lại ảnh các TC đã đổi kết luận (ảnh mới có đuôi `-pass.png`, xóa ảnh `-fail.png` cũ; không đổi tên ảnh cũ); chụp thêm ảnh giao diện trên trình duyệt để xác minh UI-01.
+6. **Việc nên làm trước khi nộp:** (a) **đã xong ngày 2026-11-20:** sửa BUG-01…BUG-05, chạy lại `npm test` và các bước bổ sung, đóng bug (§8); (b) chốt cách xử lý DEV-01, DEV-02, DEV-03 — sửa mã hoặc cập nhật tiêu chí trong backlog và [api-contract.md](api-contract.md); (c) sửa TD-01 để từng suite chạy độc lập; (d) **đã làm** cho TC-24, TC-26, TC-27, TC-28: ảnh sau khi sửa (`-pass.png`) nằm ở `screenshots/sau-sua-loi/`, còn ảnh `-fail.png` cũ ở `screenshots/` được **giữ nguyên** làm bằng chứng trước khi sửa; còn lại: chụp thêm ảnh giao diện trên trình duyệt để xác minh UI-01.
+
+## 8. Kiểm thử lại sau khi sửa lỗi (lần chạy 9–14, 2026-11-20)
+
+Nhánh `fix-bug` (sửa BUG-01…BUG-05) đã được gộp vào `main`. Bản mới được kiểm thử lại **độc lập** để đóng bug, đúng việc đã đặt ra ở §7 (mục 6): chạy lại `npm test` và các bước bổ sung, chạy lại các lệnh tái lập, chụp lại ảnh các TC đã đổi kết luận. Kết quả từng bug ở [bug-log.md](bug-log.md); mục này ghi số liệu của các lần chạy lại. **Không sửa mã** trong lần kiểm thử này.
+
+### 8.1. Phiên bản và môi trường
+
+- **Phiên bản kiểm thử lại:** `main@76b2752` — "Gộp nhánh fix-bug lên nhánh main" (2026-11-20 11:11). So với bản đã kiểm thử ở lần 1 (`2ba0157`, tag `v0.2`) có 8 commit mới của nhánh `fix-bug`: 6 commit sửa lỗi (BUG-01: `caa7c2d`; BUG-02: `6c1ffd2`; BUG-03: `d49d654`; BUG-04: `ae3e017`; BUG-05: `438a449` và `2f05954`) và 2 commit tài liệu (`7d91f2e`, `ac884e6`). Mã nguồn đổi 9 tệp trong `src/` (8 sửa, 1 tệp mới `src/utils/ma-so.js`) và 4 tệp trong `tests/` (3 sửa, 1 tệp mới `tests/ma-so.test.js`).
+- **Cách lấy bản:** `git fetch` rồi `git archive 76b2752` ra một thư mục tạm riêng (không chạy trên thư mục làm việc của nhóm). `package.json` và `package-lock.json` không đổi so với `2ba0157` nên dùng lại `node_modules` đã cài. Mã gây lỗi để đối chứng là bản sao `2ba0157` đã dùng ở lần 1.
+- **Môi trường:** như lần 1 — Windows 11 Pro, Node.js v24.22.0, PostgreSQL 18.6 (cụm tạm trên máy kiểm thử) với ba CSDL tạm (`suachua_dev`, `suachua_test`, `suachua_taplap`).
+
+### 8.2. `npm test` (lần chạy 9 và 10)
+
+Hai lần chạy liên tiếp đều **115/115 PASS**: 104 test cũ giữ nguyên và **11 test hồi quy mới** trong 5 suite `BUG-01`…`BUG-05` (thêm 1 tệp `tests/ma-so.test.js`: 10 tệp test, 32 suite).
+
+| Lần chạy | Giờ bắt đầu | Lệnh | Test | Suite | Pass | Fail | Thời gian |
+|---|---|---|---:|---:|---:|---:|---:|
+| 9 | 2026-11-20 13:36:19 | `npm test` | 115 | 32 | 115 | 0 | 8,06 s |
+| 10 | 2026-11-20 13:36:39 | `npm test` | 115 | 32 | 115 | 0 | 5,70 s |
+
+Nguyên văn phần tổng kết của lần chạy 10:
+
+```text
+ℹ tests 115
+ℹ suites 32
+ℹ pass 115
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5701.4022
+```
+
+Nguyên văn 5 suite hồi quy mới (11 test) trong log của lần chạy 10:
+
+```text
+▶ BUG-01 - Số điện thoại dài hơn cột users.phone (20 ký tự)
+  ✔ đúng 20 ký tự (cả dấu cách) đăng ký được (50.7315ms)
+  ✔ 21 hoặc 23 ký tự trả 400 VALIDATION_ERROR ở trường phone, không còn 500 (3.7707ms)
+✔ BUG-01 - Số điện thoại dài hơn cột users.phone (20 ký tự) (54.6993ms)
+▶ BUG-03 - Mã định danh vượt phạm vi int4
+  ✔ mã 2147483648 trả 404 ở mọi endpoint nhận mã, không còn 500 (30.9593ms)
+  ✔ mã lớn nhất của int4 (2147483647) vẫn trả 404 như trước (ranh giới) (32.7423ms)
+✔ BUG-03 - Mã định danh vượt phạm vi int4 (161.224ms)
+▶ BUG-02 - Giá đề xuất nhỏ hơn độ chính xác của cột price DECIMAL(15,1)
+  ✔ gửi giá 0,04 trả 400 VALIDATION_ERROR ở trường price, 0,1 vẫn gửi được (6.0799ms)
+  ✔ sửa đề xuất với giá 0,04 cũng trả 400 và giữ nguyên giá đã lưu (cùng validator) (6.7572ms)
+✔ BUG-02 - Giá đề xuất nhỏ hơn độ chính xác của cột price DECIMAL(15,1) (13.0772ms)
+▶ BUG-04 - Tham số page quá lớn
+  ✔ page cực lớn trả 200 với danh sách rỗng ở các API danh sách dùng chung, không còn 500 (8.8217ms)
+  ✔ page ở đúng mức tối đa vẫn trả 200, page 999 không đổi hành vi (3.9527ms)
+✔ BUG-04 - Tham số page quá lớn (12.9103ms)
+▶ BUG-05 - Thân yêu cầu lớn hơn giới hạn 100 KB
+  ✔ mô tả 150.000 ký tự trả 400 VALIDATION_ERROR kèm thông điệp rõ ràng, không còn 500 (2.9421ms)
+  ✔ lỗi áp dụng cho mọi API nhận JSON (ví dụ đăng ký), còn thân 50.000 ký tự vẫn được chấp nhận (4.5751ms)
+  ✔ các lỗi đọc thân khác của body-parser (bảng mã, mã hóa nội dung không hỗ trợ) cũng trả 400, không còn 500 (2.7612ms)
+✔ BUG-05 - Thân yêu cầu lớn hơn giới hạn 100 KB (10.4509ms)
+```
+
+### 8.3. Lệnh tái lập của bug-log trên mã cũ và mã mới (lần chạy 13)
+
+Cùng một bộ 23 lệnh trong [bug-log.md](bug-log.md) (Phần A) được chạy trên backend thật, lần lượt với mã cũ `2ba0157` rồi mã mới `76b2752`, mỗi lần trên CSDL tạo mới và dữ liệu mẫu (13:40). Hai lần cho kết quả đúng như ghi trong bug-log:
+
+| Bug | Số lệnh | Mã cũ `2ba0157` | Mã mới `76b2752` |
+|---|---:|---|---|
+| BUG-01 | 2 | `500`; `201` (đối chứng) | `400`; `201` |
+| BUG-02 | 2 | `500`; `201` (đối chứng) | `400`; `201` |
+| BUG-03 | 16 | đối chứng `404`; **15 endpoint đều `500`** | đối chứng `404`; **15 endpoint đều `404 *_NOT_FOUND`** |
+| BUG-04 | 2 | `200` (đối chứng); `500` | `200`; `200` |
+| BUG-05 | 1 | `500` | `400` |
+| **Tổng** | **23** | **19 phản hồi `500`** | **0 phản hồi `500`** |
+
+Log lỗi (stderr) của server: mã cũ ghi **19 lỗi** (1 × `value too long for type character varying(20)`, 1 × `violates check constraint "proposal_price_check"`, 15 × `out of range for type integer`, 1 × `out of range for type bigint`, 1 × `PayloadTooLargeError`); mã mới ghi **0**. Đây cũng là bằng chứng độc lập rằng **15 endpoint** (không phải 10 như ở TC-27 lần 1) bị lỗi BUG-03: 5 endpoint do nhóm sửa lỗi rà soát thêm đã trả `500` trên mã cũ.
+
+### 8.4. 129 bước bổ sung trên server thật (lần chạy 11 và 12)
+
+Kịch bản bổ sung giữ nguyên như lần 4, chạy trên CSDL tạo mới với `main@76b2752` (13:37:04 và 13:37:48): **124 PASS + 1 FAIL + 4 quan sát** (lần 4: 109 + 16 + 4); **0 phản hồi HTTP 500** (lần 4: 15); 0 phản hồi lộ stack trace. Hai lần chạy cho cùng kết quả từng bước (chỉ khác mốc thời gian trong dữ liệu trả về). So từng bước với lần 4, **15 bước FAIL chuyển sang PASS**:
+
+| Bước | Nội dung | Mong đợi | Lần 4 (mã `2ba0157`) | Lần 11 (mã `76b2752`) |
+|---|---|---|---|---|
+| S-24-12 | SĐT 10 chữ số, chuỗi 21 ký tự (vượt cột VARCHAR(20) 1 ký tự) | 201 hoặc 400, không bao giờ 500 | `500 INTERNAL_ERROR` | `400 VALIDATION_ERROR` |
+| S-24-13 | SĐT 12 chữ số cách bằng dấu cách, chuỗi 23 ký tự | 201 hoặc 400, không bao giờ 500 | `500 INTERNAL_ERROR` | `400 VALIDATION_ERROR` |
+| S-26-3 | price = 0.04 (cột DECIMAL(15,1), làm tròn thành 0.0) | 201 hoặc 400, không 500 | `500 INTERNAL_ERROR` | `400 VALIDATION_ERROR` |
+| S-27-2 | GET /api/requests/2147483648 (vượt int4) | 404 (không tìm thấy), không bao giờ 500 | `500 INTERNAL_ERROR` | `404 REQUEST_NOT_FOUND` |
+| S-27-3 | GET /api/proposals/2147483648 | 404 (không tìm thấy), không bao giờ 500 | `500 INTERNAL_ERROR` | `404 PROPOSAL_NOT_FOUND` |
+| S-27-4 | PATCH /api/proposals/2147483648/accept | 404 (không tìm thấy), không bao giờ 500 | `500 INTERNAL_ERROR` | `404 PROPOSAL_NOT_FOUND` |
+| S-27-5 | GET /api/proposals/request/2147483648 | 404 (không tìm thấy), không bao giờ 500 | `500 INTERNAL_ERROR` | `404 REQUEST_NOT_FOUND` |
+| S-27-6 | PATCH /api/admin/users/2147483648/lock | 404 (không tìm thấy), không bao giờ 500 | `500 INTERNAL_ERROR` | `404 USER_NOT_FOUND` |
+| S-27-7 | PATCH /api/notifications/2147483648/read | 404 (không tìm thấy), không bao giờ 500 | `500 INTERNAL_ERROR` | `404 NOTIFICATION_NOT_FOUND` |
+| S-27-8 | GET /api/reviews/user/2147483648 | 404 (không tìm thấy), không bao giờ 500 | `500 INTERNAL_ERROR` | `404 USER_NOT_FOUND` |
+| S-27-9 | PATCH /api/requests/2147483648/close | 404 (không tìm thấy), không bao giờ 500 | `500 INTERNAL_ERROR` | `404 REQUEST_NOT_FOUND` |
+| S-27-10 | POST /api/proposals với requestId=2147483648 | 404 (không tìm thấy), không bao giờ 500 | `500 INTERNAL_ERROR` | `404 REQUEST_NOT_FOUND` |
+| S-27-11 | POST /api/reviews với requestId=2147483648 | 404, không 500 | `500 INTERNAL_ERROR` | `404 REQUEST_NOT_FOUND` |
+| S-27-22 | page=9999999999999999999 (vượt bigint) | 200 (danh sách rỗng) hoặc 400, không 500 | `500 INTERNAL_ERROR` | `200` |
+| S-28-7 | Thân yêu cầu lớn hơn 100 KB (description 150.000 ký tự) | 413 hoặc 400 (từ chối thân quá cỡ), không 500 | `500 INTERNAL_ERROR` | `400 VALIDATION_ERROR` |
+
+- **Bước FAIL còn lại duy nhất** là `S-03-3` (DEV-01, quyết định thiết kế đã chấp nhận). Nguyên văn dòng FAIL trong log của lần chạy 11:
+
+```text
+FAIL     S-03-3     TC-03 B3 | Dùng lại token cũ gọi GET /api/auth/me SAU khi đăng xuất | thực tế: 200 (vẫn trả thông tin người dùng) | DEV-01: JWT không lưu phiên phía server (project-notes.md) — token còn hiệu lực đến khi hết hạn
+```
+
+- **Bốn quan sát không đổi:** `S-25-12` (OBS-02), `S-27-16` (OBS-04), `S-29-12` (OBS-01), `S-31-8` (OBS-03).
+- **Một thay đổi hành vi khác, vẫn PASS:** `S-26-4` (`price` = 0.05) lần 4 trả `201` và lưu `0.1`, nay trả `400` vì giá tối thiểu là 0,1 (mong đợi của bước là "201 hoặc 400"). `S-26-6` (`350000.55` lưu thành `350000.6`) không đổi nên OBS-05 còn mở một phần.
+
+### 8.5. Kết quả theo test case và số liệu sau khi sửa
+
+Bốn test case đổi kết luận từ FAIL sang PASS. Mỗi TC được chạy lại bằng lệnh `node --test` của suite hồi quy `BUG-0x` tương ứng và các bước bổ sung của TC (ảnh ở §8.6):
+
+| TC | Lần 1 (`2ba0157`) | Lần 2 (`76b2752`) | Test hồi quy | Bước bổ sung | Bug |
+|---|---|---|---|---|---|
+| TC-24 | FAIL (S-24-12, S-24-13) | **PASS** | `BUG-01`: 2/2 | 13 PASS · 0 FAIL | BUG-01 |
+| TC-26 | FAIL (S-26-3) | **PASS** | `BUG-02`: 2/2 | 21 PASS · 0 FAIL | BUG-02 |
+| TC-27 | FAIL (S-27-2…S-27-11, S-27-22) | **PASS** | `BUG-03`, `BUG-04`: 4/4 | 21 PASS · 0 FAIL · 1 quan sát | BUG-03, BUG-04 |
+| TC-28 | FAIL (S-28-7) | **PASS** | `BUG-05`: 3/3 | 9 PASS · 0 FAIL | BUG-05 |
+
+29 TC còn lại **không chụp lại từng TC**, nhưng toàn bộ test tự động của chúng nằm trong `npm test` 115/115 và toàn bộ bước bổ sung nằm trong 129 bước (hai lần): kết quả từng bước không đổi ngoài 15 bước ở §8.4. Theo test case: **31 PASS · 2 FAIL** (TC-03 do DEV-01 và TC-15 do DEV-02, hai lệch có chủ đích). Theo loại: luồng đúng 24 TC (22 PASS, 2 FAIL), giá trị biên 4 (4 PASS), dữ liệu sai 1 (1 PASS), bảo mật 3 (3 PASS), tái lập 1 (1 PASS). Theo ưu tiên: Cao 22 TC (20 PASS, 2 FAIL) · Trung bình 10 TC (10 PASS) · Thấp 1 TC (PASS). Theo tầng, sau khi thêm test hồi quy: tự động thuần 14 · tự động + bổ sung **14** (thêm TC-24, TC-26, TC-27, TC-28) · chỉ bổ sung **5** (TC-25, 29, 30, 31, 33); ở lần 1 là 14 · 10 · 9.
+
+| Chỉ số | Lần 1 (`2ba0157`, 2026-11-13) | Lần 2 (`76b2752`, 2026-11-20) |
+|---|---|---|
+| Test tự động (`npm test`) | 104 test · 27 suite · 9 tệp · 104 pass | 115 test · 32 suite · 10 tệp · 115 pass |
+| Bước bổ sung trên server thật | 109 PASS · 16 FAIL · 4 quan sát | 124 PASS · 1 FAIL · 4 quan sát |
+| Phản hồi HTTP 500 ở bước bổ sung | 15 | 0 |
+| Phản hồi lộ stack trace | 0 | 0 |
+| Test case | 27 PASS · 6 FAIL | 31 PASS · 2 FAIL |
+| Bug đang mở | 5 Minor (BUG-01…BUG-05) | 0 (5 bug đã đóng) |
+| Lệnh tái lập của bug-log | 19 phản hồi `500`; 19 lỗi trong log server | 0 phản hồi `500`; 0 lỗi trong log server |
+| Ảnh chụp | 35 ảnh (`screenshots/`) | thêm 6 ảnh (`screenshots/sau-sua-loi/`) |
+
+Đối chiếu lại các tiêu chí thành công của [test-plan.md](test-plan.md) §3: tiêu chí 2 (`npm test` xanh 100%, ổn định) — **Đạt**, 115/115 ở cả hai lần chạy; tiêu chí 4 (không còn bug Critical/Major mở) — **Đạt**, 0 Critical, 0 Major và nay cũng 0 Minor mở; tiêu chí 5 (không có 500 với dữ liệu nhập được, không lộ stack trace) — nay **Đạt** (lần 1: Không đạt do BUG-01…BUG-05), 0 phản hồi 500 trong 129 bước. Tiêu chí 1, 3, 6, 7 không đổi (các bước của TC-30 và TC-32 vẫn PASS ở lần chạy 11–12).
+
+### 8.6. Ảnh chụp sau khi sửa lỗi (lần chạy 14)
+
+Thư mục [screenshots/sau-sua-loi/](screenshots/sau-sua-loi/) có **6 ảnh PNG**, chụp ngày 2026-11-20 từ 13:43 đến 13:46 bằng cùng cách như §4.5 (chụp chính cửa sổ terminal chạy lệnh thật trên bản sao kiểm thử; runner tạm nằm ngoài repo). Khác lần 1: banner ghi `nhánh main @ 76b2752` và cửa sổ ghi `main@76b2752`; TC-24, TC-26, TC-27, TC-28 chạy thêm test hồi quy `BUG-0x` trước các bước bổ sung; TC-26 và TC-27 chụp với cỡ chữ nhỏ hơn để hiện đủ banner và dòng `Lệnh:`. Ảnh `-fail.png` của lần 1 ở [screenshots/](screenshots/) **được giữ nguyên** làm bằng chứng trước khi sửa.
+
+| Ảnh | Nội dung | Giờ chụp | Test tự động | Bước bổ sung |
+|---|---|---|---|---|
+| [TC-24-pass.png](screenshots/sau-sua-loi/TC-24-pass.png) | TC-24 sau khi sửa BUG-01 | 13:43:16 | 2/2 pass | 13 PASS |
+| [TC-26-pass.png](screenshots/sau-sua-loi/TC-26-pass.png) | TC-26 sau khi sửa BUG-02 | 13:45:50 | 2/2 pass | 21 PASS |
+| [TC-27-pass.png](screenshots/sau-sua-loi/TC-27-pass.png) | TC-27 sau khi sửa BUG-03, BUG-04 | 13:46:04 | 4/4 pass | 21 PASS · 1 quan sát |
+| [TC-28-pass.png](screenshots/sau-sua-loi/TC-28-pass.png) | TC-28 sau khi sửa BUG-05 | 13:44:19 | 3/3 pass | 9 PASS |
+| [npm-test-pass.png](screenshots/sau-sua-loi/npm-test-pass.png) | `npm test` đầy đủ: 115/115 (chỉ hiện phần cuối của output, đủ dòng tổng kết) | 13:44:32 | 115/115 pass | — |
+| [bo-sung-tong-ket.png](screenshots/sau-sua-loi/bo-sung-tong-ket.png) | Tổng kết 129 bước: 124 PASS + 1 FAIL + 4 quan sát | 13:44:41 | — | 124 PASS · 1 FAIL |
+
+**TC-24 — PASS sau khi sửa BUG-01**
+
+![TC-24 sau khi sửa](screenshots/sau-sua-loi/TC-24-pass.png)
+
+**TC-26 — PASS sau khi sửa BUG-02**
+
+![TC-26 sau khi sửa](screenshots/sau-sua-loi/TC-26-pass.png)
+
+**TC-27 — PASS sau khi sửa BUG-03 và BUG-04**
+
+![TC-27 sau khi sửa](screenshots/sau-sua-loi/TC-27-pass.png)
+
+**TC-28 — PASS sau khi sửa BUG-05**
+
+![TC-28 sau khi sửa](screenshots/sau-sua-loi/TC-28-pass.png)
+
+**Cả bộ bằng một lệnh `npm test` — 115/115 PASS** (lần chạy 14)
+
+![npm test sau khi sửa](screenshots/sau-sua-loi/npm-test-pass.png)
+
+**Tổng kết 129 bước bổ sung trên server thật — 124 PASS, 1 FAIL, 4 quan sát** (lần chạy 14)
+
+![Tổng kết bước bổ sung sau khi sửa](screenshots/sau-sua-loi/bo-sung-tong-ket.png)
+
+### 8.7. Việc còn lại sau khi đóng 5 bug
+
+- **Chưa thuộc phạm vi sửa lỗi, vẫn mở:** DEV-01, DEV-02, DEV-03 (lệch tiêu chí đã chấp nhận — cần chốt sửa mã hay sửa tiêu chí), UI-01 (cần xác minh trên trình duyệt), TD-01 (ba suite phụ thuộc thứ tự chạy), OBS-01…OBS-06 (OBS-05 đã thu hẹp, OBS-04 không đổi). Chi tiết ở [bug-log.md](bug-log.md) Phần B.
+- **TC-27 nên mở rộng** thêm 5 endpoint nhận mã mà nhóm sửa lỗi tìm ra (`PATCH /api/requests/{id}`, `/complete`, `PATCH /api/proposals/{id}`, `/close`, `PATCH /api/admin/users/{id}/unlock`); hiện chúng được kiểm bởi test hồi quy `tests/ma-so.test.js` chứ chưa có bước `S-27-x` riêng.
+- **Giao diện vẫn chưa chạy trên trình duyệt** (như §7 mục 1); runner chụp ảnh và 129 bước bổ sung vẫn là script tạm ngoài repo (§7 mục 2).

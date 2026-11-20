@@ -5,6 +5,8 @@ Học phần: Chuyên đề Tốt nghiệp 2, HK1 2026-2027 · Báo cáo kết q
 Nguồn tính năng cần kiểm: `ProductBacklog_Nhom03.xlsx` (bản md cùng nội dung, đã đối chiếu từng ô: [product-backlog-nhom03.md](product-backlog-nhom03.md)) — 23 user story (17 Must · 5 Should · 1 Could; Sprint 2: 12 US, Sprint 3: 11 US) và 53 kịch bản chấp nhận Given/When/Then.
 Phiên bản được kiểm: thư mục `cdtn2-nhom03-main` (không phải kho git; nội dung 127 file trùng khớp với `cdtn2-nhom03-main.zip`, SHA-256 `441ABD159AE4FEA8E704BDF7B98F799A4666EB7408531C6EC27E87BBECB011DC`) · ngày kiểm 2026-11-13.
 
+> **Cập nhật 2026-11-20:** các con số của bộ test tự động trong kế hoạch này (104 test, 27 suite, 9 file) là của bản `2ba0157` đã kiểm ở lần 1. Nhánh `fix-bug` thêm 11 test hồi quy (5 suite `BUG-01`…`BUG-05`, tệp mới `tests/ma-so.test.js`), nên `npm test` hiện có **115 test** (32 suite, 10 file). 11 test mới thuộc các TC biên và dữ liệu sai: TC-24 (2), TC-26 (2), TC-27 (4), TC-28 (3), nên nguyên tắc "mỗi test thuộc đúng một TC" vẫn giữ. Bốn TC này chuyển từ tầng "chỉ bước bổ sung" sang "tự động + bước bổ sung": số TC theo tầng ở mục 2 là 14 · 14 · 5 thay cho 14 · 10 · 9. Phạm vi 33 TC và các tiêu chí thành công không đổi; kết quả kiểm thử lại ở [test-report.md](test-report.md) §8.
+
 ## 1. Phạm vi kiểm thử và phần chủ ý KHÔNG kiểm
 
 **Kiểm:** toàn bộ 23 user story của Product Backlog (US01–US23), tương ứng FR01–FR23 và 16 quy tắc nghiệp vụ BR01–BR16 trong [srs-nhom03.md](srs-nhom03.md), qua **API thật** (Express + PostgreSQL thật, không giả lập CSDL):
