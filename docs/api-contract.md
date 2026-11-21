@@ -294,7 +294,7 @@ Response 200 (KTV được chọn):
 
 **PATCH /api/requests/{id}/close** — thông điệp: `Đóng tin thành công`. Chỉ chủ tin, chỉ khi tin ở `WAITING_PROPOSAL` (BR06): đã chọn kỹ thuật viên hoặc hoàn thành trả `400 REQUEST_ALREADY_SELECTED` (`Không thể đóng tin đã chọn kỹ thuật viên`), đã đóng trả `400 INVALID_STATUS_TRANSITION`. Các đề xuất đang chờ của tin **được giữ nguyên** ở `PENDING` nhưng tin không còn nhận chọn. Response 200: tin với `status` `CLOSED`.
 
-**PATCH /api/requests/{id}/complete** — thông điệp: `Xác nhận hoàn thành thành công`. Chỉ chủ tin (BR11), chỉ từ `SELECTED` sang `COMPLETED` (BR12); trạng thái khác trả `400 INVALID_STATUS_TRANSITION`. Response 200: tin với `status` `COMPLETED`.
+**PATCH /api/requests/{id}/complete** — thông điệp: `Xác nhận hoàn thành thành công`. Chỉ chủ tin (BR11), chỉ từ `SELECTED` sang `COMPLETED` (BR12); trạng thái khác trả `400 INVALID_STATUS_TRANSITION`. Tạo thông báo `REQUEST_COMPLETED` cho kỹ thuật viên được chọn. Response 200: tin với `status` `COMPLETED`.
 
 Trạng thái tin (BR12): `WAITING_PROPOSAL` → `SELECTED` → `COMPLETED`; hoặc `WAITING_PROPOSAL` → `CLOSED`.
 
@@ -319,7 +319,7 @@ Trạng thái tin (BR12): `WAITING_PROPOSAL` → `SELECTED` → `COMPLETED`; ho�
 | `description`       | có       | Không rỗng                                                                                                                   |
 | `estimatedDuration` | không    | Chuỗi tối đa 50 ký tự; rỗng hoặc `null` được lưu là `null`                                                                    |
 
-Lỗi giá: `Giá đề xuất phải lớn hơn 0` (≤ 0 hoặc không phải số), `Giá đề xuất tối thiểu 0,1`, `Giá đề xuất quá lớn`. Tin phải ở `WAITING_PROPOSAL` (BR07) và kỹ thuật viên chưa có đề xuất đang hiệu lực cho tin (BR08).
+Lỗi giá: `Giá đề xuất phải lớn hơn 0` (≤ 0 hoặc không phải số), `Giá đề xuất tối thiểu 0,1`, `Giá đề xuất quá lớn`. Tin phải ở `WAITING_PROPOSAL` (BR07) và kỹ thuật viên chưa có đề xuất đang hiệu lực cho tin (BR08). Gửi thành công tạo thông báo `NEW_PROPOSAL` cho khách hàng chủ tin (mục 2.3.6).
 
 Response 201:
 
@@ -359,7 +359,7 @@ Response 201:
 
 **PATCH /api/proposals/{id}/close** — thông điệp: `Rút đề xuất thành công`. Đề xuất sang `WITHDRAWN` (vẫn lưu để tra cứu lịch sử, không thể khôi phục). Chỉ người gửi, chỉ khi `PENDING`: đã chấp nhận trả `409 PROPOSAL_ALREADY_ACCEPTED`; đã bị từ chối hoặc đã rút trả `400 INVALID_STATUS_TRANSITION`. Đề xuất đã rút không còn đang hiệu lực (BR08) nên kỹ thuật viên có thể gửi đề xuất mới cho cùng tin.
 
-**PATCH /api/proposals/{id}/accept** — thông điệp: `Chấp nhận đề xuất thành công`. Chỉ chủ tin (BR09). Trong **một giao dịch**: đề xuất → `ACCEPTED`; các đề xuất `PENDING` khác của tin → `REJECTED` (BR10); tin → `SELECTED` kèm `selectedProposalId` (BR12); tạo thông báo cho kỹ thuật viên được chọn (BR16). Tin đã chọn rồi trả `409 PROPOSAL_ALREADY_ACCEPTED`; tin đã đóng hoặc đề xuất không còn `PENDING` (đã rút, đã bị từ chối) trả `400 INVALID_STATUS_TRANSITION`. Response 200: đề xuất với `status` `ACCEPTED` (cấu trúc như POST).
+**PATCH /api/proposals/{id}/accept** — thông điệp: `Chấp nhận đề xuất thành công`. Chỉ chủ tin (BR09). Trong **một giao dịch**: đề xuất → `ACCEPTED`; các đề xuất `PENDING` khác của tin → `REJECTED` (BR10); tin → `SELECTED` kèm `selectedProposalId` (BR12); tạo thông báo `PROPOSAL_ACCEPTED` cho kỹ thuật viên được chọn (BR16) và `PROPOSAL_REJECTED` cho từng kỹ thuật viên có đề xuất vừa bị từ chối (đề xuất đã rút không được báo). Tin đã chọn rồi trả `409 PROPOSAL_ALREADY_ACCEPTED`; tin đã đóng hoặc đề xuất không còn `PENDING` (đã rút, đã bị từ chối) trả `400 INVALID_STATUS_TRANSITION`. Response 200: đề xuất với `status` `ACCEPTED` (cấu trúc như POST).
 
 #### **2.3.4. ReviewController – /api/reviews**
 
@@ -368,7 +368,7 @@ Response 201:
 | **POST**   | /api/reviews               | KH, KTV      | Tạo đánh giá hai chiều                                 | 201         | VALIDATION_ERROR, REQUEST_NOT_FOUND, NOT_OWNER, CANNOT_REVIEW_YET, ALREADY_REVIEWED                   |
 | **GET**    | /api/reviews/user/{userId} | mọi vai trò  | Xem các đánh giá mà một người dùng đã nhận             | 200         | USER_NOT_FOUND                                                                                        |
 
-**POST /api/reviews** — thông điệp: `Đánh giá thành công`. Request Body: `requestId` (số nguyên dương), `rating` (số nguyên 1 đến 5), `comment` (không bắt buộc, chuỗi tối đa 1000 ký tự). Người được đánh giá do hệ thống xác định: khách hàng chủ tin đánh giá kỹ thuật viên được chọn, kỹ thuật viên được chọn đánh giá khách hàng chủ tin; người không tham gia công việc nhận `403 NOT_OWNER`. Thứ tự kiểm tra: tin tồn tại (`404 REQUEST_NOT_FOUND`) → người gọi tham gia công việc (`403 NOT_OWNER`; tin chưa chọn kỹ thuật viên thì chưa có bên còn lại nên cũng trả mã này) → tin ở `COMPLETED` (BR13, nếu chưa: `400 CANNOT_REVIEW_YET`) → chưa đánh giá (BR14, nếu rồi: `409 ALREADY_REVIEWED`). Điểm trung bình `ratingAvg` của người được đánh giá được tính lại (làm tròn một chữ số thập phân) trong cùng giao dịch.
+**POST /api/reviews** — thông điệp: `Đánh giá thành công`. Request Body: `requestId` (số nguyên dương), `rating` (số nguyên 1 đến 5), `comment` (không bắt buộc, chuỗi tối đa 1000 ký tự). Người được đánh giá do hệ thống xác định: khách hàng chủ tin đánh giá kỹ thuật viên được chọn, kỹ thuật viên được chọn đánh giá khách hàng chủ tin; người không tham gia công việc nhận `403 NOT_OWNER`. Thứ tự kiểm tra: tin tồn tại (`404 REQUEST_NOT_FOUND`) → người gọi tham gia công việc (`403 NOT_OWNER`; tin chưa chọn kỹ thuật viên thì chưa có bên còn lại nên cũng trả mã này) → tin ở `COMPLETED` (BR13, nếu chưa: `400 CANNOT_REVIEW_YET`) → chưa đánh giá (BR14, nếu rồi: `409 ALREADY_REVIEWED`). Điểm trung bình `ratingAvg` của người được đánh giá được tính lại (làm tròn một chữ số thập phân) trong cùng giao dịch, cùng với thông báo `REVIEW_RECEIVED` cho người được đánh giá.
 
 Response 201:
 
@@ -446,31 +446,51 @@ Mọi vai trò đã đăng nhập; mỗi người chỉ thấy thông báo của
 | **GET**    | /api/notifications/unread-count | Số thông báo chưa đọc                      | 200         | UNAUTHORIZED                                 |
 | **PATCH**  | /api/notifications/{id}/read    | Đánh dấu đã đọc                            | 200         | NOTIFICATION_NOT_FOUND, NOT_OWNER            |
 
-**GET /api/notifications** — có phân trang (`page`, `size`). Response:
+**GET /api/notifications** — có phân trang (`page`, `size`). Response (kỹ thuật viên `ktv2@demo.vn` trong dữ liệu mẫu):
 
 ```
 {
   "success": true,
   "data": [
     {
-      "id": 1,
-      "userId": 4,
-      "type": "PROPOSAL_ACCEPTED",
-      "title": "Đề xuất của bạn đã được chấp nhận",
-      "content": "Đề xuất của bạn cho tin \"Rò rỉ ống nước dưới bồn rửa\" đã được chấp nhận",
+      "id": 149,
+      "userId": 5,
+      "type": "REVIEW_RECEIVED",
+      "title": "Bạn nhận được một đánh giá mới",
+      "content": "Phạm Đình Quang đã đánh giá 3 sao cho công việc \"Máy lạnh có mùi hôi khi bật\"",
       "isRead": false,
-      "relatedId": 4,
-      "createdAt": "2026-11-21T00:20:52.196Z"
+      "relatedId": 35,
+      "createdAt": "2026-11-21T01:27:40.747Z"
     }
   ],
   "message": "Thành công",
-  "meta": { "page": 1, "size": 10, "totalElements": 1, "totalPages": 1 }
+  "meta": { "page": 1, "size": 2, "totalElements": 12, "totalPages": 6 }
 }
 ```
 
-Loại thông báo duy nhất hiện có là `PROPOSAL_ACCEPTED` (BR16), gửi cho kỹ thuật viên khi đề xuất được chấp nhận; `relatedId` là **mã đề xuất** được chấp nhận (không phải mã tin).
+**Các loại thông báo.** Mỗi thông báo được tạo trong cùng giao dịch với sự kiện gây ra nó, nên sự kiện thất bại thì không có thông báo. `title` là chuỗi cố định theo loại; tên tin chỉ nằm ở `content`. **`relatedId` có ý nghĩa khác nhau theo `type`**: mã đề xuất với ba loại đầu, mã tin với hai loại sau.
 
-**GET /api/notifications/unread-count** — `{ "success": true, "data": { "count": 1 }, "message": "Thành công" }`.
+| `type`              | Người nhận                                    | Khi nào                                                                                              | `relatedId` | `title`                                      | Ví dụ `content`                                                                    |
+| ------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `NEW_PROPOSAL`      | Khách hàng chủ tin                            | Kỹ thuật viên gửi đề xuất mới cho tin (`POST /api/proposals`), kể cả gửi lại sau khi rút              | Mã đề xuất  | Có đề xuất mới cho tin của bạn               | `Trần Quốc Huy đã gửi đề xuất 450.000 đồng cho tin "Máy lạnh không làm mát"`        |
+| `PROPOSAL_ACCEPTED` | Kỹ thuật viên được chọn (BR16)                | Khách hàng chấp nhận đề xuất (`PATCH /api/proposals/{id}/accept`)                                     | Mã đề xuất  | Đề xuất của bạn đã được chấp nhận            | `Đề xuất của bạn cho tin "Rò rỉ ống nước dưới bồn rửa" đã được chấp nhận`           |
+| `PROPOSAL_REJECTED` | Mỗi kỹ thuật viên có đề xuất đang chờ của tin | Cùng lúc khách hàng chấp nhận một đề xuất khác (BR10); đề xuất đã rút không được báo                  | Mã đề xuất bị từ chối | Đề xuất của bạn không được chọn      | `Khách hàng đã chọn kỹ thuật viên khác cho tin "Rò rỉ ống nước dưới bồn rửa"`        |
+| `REQUEST_COMPLETED` | Kỹ thuật viên được chọn                       | Khách hàng xác nhận hoàn thành (`PATCH /api/requests/{id}/complete`)                                  | Mã tin      | Khách hàng đã xác nhận hoàn thành công việc  | `Công việc "Tủ lạnh không đông" đã được khách hàng xác nhận hoàn thành`             |
+| `REVIEW_RECEIVED`   | Bên được đánh giá (khách hàng hoặc kỹ thuật viên) | Bên kia gửi đánh giá (`POST /api/reviews`)                                                       | Mã tin      | Bạn nhận được một đánh giá mới               | `Lê Thị Hoa đã đánh giá 5 sao cho công việc "Tủ lạnh không đông"`                  |
+
+Một ví dụ cho mỗi loại (trường `id`, `userId`, `isRead`, `createdAt` như ví dụ ở trên):
+
+```
+{ "type": "NEW_PROPOSAL",      "title": "Có đề xuất mới cho tin của bạn", "content": "Trần Quốc Huy đã gửi đề xuất 450.000 đồng cho tin \"Máy lạnh không làm mát\"", "relatedId": 1 }
+{ "type": "PROPOSAL_ACCEPTED", "title": "Đề xuất của bạn đã được chấp nhận", "content": "Đề xuất của bạn cho tin \"Rò rỉ ống nước dưới bồn rửa\" đã được chấp nhận", "relatedId": 4 }
+{ "type": "PROPOSAL_REJECTED", "title": "Đề xuất của bạn không được chọn", "content": "Khách hàng đã chọn kỹ thuật viên khác cho tin \"Rò rỉ ống nước dưới bồn rửa\"", "relatedId": 5 }
+{ "type": "REQUEST_COMPLETED", "title": "Khách hàng đã xác nhận hoàn thành công việc", "content": "Công việc \"Tủ lạnh không đông\" đã được khách hàng xác nhận hoàn thành", "relatedId": 4 }
+{ "type": "REVIEW_RECEIVED",   "title": "Bạn nhận được một đánh giá mới", "content": "Lê Thị Hoa đã đánh giá 5 sao cho công việc \"Tủ lạnh không đông\"", "relatedId": 4 }
+```
+
+Rút đề xuất, sửa đề xuất, sửa tin và đóng tin **không** tạo thông báo. Cột `type` trong CSDL là chuỗi tự do (`VARCHAR(50)`), nên thêm loại mới không cần đổi lược đồ.
+
+**GET /api/notifications/unread-count** — `{ "success": true, "data": { "count": 12 }, "message": "Thành công" }`.
 
 **PATCH /api/notifications/{id}/read** — thông điệp: `Đã đánh dấu đã đọc`. Response 200: thông báo với `isRead: true`. Gọi lại trên thông báo đã đọc vẫn trả `200`. Thông báo của người khác trả `403 NOT_OWNER`.
 
@@ -524,6 +544,8 @@ id, requestId, fromUserId, toUserId, rating, comment, createdAt
 ```
 id, userId, type, title, content, isRead, relatedId, createdAt
 ```
+
+`type`: `NEW_PROPOSAL` | `PROPOSAL_ACCEPTED` | `PROPOSAL_REJECTED` | `REQUEST_COMPLETED` | `REVIEW_RECEIVED`. `relatedId` là mã đề xuất hoặc mã tin tùy `type` (bảng ở mục 2.3.6).
 
 ### 2.5. Ví dụ Response thực tế
 
@@ -647,3 +669,4 @@ Tóm tắt các điểm contract này khác bản đầu; chi tiết, lý do và
 - `sort` chỉ có ở hai API danh sách tin (bản đầu ghi mọi API danh sách đều hỗ trợ); `GET /api/requests` bỏ qua `status`; `GET /api/admin/users` có thêm tham số `q`.
 - Đăng xuất **không thu hồi token** (DEV-01); kỹ thuật viên gửi đề xuất cũng xem được chi tiết đề xuất đó (DEV-02).
 - Giá đề xuất tối thiểu 0,1; số điện thoại tối đa 20 ký tự; mã số vượt 2147483647 trả `404` (sửa lỗi Sprint 4, [bug-log.md](bug-log.md)).
+- Thông báo (US20, BR16) mở rộng từ một loại (`PROPOSAL_ACCEPTED`) lên năm loại theo yêu cầu ngày 2026-11-21: thêm `NEW_PROPOSAL`, `PROPOSAL_REJECTED`, `REQUEST_COMPLETED`, `REVIEW_RECEIVED`. Không thêm API hay trường mới; chỉ thêm các giá trị `type`, và `relatedId` nay là mã đề xuất hoặc mã tin tùy `type`.
