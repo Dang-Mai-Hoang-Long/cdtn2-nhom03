@@ -3,16 +3,28 @@ const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { app, request, truyVan, dongKetNoi, datLaiCoSoDuLieu } = require('./helpers');
 const { chayDuLieuMau } = require('../seeds/chay-seed');
+const { sinhKeHoach } = require('../seeds/tu-dong');
 const { MAT_KHAU_DEMO } = require('../seeds/hang-so');
 const { taiKhoan: cacTaiKhoan, tin: cacTin, deXuat: cacDeXuat, danhGia: cacDanhGia } = require('../seeds/thu-cong');
 
-const theoVaiTro = (role) => cacTaiKhoan.filter((taiKhoan) => taiKhoan.role === role);
+// Phần tự động chạy với 150 tin thay vì 1000 cho nhanh; logic giống hệt. Cùng hạt giống và bayGio thì cùng kế hoạch,
+// nên bài test biết chính xác số lượng cần có.
+const SO_TIN_TU_DONG = 150;
+const bayGio = new Date();
+const tuyChonSeed = { soTinTuDong: SO_TIN_TU_DONG, hatGiong: 7, bayGio };
+const keHoachTuDong = sinhKeHoach({ soTin: SO_TIN_TU_DONG, hatGiong: 7, bayGio });
+const tatCaTaiKhoan = [...cacTaiKhoan, ...keHoachTuDong.taiKhoan];
+const tatCaDeXuat = [...cacDeXuat, ...keHoachTuDong.deXuat];
+const tatCaTin = [...cacTin, ...keHoachTuDong.tin];
+const tongTin = tatCaTin.length;
+
+const theoVaiTro = (role) => tatCaTaiKhoan.filter((taiKhoan) => taiKhoan.role === role);
 
 let ketQuaSeed;
 
 before(async () => {
   await datLaiCoSoDuLieu();
-  ketQuaSeed = await chayDuLieuMau();
+  ketQuaSeed = await chayDuLieuMau(tuyChonSeed);
 });
 after(dongKetNoi);
 
@@ -23,7 +35,8 @@ async function lay(cauLenh, thamSo) {
 
 describe('Seed - tài khoản demo', () => {
   it('đủ tài khoản theo vai trò, đăng nhập được bằng mật khẩu demo (BR01)', async () => {
-    for (const taiKhoan of cacTaiKhoan.filter((tk) => !tk.biKhoa)) {
+    const mauDangNhap = [...cacTaiKhoan, ...keHoachTuDong.taiKhoan.slice(0, 6), ...keHoachTuDong.taiKhoan.slice(-6)].filter((tk) => !tk.biKhoa);
+    for (const taiKhoan of mauDangNhap) {
       const res = await request(app).post('/api/auth/login').send({ email: taiKhoan.email, password: MAT_KHAU_DEMO });
       assert.equal(res.status, 200, taiKhoan.email);
     }
@@ -33,14 +46,19 @@ describe('Seed - tài khoản demo', () => {
       { role: 'CUSTOMER', so: theoVaiTro('CUSTOMER').length },
       { role: 'TECHNICIAN', so: theoVaiTro('TECHNICIAN').length },
     ]);
-    assert.equal(ketQuaSeed.soTaiKhoan, cacTaiKhoan.length);
+    assert.equal(ketQuaSeed.soTaiKhoan, tatCaTaiKhoan.length);
   });
 
-  it('tài khoản bị khóa không đăng nhập được (BR02)', async () => {
-    const taiKhoanBiKhoa = cacTaiKhoan.find((taiKhoan) => taiKhoan.biKhoa);
-    const res = await request(app).post('/api/auth/login').send({ email: taiKhoanBiKhoa.email, password: MAT_KHAU_DEMO });
-    assert.equal(res.status, 403);
-    assert.equal(res.body.code, 'ACCOUNT_LOCKED');
+  it('mọi tài khoản bị khóa (viết tay lẫn tự động) không đăng nhập được, các tài khoản còn lại không bị khóa (BR02)', async () => {
+    const biKhoa = tatCaTaiKhoan.filter((taiKhoan) => taiKhoan.biKhoa);
+    assert.ok(biKhoa.length >= 4, 'cần cả tài khoản viết tay lẫn tự động bị khóa');
+    for (const taiKhoan of [biKhoa[0], biKhoa[biKhoa.length - 1]]) {
+      const res = await request(app).post('/api/auth/login').send({ email: taiKhoan.email, password: MAT_KHAU_DEMO });
+      assert.equal(res.status, 403, taiKhoan.email);
+      assert.equal(res.body.code, 'ACCOUNT_LOCKED');
+    }
+    const emailBiKhoa = (await lay('SELECT email FROM users WHERE is_locked')).map((dong) => dong.email).sort();
+    assert.deepEqual(emailBiKhoa, biKhoa.map((taiKhoan) => taiKhoan.email).sort());
   });
 });
 
@@ -54,7 +72,7 @@ describe('Seed - quy tắc nghiệp vụ của dữ liệu mẫu', () => {
 
   it('trạng thái tin khớp đề xuất được chọn, đề xuất còn lại không còn chờ (BR10, BR12)', async () => {
     const cacYeuCau = await lay('SELECT id, status, selected_proposal_id FROM repair_request ORDER BY id');
-    assert.equal(cacYeuCau.length, cacTin.length);
+    assert.equal(cacYeuCau.length, tongTin);
     for (const yeuCau of cacYeuCau) {
       const deXuatTrongTin = await lay('SELECT id, status FROM proposal WHERE request_id = $1', [yeuCau.id]);
       if (['SELECTED', 'COMPLETED'].includes(yeuCau.status)) {
@@ -73,14 +91,16 @@ describe('Seed - quy tắc nghiệp vụ của dữ liệu mẫu', () => {
     assert.deepEqual(trangThaiTin, ['CLOSED', 'COMPLETED', 'SELECTED', 'WAITING_PROPOSAL']);
     const trangThaiDeXuat = (await lay('SELECT DISTINCT status FROM proposal ORDER BY status')).map((dong) => dong.status);
     assert.deepEqual(trangThaiDeXuat, ['ACCEPTED', 'PENDING', 'REJECTED', 'WITHDRAWN']);
-    assert.equal(ketQuaSeed.soTin, cacTin.length);
-    assert.equal(ketQuaSeed.soDeXuat, cacDeXuat.length);
+    assert.equal(ketQuaSeed.soTin, tongTin);
+    assert.equal(ketQuaSeed.soDeXuat, tatCaDeXuat.length);
+    assert.equal(ketQuaSeed.soTinThuCong, cacTin.length);
+    assert.equal(ketQuaSeed.soTinTuDong, SO_TIN_TU_DONG);
   });
 
   it('đánh giá chỉ cho tin hoàn thành, đúng hai bên tham gia, mỗi bên một lần và điểm trung bình khớp (BR13, BR14)', async () => {
     const cacDanhGiaDaLuu = await lay(`SELECT rv.request_id, rv.from_user_id, rv.to_user_id, r.status, r.customer_id, p.technician_id
       FROM review rv JOIN repair_request r ON r.id = rv.request_id JOIN proposal p ON p.id = r.selected_proposal_id`);
-    assert.equal(cacDanhGiaDaLuu.length, cacDanhGia.length);
+    assert.equal(cacDanhGiaDaLuu.length, cacDanhGia.length + keHoachTuDong.danhGia.length);
     for (const danhGia of cacDanhGiaDaLuu) {
       assert.equal(danhGia.status, 'COMPLETED');
       const haiBen = [danhGia.customer_id, danhGia.technician_id].sort();
@@ -203,24 +223,78 @@ describe('Seed - phần viết tay phủ đủ các tình huống đã hứa tro
   });
 });
 
+describe('Seed - phần tự động trong CSDL: khớp kế hoạch, dòng thời gian đúng trình tự, phân bổ lệch', () => {
+  it('số lượng trong CSDL khớp kế hoạch: trạng thái tin, đề xuất đã rút và được chấp nhận, thông báo đã đọc', async () => {
+    const theoTrangThai = Object.fromEntries((await lay('SELECT status, count(*)::int AS so FROM repair_request GROUP BY status')).map((dong) => [dong.status, dong.so]));
+    const dem = (ketQua) => tatCaTin.filter((tin) => tin.ketQua === ketQua).length;
+    assert.deepEqual(theoTrangThai, { WAITING_PROPOSAL: dem('CHO_DE_XUAT'), SELECTED: dem('DA_CHON'), COMPLETED: dem('HOAN_THANH'), CLOSED: dem('DA_DONG') });
+    const [{ da_rut }] = await lay(`SELECT count(*)::int AS da_rut FROM proposal WHERE status = 'WITHDRAWN'`);
+    assert.equal(da_rut, tatCaDeXuat.filter((deXuat) => deXuat.rut).length);
+    const [{ duoc_chon }] = await lay(`SELECT count(*)::int AS duoc_chon FROM proposal WHERE status = 'ACCEPTED'`);
+    assert.equal(duoc_chon, tatCaTin.filter((tin) => tin.ktvDuocChon).length);
+    const [{ da_doc }] = await lay('SELECT count(*)::int AS da_doc FROM notification WHERE is_read');
+    assert.equal(da_doc, tatCaDeXuat.filter((deXuat) => deXuat.daDocThongBao).length);
+  });
+
+  it('dòng thời gian đúng trình tự: tài khoản < tin < đề xuất < chấp nhận < đánh giá, không có thời điểm ở tương lai', async () => {
+    const truyVanSai = {
+      'tin sớm hơn tài khoản chủ tin': 'SELECT r.id FROM repair_request r JOIN users u ON u.id = r.customer_id WHERE r.created_at < u.created_at',
+      'đề xuất sớm hơn tin': 'SELECT p.id FROM proposal p JOIN repair_request r ON r.id = p.request_id WHERE p.created_at < r.created_at',
+      'đề xuất sớm hơn tài khoản kỹ thuật viên': 'SELECT p.id FROM proposal p JOIN users u ON u.id = p.technician_id WHERE p.created_at < u.created_at',
+      'thông báo sớm hơn đề xuất': `SELECT n.id FROM notification n JOIN proposal p ON p.id = n.related_id WHERE n.type = 'PROPOSAL_ACCEPTED' AND n.created_at < p.created_at`,
+      'đánh giá sớm hơn lúc chấp nhận': `SELECT rv.id FROM review rv JOIN repair_request r ON r.id = rv.request_id
+        JOIN notification n ON n.related_id = r.selected_proposal_id AND n.type = 'PROPOSAL_ACCEPTED' WHERE rv.created_at < n.created_at`,
+      'có thời điểm ở tương lai': `SELECT id FROM repair_request WHERE created_at > now() UNION ALL SELECT id FROM proposal WHERE created_at > now()
+        UNION ALL SELECT id FROM review WHERE created_at > now() UNION ALL SELECT id FROM notification WHERE created_at > now()
+        UNION ALL SELECT id FROM users WHERE created_at > now()`,
+    };
+    for (const [moTa, cauLenh] of Object.entries(truyVanSai)) assert.deepEqual(await lay(cauLenh), [], moTa);
+  });
+
+  it('tin tự động trải trên nhiều tháng và mã tin tăng theo thời điểm đăng', async () => {
+    const [{ so_ngay }] = await lay('SELECT (EXTRACT(EPOCH FROM max(created_at) - min(created_at)) / 86400)::int AS so_ngay FROM repair_request WHERE id > $1', [cacTin.length]);
+    assert.ok(so_ngay > 100, `tin tự động chỉ trải ${so_ngay} ngày`);
+    const daoThuTu = await lay('SELECT a.id FROM repair_request a JOIN repair_request b ON b.id = a.id + 1 WHERE a.id > $1 AND b.created_at < a.created_at', [cacTin.length]);
+    assert.deepEqual(daoThuTu, []);
+  });
+
+  it('phân bổ lệch như thật: khách hàng nhiều tin, khách hàng chưa có tin, kỹ thuật viên rất nhiều đề xuất', async () => {
+    const [{ nhieu_nhat }] = await lay('SELECT max(so)::int AS nhieu_nhat FROM (SELECT count(*) AS so FROM repair_request WHERE id > $1 GROUP BY customer_id) t', [cacTin.length]);
+    assert.ok(nhieu_nhat >= 10, `khách hàng nhiều tin nhất chỉ có ${nhieu_nhat} tin`);
+    const khachChuaCoTin = await lay(`SELECT u.id FROM users u WHERE u.email LIKE 'auto.kh%' AND NOT EXISTS (SELECT 1 FROM repair_request WHERE customer_id = u.id)`);
+    assert.ok(khachChuaCoTin.length >= 3);
+    const [{ de_xuat_nhieu_nhat }] = await lay('SELECT max(so)::int AS de_xuat_nhieu_nhat FROM (SELECT count(*) AS so FROM proposal WHERE request_id > $1 GROUP BY technician_id) t', [cacTin.length]);
+    assert.ok(de_xuat_nhieu_nhat >= 20, `kỹ thuật viên nhiều đề xuất nhất chỉ có ${de_xuat_nhieu_nhat}`);
+  });
+});
+
 describe('Seed - chạy lại và chốt chặn', () => {
   it('đã có tài khoản demo thì từ chối chạy lại, --reset tạo lại đúng số lượng', async () => {
-    await assert.rejects(() => chayDuLieuMau(), /seed:reset/);
-    const lanHai = await chayDuLieuMau({ datLai: true });
+    await assert.rejects(() => chayDuLieuMau(tuyChonSeed), /seed:reset/);
+    const lanHai = await chayDuLieuMau({ ...tuyChonSeed, datLai: true });
     assert.deepEqual(lanHai, ketQuaSeed);
     const soTin = await lay('SELECT count(*)::int AS so FROM repair_request');
-    assert.equal(soTin[0].so, cacTin.length);
+    assert.equal(soTin[0].so, tongTin);
+  });
+
+  it('chỉ phần viết tay khi soTinTuDong = 0', async () => {
+    const chiThuCong = await chayDuLieuMau({ datLai: true, soTinTuDong: 0, bayGio });
+    assert.equal(chiThuCong.soTin, cacTin.length);
+    assert.equal(chiThuCong.soTinTuDong, 0);
+    const [{ so }] = await lay('SELECT count(*)::int AS so FROM users');
+    assert.equal(so, cacTaiKhoan.length);
+    await chayDuLieuMau({ ...tuyChonSeed, datLai: true });
   });
 
   it('từ chối chạy ở môi trường production', async () => {
     const moiTruongCu = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     try {
-      await assert.rejects(() => chayDuLieuMau({ datLai: true }), /production/);
+      await assert.rejects(() => chayDuLieuMau({ ...tuyChonSeed, datLai: true }), /production/);
     } finally {
       process.env.NODE_ENV = moiTruongCu;
     }
     const soTin = await lay('SELECT count(*)::int AS so FROM repair_request');
-    assert.equal(soTin[0].so, cacTin.length);
+    assert.equal(soTin[0].so, tongTin);
   });
 });
