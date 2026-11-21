@@ -105,6 +105,104 @@ describe('Seed - quy tắc nghiệp vụ của dữ liệu mẫu', () => {
   });
 });
 
+describe('Seed - mã ổn định của dữ liệu cũ (bug-log, api-contract dẫn tới những mã này)', () => {
+  it('7 tài khoản, 7 tin, 9 đề xuất, 3 đánh giá đầu giữ nguyên mã và trạng thái', async () => {
+    const emails = (await lay('SELECT email FROM users WHERE id <= 7 ORDER BY id')).map((dong) => dong.email);
+    assert.deepEqual(emails, ['admin@demo.vn', 'khach1@demo.vn', 'khach2@demo.vn', 'ktv1@demo.vn', 'ktv2@demo.vn', 'ktv3@demo.vn', 'bikhoa@demo.vn']);
+    const tin = await lay('SELECT id, title, status FROM repair_request WHERE id <= 7 ORDER BY id');
+    assert.equal(tin[1].title, 'Máy giặt không vắt được');
+    assert.deepEqual(tin.map((dong) => dong.status), ['WAITING_PROPOSAL', 'WAITING_PROPOSAL', 'SELECTED', 'COMPLETED', 'COMPLETED', 'CLOSED', 'WAITING_PROPOSAL']);
+    const deXuat = await lay('SELECT status FROM proposal WHERE id <= 9 ORDER BY id');
+    assert.deepEqual(deXuat.map((dong) => dong.status), ['PENDING', 'PENDING', 'WITHDRAWN', 'ACCEPTED', 'REJECTED', 'ACCEPTED', 'REJECTED', 'ACCEPTED', 'PENDING']);
+    const danhGia = await lay('SELECT request_id FROM review WHERE id <= 3 ORDER BY id');
+    assert.deepEqual(danhGia.map((dong) => dong.request_id), [4, 4, 5]);
+    const thongBao = await lay('SELECT user_id, related_id, is_read FROM notification WHERE id <= 3 ORDER BY id');
+    assert.deepEqual(thongBao, [{ user_id: 4, related_id: 4, is_read: false }, { user_id: 5, related_id: 6, is_read: false }, { user_id: 4, related_id: 8, is_read: true }]);
+  });
+});
+
+describe('Seed - phần viết tay phủ đủ các tình huống đã hứa trong seeds/README.md', () => {
+  const soTinThuCong = cacTin.length;
+
+  it('khoảng 50 tin; có khách hàng và kỹ thuật viên đủ nhiều dữ liệu để thử phân trang (10 mục mỗi trang)', async () => {
+    assert.ok(soTinThuCong >= 45 && soTinThuCong <= 55, `số tin viết tay là ${soTinThuCong}`);
+    const khachNhieuTin = await lay('SELECT customer_id FROM repair_request WHERE id <= $1 GROUP BY customer_id HAVING count(*) > 10', [soTinThuCong]);
+    assert.ok(khachNhieuTin.length >= 1);
+    const ktvNhieuDeXuat = await lay('SELECT technician_id FROM proposal WHERE request_id <= $1 GROUP BY technician_id HAVING count(*) > 10', [soTinThuCong]);
+    assert.ok(ktvNhieuDeXuat.length >= 1);
+    const ktvNhieuViecDuocChon = await lay(`SELECT technician_id FROM proposal WHERE request_id <= $1 AND status = 'ACCEPTED' GROUP BY technician_id HAVING count(*) >= 5`, [soTinThuCong]);
+    assert.ok(ktvNhieuViecDuocChon.length >= 1);
+  });
+
+  it('tin đóng còn đề xuất chờ (BR06), tin chờ mà mọi đề xuất đã rút, đề xuất gửi lại sau khi rút (BR08)', async () => {
+    const dongConCho = await lay(`SELECT DISTINCT r.id FROM repair_request r JOIN proposal p ON p.request_id = r.id
+      WHERE r.status = 'CLOSED' AND p.status = 'PENDING' AND r.id <= $1`, [soTinThuCong]);
+    assert.ok(dongConCho.length >= 1);
+    const chiConDeXuatDaRut = await lay(`SELECT r.id FROM repair_request r WHERE r.status = 'WAITING_PROPOSAL' AND r.id <= $1
+      AND EXISTS (SELECT 1 FROM proposal WHERE request_id = r.id)
+      AND NOT EXISTS (SELECT 1 FROM proposal WHERE request_id = r.id AND status IN ('PENDING', 'ACCEPTED'))`, [soTinThuCong]);
+    assert.ok(chiConDeXuatDaRut.length >= 1);
+    const guiLai = await lay(`SELECT request_id, technician_id FROM proposal WHERE request_id <= $1 GROUP BY request_id, technician_id
+      HAVING count(*) FILTER (WHERE status = 'WITHDRAWN') > 0 AND count(*) FILTER (WHERE status = 'PENDING') > 0`, [soTinThuCong]);
+    assert.ok(guiLai.length >= 1);
+  });
+
+  it('đánh giá đủ 1 đến 5 sao; có tin hoàn thành chưa ai đánh giá, chỉ một bên đánh giá, nhận xét dài đúng 1000 ký tự', async () => {
+    const cacSao = (await lay('SELECT DISTINCT rating FROM review WHERE request_id <= $1 ORDER BY rating', [soTinThuCong])).map((dong) => dong.rating);
+    assert.deepEqual(cacSao, [1, 2, 3, 4, 5]);
+    const theoTin = await lay(`SELECT count(rv.id)::int AS so, coalesce(bool_or(rv.from_user_id = r.customer_id), false) AS co_khach
+      FROM repair_request r LEFT JOIN review rv ON rv.request_id = r.id WHERE r.status = 'COMPLETED' AND r.id <= $1 GROUP BY r.id`, [soTinThuCong]);
+    assert.ok(theoTin.some((dong) => dong.so === 0), 'cần tin hoàn thành chưa ai đánh giá');
+    assert.ok(theoTin.some((dong) => dong.so === 1 && dong.co_khach), 'cần tin chỉ khách hàng đánh giá');
+    assert.ok(theoTin.some((dong) => dong.so === 1 && !dong.co_khach), 'cần tin chỉ kỹ thuật viên đánh giá');
+    const [{ dai_nhat }] = await lay('SELECT max(length(comment))::int AS dai_nhat FROM review WHERE request_id <= $1', [soTinThuCong]);
+    assert.equal(dai_nhat, 1000);
+  });
+
+  it('giá đề xuất ở hai đầu biên của validator', async () => {
+    const [{ thap, cao }] = await lay('SELECT min(price) AS thap, max(price) AS cao FROM proposal WHERE request_id <= $1', [soTinThuCong]);
+    assert.equal(thap, 0.1);
+    assert.ok(cao >= 9999999999999);
+  });
+
+  it('tài khoản đủ loại: khách hàng và kỹ thuật viên bị khóa, người chưa có dữ liệu; không khóa được quản trị viên (BR01, BR02)', async () => {
+    const biKhoa = (await lay('SELECT role FROM users WHERE is_locked ORDER BY role')).map((dong) => dong.role);
+    assert.ok(biKhoa.includes('CUSTOMER') && biKhoa.includes('TECHNICIAN'));
+    const khachChuaCoTin = await lay(`SELECT id FROM users u WHERE role = 'CUSTOMER' AND NOT EXISTS (SELECT 1 FROM repair_request WHERE customer_id = u.id)`);
+    assert.ok(khachChuaCoTin.length >= 1);
+    const ktvChuaDeXuat = await lay(`SELECT id FROM users u WHERE role = 'TECHNICIAN' AND NOT EXISTS (SELECT 1 FROM proposal WHERE technician_id = u.id)`);
+    assert.ok(ktvChuaDeXuat.length >= 1);
+
+    const dangNhap = await request(app).post('/api/auth/login').send({ email: 'admin@demo.vn', password: MAT_KHAU_DEMO });
+    const [{ id: maAdminPhu }] = await lay(`SELECT id FROM users WHERE email = 'admin2@demo.vn'`);
+    const khoa = await request(app).patch(`/api/admin/users/${maAdminPhu}/lock`).set('Authorization', `Bearer ${dangNhap.body.data.token}`);
+    assert.equal(khoa.status, 403);
+    assert.equal(khoa.body.code, 'FORBIDDEN');
+  });
+
+  it('thông báo có cả đã đọc lẫn chưa đọc, một kỹ thuật viên có nhiều thông báo chưa đọc (BR16)', async () => {
+    const [{ da_doc }] = await lay('SELECT count(*)::int AS da_doc FROM notification WHERE is_read');
+    assert.ok(da_doc >= 1);
+    const nhieuChuaDoc = await lay('SELECT user_id FROM notification WHERE NOT is_read GROUP BY user_id HAVING count(*) >= 5');
+    assert.ok(nhieuChuaDoc.length >= 1);
+  });
+
+  it('dữ liệu biên được lưu đúng: độ dài tối đa, khoảng trắng bị cắt, ký tự đặc biệt giữ nguyên, tin và đề xuất đã sửa', async () => {
+    const [{ title: dai200 }] = await lay('SELECT title FROM repair_request WHERE length(title) = 200');
+    assert.equal(dai200.length, 200);
+    const toiDa = await lay('SELECT 1 FROM repair_request WHERE length(category) = 50 AND length(location) = 255');
+    assert.equal(toiDa.length, 1);
+    const daCat = await lay(`SELECT title, location FROM repair_request WHERE title = 'Máy giặt   kêu  to' AND location = 'Quận 5, TP. Hồ Chí Minh'`);
+    assert.equal(daCat.length, 1);
+    const dacBiet = await lay(`SELECT 1 FROM repair_request WHERE title = $1`, [`Ổ cắm "chập" & <b>nổ</b> '; DROP TABLE users; --`]);
+    assert.equal(dacBiet.length, 1);
+    const daSua = await lay(`SELECT 1 FROM repair_request WHERE title = 'Cần xem giúp cửa cuốn bị kẹt' AND category = 'Sửa cửa cuốn'`);
+    assert.equal(daSua.length, 1);
+    const [{ price }] = await lay(`SELECT price FROM proposal WHERE description LIKE 'Kiểm tra gas, áp suất và cảm biến của cả hai máy.%'`);
+    assert.equal(price, 430000);
+  });
+});
+
 describe('Seed - chạy lại và chốt chặn', () => {
   it('đã có tài khoản demo thì từ chối chạy lại, --reset tạo lại đúng số lượng', async () => {
     await assert.rejects(() => chayDuLieuMau(), /seed:reset/);
