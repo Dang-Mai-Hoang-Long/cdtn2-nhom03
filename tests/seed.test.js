@@ -3,10 +3,10 @@ const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { app, request, truyVan, dongKetNoi, datLaiCoSoDuLieu } = require('./helpers');
 const { chayDuLieuMau } = require('../seeds/chay-seed');
-const { MAT_KHAU_DEMO, QUAN_TRI_VIEN, KHACH_HANG, KY_THUAT_VIEN } = require('../seeds/tai-khoan');
-const cacTin = require('../seeds/tin-sua-chua');
-const cacDeXuat = require('../seeds/de-xuat');
-const cacDanhGia = require('../seeds/danh-gia');
+const { MAT_KHAU_DEMO } = require('../seeds/hang-so');
+const { taiKhoan: cacTaiKhoan, tin: cacTin, deXuat: cacDeXuat, danhGia: cacDanhGia } = require('../seeds/thu-cong');
+
+const theoVaiTro = (role) => cacTaiKhoan.filter((taiKhoan) => taiKhoan.role === role);
 
 let ketQuaSeed;
 
@@ -23,22 +23,21 @@ async function lay(cauLenh, thamSo) {
 
 describe('Seed - tài khoản demo', () => {
   it('đủ tài khoản theo vai trò, đăng nhập được bằng mật khẩu demo (BR01)', async () => {
-    const tatCa = [...QUAN_TRI_VIEN, ...KHACH_HANG, ...KY_THUAT_VIEN].filter((taiKhoan) => !taiKhoan.biKhoa);
-    for (const taiKhoan of tatCa) {
+    for (const taiKhoan of cacTaiKhoan.filter((tk) => !tk.biKhoa)) {
       const res = await request(app).post('/api/auth/login').send({ email: taiKhoan.email, password: MAT_KHAU_DEMO });
       assert.equal(res.status, 200, taiKhoan.email);
     }
-    const theoVaiTro = await lay('SELECT role, count(*)::int AS so FROM users GROUP BY role ORDER BY role');
-    assert.deepEqual(theoVaiTro, [
-      { role: 'ADMIN', so: QUAN_TRI_VIEN.length },
-      { role: 'CUSTOMER', so: KHACH_HANG.length },
-      { role: 'TECHNICIAN', so: KY_THUAT_VIEN.length },
+    const soTheoVaiTro = await lay('SELECT role, count(*)::int AS so FROM users GROUP BY role ORDER BY role');
+    assert.deepEqual(soTheoVaiTro, [
+      { role: 'ADMIN', so: theoVaiTro('ADMIN').length },
+      { role: 'CUSTOMER', so: theoVaiTro('CUSTOMER').length },
+      { role: 'TECHNICIAN', so: theoVaiTro('TECHNICIAN').length },
     ]);
-    assert.equal(ketQuaSeed.soTaiKhoan, QUAN_TRI_VIEN.length + KHACH_HANG.length + KY_THUAT_VIEN.length);
+    assert.equal(ketQuaSeed.soTaiKhoan, cacTaiKhoan.length);
   });
 
   it('tài khoản bị khóa không đăng nhập được (BR02)', async () => {
-    const taiKhoanBiKhoa = KY_THUAT_VIEN.find((taiKhoan) => taiKhoan.biKhoa);
+    const taiKhoanBiKhoa = cacTaiKhoan.find((taiKhoan) => taiKhoan.biKhoa);
     const res = await request(app).post('/api/auth/login').send({ email: taiKhoanBiKhoa.email, password: MAT_KHAU_DEMO });
     assert.equal(res.status, 403);
     assert.equal(res.body.code, 'ACCOUNT_LOCKED');

@@ -38,8 +38,9 @@ Mật khẩu chung: `Demo@123` (chỉ dành cho môi trường phát triển).
 
 ## Cách hoạt động
 
-- Dữ liệu viết trong các file `tai-khoan.js`, `tin-sua-chua.js`, `de-xuat.js`, `danh-gia.js`. Sửa các file này để đổi dữ liệu mẫu.
-- `chay-seed.js` tạo dữ liệu bằng đúng các service của ứng dụng (đăng ký, đăng tin, gửi đề xuất, chấp nhận, xác nhận hoàn thành, đánh giá, khóa tài khoản), không chèn SQL trực tiếp. Nhờ đó các quy tắc nghiệp vụ BR01 đến BR16 được áp dụng như khi dùng thật: đề xuất khác tự bị từ chối khi chọn kỹ thuật viên, kỹ thuật viên được chọn nhận thông báo, điểm trung bình được tính lại.
+- Dữ liệu viết tay nằm trong `thu-cong/` (`tai-khoan.js`, `tin-sua-chua.js`, `de-xuat.js`, `danh-gia.js`). Sửa các file này để đổi dữ liệu mẫu. Mã tài khoản, tin, đề xuất theo đúng thứ tự trong mảng, các tài liệu dẫn tới những mã đó nên chỉ thêm mục mới ở cuối mảng.
+- Mọi nguồn dữ liệu cùng trả về một "kế hoạch" (tài khoản, tin, đề xuất, đánh giá). `ke-hoach.js` kiểm tra kế hoạch bằng chính các validator của API trước khi ghi gì vào CSDL; `thuc-thi.js` thực thi kế hoạch; `chay-seed.js` là lệnh chạy.
+- `thuc-thi.js` tạo dữ liệu bằng đúng các service của ứng dụng (đăng tin, sửa tin, gửi đề xuất, rút, chấp nhận, xác nhận hoàn thành, đánh giá, khóa tài khoản), không chèn SQL trực tiếp, trừ việc lùi ngày tạo về quá khứ khi kế hoạch có `taoLuc`. Nhờ đó các quy tắc nghiệp vụ BR01 đến BR16 được áp dụng như khi dùng thật: đề xuất khác tự bị từ chối khi chọn kỹ thuật viên, kỹ thuật viên được chọn nhận thông báo, điểm trung bình được tính lại.
 - Thời gian mong muốn của tin tính theo lúc chạy seed, nên tin chưa hoàn thành luôn nằm trong tương lai.
 - `npm test` có `tests/seed.test.js` chạy seed trên CSDL test và kiểm tra các quy tắc nghiệp vụ trên dữ liệu tạo ra.
 - Seed không nằm trong một transaction. Nếu bị lỗi giữa chừng, chạy `npm run seed:reset`.
