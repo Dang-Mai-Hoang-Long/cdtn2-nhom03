@@ -2,6 +2,7 @@ const { chayTrongGiaoDich, truyVan } = require('../db');
 const khoDanhGia = require('../repositories/review.repository');
 const khoNguoiDung = require('../repositories/user.repository');
 const dichVuYeuCau = require('./request.service');
+const dichVuThongBao = require('./notification.service');
 const { LoiUngDung } = require('../utils/error-handler');
 const { TRANG_THAI_YEU_CAU } = require('../utils/constants');
 
@@ -39,6 +40,8 @@ function taoDanhGia(nguoiDung, { requestId, rating, comment }) {
       { client },
     );
     await khoDanhGia.capNhatDiemTrungBinh(nguoiDuocDanhGiaId, { client });
+    // US20: báo cho bên được đánh giá trong cùng transaction.
+    await dichVuThongBao.thongBaoCoDanhGiaMoi(danhGia, yeuCau, nguoiDung, { client });
     return danhGia;
   });
 }

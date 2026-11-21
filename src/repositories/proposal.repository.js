@@ -61,12 +61,22 @@ async function capNhatTrangThai(id, status, { client } = {}) {
 }
 
 // BR10: các đề xuất còn chờ khác của cùng tin bị từ chối khi một đề xuất được chấp nhận.
+// Trả về đúng các đề xuất vừa chuyển từ PENDING sang REJECTED (đề xuất đã rút không bị đụng tới) để báo cho kỹ thuật viên.
 async function tuChoiCacDeXuatConLai(requestId, idDuocChon, { client } = {}) {
   const thucThi = client ?? { query: truyVan };
-  await thucThi.query(
-    `UPDATE proposal SET status = 'REJECTED' WHERE request_id = $1 AND id <> $2 AND status = 'PENDING'`,
+  const { rows } = await thucThi.query(
+    `UPDATE proposal SET status = 'REJECTED' WHERE request_id = $1 AND id <> $2 AND status = 'PENDING'
+     RETURNING id, technician_id`,
     [requestId, idDuocChon],
   );
+  return rows.map((dong) => ({ id: dong.id, technicianId: dong.technician_id }));
+}
+
+// Mã kỹ thuật viên của một đề xuất, chạy trong cùng transaction (dùng khi báo cho kỹ thuật viên được chọn).
+async function timMaKyThuatVien(id, { client } = {}) {
+  const thucThi = client ?? { query: truyVan };
+  const { rows } = await thucThi.query('SELECT technician_id FROM proposal WHERE id = $1', [id]);
+  return rows[0]?.technician_id ?? null;
 }
 
 // Chi tiết đề xuất kèm thông tin kỹ thuật viên và tóm tắt tin (US15).
@@ -140,4 +150,5 @@ module.exports = {
   capNhatTrangThai,
   capNhatThongTin,
   tuChoiCacDeXuatConLai,
+  timMaKyThuatVien,
 };

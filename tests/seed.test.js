@@ -120,8 +120,18 @@ describe('Seed - quy tắc nghiệp vụ của dữ liệu mẫu', () => {
       const thongBao = await lay(`SELECT id FROM notification WHERE user_id = $1 AND related_id = $2 AND type = 'PROPOSAL_ACCEPTED'`, [deXuat.technician_id, deXuat.id]);
       assert.equal(thongBao.length, 1, `đề xuất ${deXuat.id}`);
     }
-    const tongThongBao = await lay('SELECT count(*)::int AS so FROM notification');
-    assert.equal(tongThongBao[0].so, chapNhan.length);
+    const tongChapNhan = await lay(`SELECT count(*)::int AS so FROM notification WHERE type = 'PROPOSAL_ACCEPTED'`);
+    assert.equal(tongChapNhan[0].so, chapNhan.length);
+  });
+
+  it('số thông báo theo từng loại khớp đúng số sự kiện: đề xuất mới, bị từ chối, hoàn thành, đánh giá (US20)', async () => {
+    const theoLoai = Object.fromEntries((await lay('SELECT type, count(*)::int AS so FROM notification GROUP BY type')).map((dong) => [dong.type, dong.so]));
+    const dem = async (cauLenh) => (await lay(cauLenh))[0].so;
+    assert.equal(theoLoai.NEW_PROPOSAL, tatCaDeXuat.length, 'mỗi đề xuất gửi đi (kể cả đã rút, gửi lại) báo cho chủ tin');
+    assert.equal(theoLoai.PROPOSAL_REJECTED, await dem(`SELECT count(*)::int AS so FROM proposal WHERE status = 'REJECTED'`));
+    assert.equal(theoLoai.REQUEST_COMPLETED, await dem(`SELECT count(*)::int AS so FROM repair_request WHERE status = 'COMPLETED'`));
+    assert.equal(theoLoai.REVIEW_RECEIVED, await dem('SELECT count(*)::int AS so FROM review'));
+    assert.equal(Object.keys(theoLoai).length, 5);
   });
 });
 
@@ -136,7 +146,8 @@ describe('Seed - mã ổn định của dữ liệu cũ (bug-log, api-contract d
     assert.deepEqual(deXuat.map((dong) => dong.status), ['PENDING', 'PENDING', 'WITHDRAWN', 'ACCEPTED', 'REJECTED', 'ACCEPTED', 'REJECTED', 'ACCEPTED', 'PENDING']);
     const danhGia = await lay('SELECT request_id FROM review WHERE id <= 3 ORDER BY id');
     assert.deepEqual(danhGia.map((dong) => dong.request_id), [4, 4, 5]);
-    const thongBao = await lay('SELECT user_id, related_id, is_read FROM notification WHERE id <= 3 ORDER BY id');
+    // Từ khi có thông báo đề xuất mới, mã của các thông báo đầu thay đổi; giữ ổn định thông báo "được chấp nhận" theo thứ tự chấp nhận.
+    const thongBao = await lay(`SELECT user_id, related_id, is_read FROM notification WHERE type = 'PROPOSAL_ACCEPTED' ORDER BY id LIMIT 3`);
     assert.deepEqual(thongBao, [{ user_id: 4, related_id: 4, is_read: false }, { user_id: 5, related_id: 6, is_read: false }, { user_id: 4, related_id: 8, is_read: true }]);
   });
 });
