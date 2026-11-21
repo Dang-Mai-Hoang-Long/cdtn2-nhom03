@@ -1,32 +1,18 @@
-// Tạo dữ liệu mẫu và tài khoản demo cho môi trường phát triển.
-// Đi qua tầng service như khi dùng ứng dụng nên mọi quy tắc nghiệp vụ (BR01-BR16) đều được áp dụng:
-// trạng thái tin, đề xuất khác bị từ chối khi chọn kỹ thuật viên, thông báo cho kỹ thuật viên, điểm trung bình.
-// Cách dùng: npm run seed        dừng nếu đã có tài khoản demo
-//            npm run seed:reset  xóa TOÀN BỘ dữ liệu ứng dụng rồi tạo lại
-const bcrypt = require('bcryptjs');
+// Tạo dữ liệu mẫu và tài khoản demo cho môi trường phát triển: phần viết tay (thu-cong/, 50 tin) và phần sinh tự động
+// (tu-dong/, mặc định 1000 tin). Bộ thực thi (thuc-thi.js) tạo qua service nên mọi quy tắc nghiệp vụ được áp dụng.
+// Cách dùng: npm run seed                  dừng nếu đã có tài khoản demo
+//            npm run seed:reset            xóa TOÀN BỘ dữ liệu ứng dụng rồi tạo lại
+//            npm run seed:thu-cong         chỉ phần viết tay (nhanh, vài giây)
+//            npm run seed -- --so-tin=300  đổi số tin tự động; --hat-giong=N đổi hạt giống (cùng hạt giống thì cùng dữ liệu)
 const { truyVan, dongKetNoi } = require('../src/db');
-const khoNguoiDung = require('../src/repositories/user.repository');
-const dichVuXacThuc = require('../src/services/auth.service');
-const dichVuYeuCau = require('../src/services/request.service');
-const dichVuDeXuat = require('../src/services/proposal.service');
-const dichVuDanhGia = require('../src/services/review.service');
-const dichVuThongBao = require('../src/services/notification.service');
-const dichVuQuanTri = require('../src/services/admin.service');
-const { VAI_TRO } = require('../src/utils/constants');
-const { MAT_KHAU_DEMO, QUAN_TRI_VIEN, KHACH_HANG, KY_THUAT_VIEN } = require('./tai-khoan');
-const cacTin = require('./tin-sua-chua');
-const cacDeXuat = require('./de-xuat');
-const cacDanhGia = require('./danh-gia');
+const thuCong = require('./thu-cong');
+const { sinhKeHoach, SO_TIN_MAC_DINH, HAT_GIONG_MAC_DINH } = require('./tu-dong');
+const { gopKeHoach } = require('./ke-hoach');
+const { thucThiKeHoach } = require('./thuc-thi');
+const { MAT_KHAU_DEMO } = require('./hang-so');
 
 const CAC_BANG_UNG_DUNG = 'users, repair_request, proposal, review, notification';
-const MOT_NGAY_MS = 24 * 60 * 60 * 1000;
-const SO_VONG_BAM_MAT_KHAU = 10;
-
-function layMaDeXuat(cacMaDeXuat, khoaTin, khoaKyThuatVien) {
-  const ma = cacMaDeXuat[`${khoaTin}:${khoaKyThuatVien}`];
-  if (!ma) throw new Error(`Dữ liệu mẫu sai: tin "${khoaTin}" tham chiếu kỹ thuật viên "${khoaKyThuatVien}" chưa có đề xuất`);
-  return ma;
-}
+const NHAN_VAI_TRO = { ADMIN: 'Quản trị viên', CUSTOMER: 'Khách hàng', TECHNICIAN: 'Kỹ thuật viên' };
 
 function kiemTraMoiTruong() {
   if (process.env.NODE_ENV === 'production') {
@@ -38,138 +24,55 @@ function kiemTraMoiTruong() {
 }
 
 async function daCoTaiKhoanDemo() {
-  const cacEmail = [...QUAN_TRI_VIEN, ...KHACH_HANG, ...KY_THUAT_VIEN].map((taiKhoan) => taiKhoan.email);
+  const cacEmail = thuCong.taiKhoan.map((taiKhoan) => taiKhoan.email);
   const { rows } = await truyVan('SELECT count(*)::int AS so FROM users WHERE email = ANY($1)', [cacEmail]);
   return rows[0].so > 0;
 }
 
-// Trả về { khoa: { id, role } } để các bước sau gọi service với đúng người dùng.
-async function taoTaiKhoan() {
-  const nguoiDung = {};
-  for (const taiKhoan of QUAN_TRI_VIEN) {
-    const daTao = await khoNguoiDung.tao({
-      email: taiKhoan.email,
-      passwordHash: await bcrypt.hash(MAT_KHAU_DEMO, SO_VONG_BAM_MAT_KHAU),
-      fullName: taiKhoan.fullName,
-      phone: taiKhoan.phone,
-      role: VAI_TRO.QUAN_TRI_VIEN,
-    });
-    nguoiDung[taiKhoan.khoa] = { id: daTao.id, role: daTao.role };
-  }
-  const cacNhom = [[KHACH_HANG, VAI_TRO.KHACH_HANG], [KY_THUAT_VIEN, VAI_TRO.KY_THUAT_VIEN]];
-  for (const [danhSach, role] of cacNhom) {
-    for (const taiKhoan of danhSach) {
-      const daTao = await dichVuXacThuc.dangKy({ email: taiKhoan.email, password: MAT_KHAU_DEMO, fullName: taiKhoan.fullName, phone: taiKhoan.phone, role });
-      nguoiDung[taiKhoan.khoa] = { id: daTao.id, role };
-    }
-  }
-  return nguoiDung;
-}
-
-async function taoCacTin(nguoiDung) {
-  const cacMaTin = {};
-  for (const mau of cacTin) {
-    const thoiGianMongMuon = new Date(Date.now() + mau.soNgayToi * MOT_NGAY_MS);
-    thoiGianMongMuon.setHours(mau.gioMongMuon, 0, 0, 0);
-    const daTao = await dichVuYeuCau.taoYeuCau(nguoiDung[mau.khachHang], {
-      title: mau.title,
-      description: mau.description,
-      category: mau.category,
-      location: mau.location,
-      preferredTime: thoiGianMongMuon.toISOString(),
-    });
-    cacMaTin[mau.khoa] = daTao.id;
-  }
-  return cacMaTin;
-}
-
-// Khóa của kết quả: "<khóa tin>:<khóa kỹ thuật viên>" -> mã đề xuất.
-async function guiCacDeXuat(nguoiDung, cacMaTin) {
-  const cacMaDeXuat = {};
-  for (const mau of cacDeXuat) {
-    const kyThuatVien = nguoiDung[mau.ktv];
-    const daGui = await dichVuDeXuat.guiDeXuat(kyThuatVien, {
-      requestId: cacMaTin[mau.tin],
-      price: mau.price,
-      description: mau.description,
-      estimatedDuration: mau.estimatedDuration,
-    });
-    cacMaDeXuat[`${mau.tin}:${mau.ktv}`] = daGui.id;
-    if (mau.rut) await dichVuDeXuat.rutDeXuat(kyThuatVien, daGui.id);
-  }
-  return cacMaDeXuat;
-}
-
-// Đưa từng tin tới trạng thái cuối bằng đúng các thao tác của khách hàng.
-async function hoanTatCacTin(nguoiDung, cacMaTin, cacMaDeXuat) {
-  for (const mau of cacTin) {
-    const khachHang = nguoiDung[mau.khachHang];
-    const maTin = cacMaTin[mau.khoa];
-    if (mau.ketQua === 'DA_DONG') await dichVuYeuCau.dongYeuCau(khachHang, maTin);
-    if (mau.ketQua === 'DA_CHON' || mau.ketQua === 'HOAN_THANH') {
-      await dichVuDeXuat.chapNhanDeXuat(khachHang, layMaDeXuat(cacMaDeXuat, mau.khoa, mau.ktvDuocChon));
-    }
-    if (mau.ketQua === 'HOAN_THANH') await dichVuYeuCau.xacNhanHoanThanh(khachHang, maTin);
-  }
-}
-
-async function guiCacDanhGia(nguoiDung, cacMaTin) {
-  for (const mau of cacDanhGia) {
-    await dichVuDanhGia.taoDanhGia(nguoiDung[mau.nguoiGui], { requestId: cacMaTin[mau.tin], rating: mau.rating, comment: mau.comment });
-  }
-}
-
-async function danhDauThongBaoDaDoc(nguoiDung, cacMaDeXuat) {
-  for (const mau of cacDeXuat.filter((deXuat) => deXuat.daDocThongBao)) {
-    const { rows } = await truyVan('SELECT id FROM notification WHERE user_id = $1 AND related_id = $2', [nguoiDung[mau.ktv].id, cacMaDeXuat[`${mau.tin}:${mau.ktv}`]]);
-    for (const dong of rows) await dichVuThongBao.danhDauDaDoc(nguoiDung[mau.ktv], dong.id);
-  }
-}
-
-async function khoaCacTaiKhoanDemo(nguoiDung) {
-  for (const taiKhoan of [...KHACH_HANG, ...KY_THUAT_VIEN].filter((tk) => tk.biKhoa)) {
-    await dichVuQuanTri.datTrangThaiKhoa(nguoiDung[taiKhoan.khoa].id, true);
-  }
-}
-
-async function chayDuLieuMau({ datLai = false } = {}) {
+// soTinTuDong = 0 chỉ tạo phần viết tay. Cùng soTinTuDong, hatGiong và bayGio thì dữ liệu tự động giống hệt nhau.
+async function chayDuLieuMau({ datLai = false, soTinTuDong = SO_TIN_MAC_DINH, hatGiong = HAT_GIONG_MAC_DINH, bayGio = new Date(), tienDo } = {}) {
   kiemTraMoiTruong();
+  const keHoach = gopKeHoach(thuCong, sinhKeHoach({ soTin: soTinTuDong, hatGiong, bayGio }));
   if (datLai) {
     await truyVan(`TRUNCATE ${CAC_BANG_UNG_DUNG} RESTART IDENTITY CASCADE`);
   } else if (await daCoTaiKhoanDemo()) {
     throw new Error('Đã có tài khoản demo trong CSDL. Chạy "npm run seed:reset" để xóa toàn bộ dữ liệu và tạo lại.');
   }
-
-  const nguoiDung = await taoTaiKhoan();
-  const cacMaTin = await taoCacTin(nguoiDung);
-  const cacMaDeXuat = await guiCacDeXuat(nguoiDung, cacMaTin);
-  await hoanTatCacTin(nguoiDung, cacMaTin, cacMaDeXuat);
-  await guiCacDanhGia(nguoiDung, cacMaTin);
-  await danhDauThongBaoDaDoc(nguoiDung, cacMaDeXuat);
-  await khoaCacTaiKhoanDemo(nguoiDung);
-
-  return {
-    soTaiKhoan: Object.keys(nguoiDung).length,
-    soTin: Object.keys(cacMaTin).length,
-    soDeXuat: Object.keys(cacMaDeXuat).length,
-    soDanhGia: cacDanhGia.length,
-  };
+  const ketQua = await thucThiKeHoach(keHoach, { bayGio, tienDo });
+  return { ...ketQua, soTinThuCong: thuCong.tin.length, soTinTuDong: keHoach.tin.length - thuCong.tin.length };
 }
 
-function inKetQua(ketQua) {
-  console.log(`Đã tạo ${ketQua.soTaiKhoan} tài khoản, ${ketQua.soTin} tin, ${ketQua.soDeXuat} đề xuất, ${ketQua.soDanhGia} đánh giá.`);
-  console.log(`\nTài khoản demo (mật khẩu chung: ${MAT_KHAU_DEMO})`);
-  const cacNhom = [['Quản trị viên', QUAN_TRI_VIEN], ['Khách hàng', KHACH_HANG], ['Kỹ thuật viên', KY_THUAT_VIEN]];
-  for (const [nhan, danhSach] of cacNhom) {
-    for (const taiKhoan of danhSach) {
-      console.log(`  ${nhan.padEnd(14)} ${taiKhoan.email.padEnd(18)} ${taiKhoan.fullName}${taiKhoan.biKhoa ? ' (bị khóa)' : ''}`);
-    }
+function docSoTuThamSo(cacThamSo, ten) {
+  const muc = cacThamSo.find((thamSo) => thamSo.startsWith(`--${ten}=`));
+  return muc === undefined ? undefined : Number(muc.slice(ten.length + 3));
+}
+
+function docTuyChon(cacThamSo) {
+  const tuyChon = { datLai: cacThamSo.includes('--reset') };
+  if (cacThamSo.includes('--chi-thu-cong')) tuyChon.soTinTuDong = 0;
+  const soTin = docSoTuThamSo(cacThamSo, 'so-tin');
+  if (soTin !== undefined) tuyChon.soTinTuDong = soTin;
+  const hatGiong = docSoTuThamSo(cacThamSo, 'hat-giong');
+  if (hatGiong !== undefined) tuyChon.hatGiong = hatGiong;
+  return tuyChon;
+}
+
+function inKetQua(ketQua, thoiGianGiay) {
+  console.log(`Đã tạo ${ketQua.soTaiKhoan} tài khoản, ${ketQua.soTin} tin (${ketQua.soTinThuCong} viết tay + ${ketQua.soTinTuDong} tự động), ${ketQua.soDeXuat} đề xuất, ${ketQua.soDanhGia} đánh giá trong ${thoiGianGiay} giây.`);
+  console.log(`\nTài khoản demo viết tay (mật khẩu chung: ${MAT_KHAU_DEMO})`);
+  for (const taiKhoan of thuCong.taiKhoan) {
+    console.log(`  ${NHAN_VAI_TRO[taiKhoan.role].padEnd(14)} ${taiKhoan.email.padEnd(22)} ${taiKhoan.fullName}${taiKhoan.biKhoa ? ' (bị khóa)' : ''}`);
+  }
+  if (ketQua.soTinTuDong > 0) {
+    console.log(`\nTài khoản tự động: auto.kh001@demo.vn (khách hàng), auto.ktv001@demo.vn (kỹ thuật viên), ... cùng mật khẩu ${MAT_KHAU_DEMO}.`);
   }
 }
 
 if (require.main === module) {
-  chayDuLieuMau({ datLai: process.argv.includes('--reset') })
-    .then(inKetQua)
+  const batDau = Date.now();
+  const tienDo = (buoc, daXong, tong) => console.log(`  ${buoc}: ${daXong}/${tong}`);
+  chayDuLieuMau({ ...docTuyChon(process.argv.slice(2)), tienDo })
+    .then((ketQua) => inKetQua(ketQua, Math.round((Date.now() - batDau) / 1000)))
     .catch((loi) => {
       console.error(loi.message);
       process.exitCode = 1;

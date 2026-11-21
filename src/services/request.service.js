@@ -1,6 +1,8 @@
 const { chayTrongGiaoDich, truyVan } = require('../db');
 const khoYeuCau = require('../repositories/request.repository');
 const khoNguoiDung = require('../repositories/user.repository');
+const khoDeXuat = require('../repositories/proposal.repository');
+const dichVuThongBao = require('./notification.service');
 const { LoiUngDung } = require('../utils/error-handler');
 const { docMaSo } = require('../utils/ma-so');
 const { VAI_TRO, TRANG_THAI_YEU_CAU } = require('../utils/constants');
@@ -94,7 +96,12 @@ function xacNhanHoanThanh(nguoiDung, id) {
     if (yeuCau.status !== TRANG_THAI_YEU_CAU.DA_CHON_KY_THUAT_VIEN) {
       throw new LoiUngDung(400, 'INVALID_STATUS_TRANSITION', 'Chỉ xác nhận hoàn thành được khi tin đã chọn kỹ thuật viên');
     }
-    return khoYeuCau.capNhatTrangThai(yeuCau.id, TRANG_THAI_YEU_CAU.HOAN_THANH, { client });
+    const yeuCauHoanThanh = await khoYeuCau.capNhatTrangThai(yeuCau.id, TRANG_THAI_YEU_CAU.HOAN_THANH, { client });
+    // US20: báo cho kỹ thuật viên được chọn trong cùng transaction. Tra bằng client để không chạy ngoài transaction.
+    // Qua API, tin Đã chọn luôn có đề xuất được chọn; nếu dữ liệu thiếu thì không có ai để báo, việc xác nhận vẫn thành công.
+    const maKyThuatVien = yeuCau.selectedProposalId ? await khoDeXuat.timMaKyThuatVien(yeuCau.selectedProposalId, { client }) : null;
+    if (maKyThuatVien) await dichVuThongBao.thongBaoDaHoanThanh(yeuCau, maKyThuatVien, { client });
+    return yeuCauHoanThanh;
   });
 }
 

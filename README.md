@@ -65,7 +65,7 @@ Ngoài phạm vi:
    npm run migrate
    ```
 
-   Muốn có sẵn dữ liệu mẫu và tài khoản demo (mật khẩu `Demo@123`), chạy thêm `npm run seed`. Chi tiết ở `seeds/README.md`.
+   Muốn có sẵn dữ liệu mẫu và tài khoản demo (mật khẩu `Demo@123`), chạy thêm `npm run seed` (50 tin viết tay và 1000 tin tự động; `npm run seed:thu-cong` nếu chỉ cần phần viết tay). Chi tiết ở `seeds/README.md`.
 
 5. Chạy backend (cổng 3000) và frontend (cổng 5173) cùng lúc bằng một lệnh:
 
@@ -92,7 +92,7 @@ src/                    Backend Express (kiến trúc phân lớp)
   utils/                Hằng số, response chuẩn, xử lý lỗi
   db.js, migrate.js     Kết nối PostgreSQL và chạy migration
 migrations/             File SQL thuần, chạy theo thứ tự tên
-seeds/                  Dữ liệu mẫu và tài khoản demo (npm run seed)
+seeds/                  Dữ liệu mẫu và tài khoản demo: 50 tin viết tay + 1000 tin tự động (npm run seed)
 Dockerfile, docker-compose.yml, docker/   Chạy bằng Docker (CSDL + backend + giao diện)
 tests/                  Kiểm thử API (node:test + supertest)
 frontend/src/
@@ -100,7 +100,7 @@ frontend/src/
   pages/                Màn hình theo vai trò (customer, technician, admin, shared)
   components/           Thành phần dùng chung
   navigation/, routes/  Định tuyến hash và chặn trang theo vai trò
-docs/                   SRS, backlog, API contract, ERD, kiến trúc, quy ước đặt tên
+docs/                   SRS, backlog, API contract, ERD, kiến trúc, quy ước đặt tên, thay-doi-thiet-ke.md (mọi chỗ khác thiết kế ban đầu)
 ```
 
 ## 5. Kiểm thử

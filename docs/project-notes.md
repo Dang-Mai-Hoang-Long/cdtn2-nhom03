@@ -31,3 +31,11 @@
 - BUG-03: mã vượt 2147483647 trả `404` như mã không tồn tại; hàm `docMaSo` nằm ở `src/utils/ma-so.js`. Bug-log liệt kê 10 endpoint nhưng thực tế 15 endpoint bị lỗi, đều đã sửa và có test. Mã dạng hex hoặc thập phân (OBS-04) vẫn được `Number()` chấp nhận.
 - BUG-04: `page` được kẹp tối đa 1.000.000; `page` lớn hơn trả `200` với danh sách rỗng và `meta.page` là mức tối đa.
 - BUG-05: thân yêu cầu lớn hơn 100 KB trả `400 VALIDATION_ERROR` thay vì `413` để không phải thêm mã mới vào API contract.
+
+## Quyết định sau Sprint 4 (2026-11-21)
+
+Toàn bộ chỗ mã khác thiết kế ban đầu (kèm lý do và commit) được tổng hợp ở [thay-doi-thiet-ke.md](thay-doi-thiet-ke.md). Riêng vòng này:
+
+- API contract được viết lại theo mã nguồn (22 mã lỗi, 28 endpoint đối chiếu máy móc); mục 2.6 nay ghi `page` bắt đầu từ 1, nên ghi chú "Phân trang bắt đầu từ `page=1`" ở Sprint 2 không còn lệch tài liệu.
+- Dữ liệu mẫu gồm 50 tin viết tay và 1000 tin tự động (xem `seeds/README.md`). Mọi nguồn trả về một "kế hoạch" được kiểm tra bằng validator của API trước khi ghi.
+- Thông báo (US20, BR16) mở rộng thành năm loại: đề xuất mới, được chấp nhận, bị từ chối, hoàn thành, đánh giá. `relatedId` là mã đề xuất hoặc mã tin tùy loại; không tạo thông báo cho rút, sửa, đóng tin. Giao diện đánh dấu thông báo chưa đọc bằng chấm xanh.

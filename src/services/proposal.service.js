@@ -19,8 +19,9 @@ function guiDeXuat(nguoiDung, duLieu) {
     }
     if (await khoDeXuat.coDeXuatDangHieuLuc(yeuCau.id, nguoiDung.id, { client })) throw baoLoiDaGuiDeXuat();
 
+    let deXuat;
     try {
-      return await khoDeXuat.tao(
+      deXuat = await khoDeXuat.tao(
         {
           requestId: yeuCau.id,
           technicianId: nguoiDung.id,
@@ -34,6 +35,9 @@ function guiDeXuat(nguoiDung, duLieu) {
       if (loi.code === '23505') throw baoLoiDaGuiDeXuat();
       throw loi;
     }
+    // US20: báo cho khách hàng chủ tin trong cùng transaction.
+    await dichVuThongBao.thongBaoCoDeXuatMoi(deXuat, yeuCau, nguoiDung, { client });
+    return deXuat;
   });
 }
 
@@ -67,9 +71,10 @@ function chapNhanDeXuat(nguoiDung, id) {
     }
 
     const deXuatDuocChon = await khoDeXuat.capNhatTrangThai(deXuat.id, TRANG_THAI_DE_XUAT.DA_CHAP_NHAN, { client });
-    await khoDeXuat.tuChoiCacDeXuatConLai(yeuCau.id, deXuat.id, { client });
+    const cacDeXuatBiTuChoi = await khoDeXuat.tuChoiCacDeXuatConLai(yeuCau.id, deXuat.id, { client });
     await khoYeuCau.capNhatTrangThai(yeuCau.id, TRANG_THAI_YEU_CAU.DA_CHON_KY_THUAT_VIEN, { client, selectedProposalId: deXuat.id });
     await dichVuThongBao.thongBaoDeXuatDuocChapNhan(deXuatDuocChon, yeuCau, { client });
+    await dichVuThongBao.thongBaoDeXuatBiTuChoi(cacDeXuatBiTuChoi, yeuCau, { client });
     return deXuatDuocChon;
   });
 }

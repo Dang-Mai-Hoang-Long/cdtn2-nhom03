@@ -181,7 +181,8 @@ a {
   display: grid;
 }
 .muc-thong-bao {
-  padding: 15px 19px 16px;
+  position: relative;
+  padding: 15px 19px 16px 40px;
   display: grid;
   gap: 6px;
   border-bottom: 1px solid #ededed;
@@ -908,10 +909,29 @@ button.muc-thong-bao {
   text-align: left;
   cursor: pointer;
 }
-.muc-thong-bao.chua-doc {
-  background: #f3f3f3;
+/* Thông báo chưa đọc: chấm tròn xanh dương bên trái dòng, biến mất sau khi người dùng bấm vào xem. */
+.cham-chua-doc {
+  position: absolute;
+  top: 20px;
+  left: 18px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #1a6fe0;
+}
+.chi-cho-trinh-doc {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 p.muc-thong-bao {
   margin: 0;
+  padding-left: 19px;
   color: #6b6b6b;
 }
