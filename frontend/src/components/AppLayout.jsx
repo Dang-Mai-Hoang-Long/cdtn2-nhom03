@@ -42,7 +42,7 @@ export function KhungUngDung({ manHinh, phien, children }) {
         <LienKetDieuHuong nhan="Đăng ký" mucHienTai={maManHinh === '02' ? 'Đăng ký' : ''} />
       </nav>}
       {phien && <div className="thao-tac-dau-trang">
-        <ChuongThongBao vaiTro={NHAN_VAI_TRO[phien.user.role]} />
+        <ChuongThongBao vaiTro={NHAN_VAI_TRO[phien.user.role]} maVaiTro={phien.user.role} />
         <div className="the-tai-khoan">
           <strong>{phien.user.fullName}</strong>
           <span>{NHAN_VAI_TRO[phien.user.role]}</span>
