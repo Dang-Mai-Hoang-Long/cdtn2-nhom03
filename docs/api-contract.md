@@ -1,6 +1,6 @@
 ## **API Contract**
 
-> Bản này **khớp mã nguồn hiện tại** (cập nhật 2026-11-21). Ví dụ thành công lấy từ phản hồi thật của backend chạy trên dữ liệu mẫu trong `seeds/` (rút bớt phần tử cho gọn, token cắt ngắn). Ví dụ lỗi ở mục 2.5.4, 2.5.6 và 2.5.7 dùng đúng thông điệp và mã lỗi của mã nguồn nhưng thời điểm và mã tin chỉ để minh họa. Các điểm khác bản thiết kế ban đầu được liệt kê ở mục 2.7 và đầy đủ ở [thay-doi-thiet-ke.md](thay-doi-thiet-ke.md).
+> Bản này **khớp mã nguồn hiện tại** (cập nhật 2026-11-21). Ví dụ thành công lấy từ phản hồi thật của backend sau `npm run seed:thu-cong` (17 tài khoản, 50 tin viết tay; rút bớt phần tử cho gọn, token cắt ngắn). Mã của tài khoản, tin, đề xuất đầu và mọi tên, giá trị trong ví dụ khớp dữ liệu đó; mã của bản ghi mới tạo (ví dụ tin 51, đề xuất 79), điểm trung bình và số lượng sẽ lớn hơn nếu chạy `npm run seed` (thêm 1000 tin tự động). Ví dụ lỗi ở mục 2.5.4, 2.5.6 và 2.5.7 dùng đúng thông điệp và mã lỗi của mã nguồn nhưng thời điểm và mã tin chỉ để minh họa. Các điểm khác bản thiết kế ban đầu được liệt kê ở mục 2.7 và đầy đủ ở [thay-doi-thiet-ke.md](thay-doi-thiet-ke.md).
 
 Mọi API nằm dưới tiền tố `/api`. Giá trị thời gian là chuỗi ISO 8601 UTC (ví dụ `2026-11-05T09:00:00.000Z`). Tên trường JSON dùng camelCase.
 
@@ -141,7 +141,7 @@ Response 201 (đăng ký xong nhận luôn token, giao diện vẫn chuyển ng�
 {
   "success": true,
   "data": {
-    "id": 8,
+    "id": 18,
     "email": "mau@example.com",
     "fullName": "Mẫu",
     "phone": "0912345678",
@@ -168,7 +168,7 @@ Response 200:
       "phone": "0901000001",
       "role": "CUSTOMER",
       "isLocked": false,
-      "ratingAvg": null
+      "ratingAvg": 4.5
     }
   },
   "message": "Đăng nhập thành công"
@@ -191,8 +191,8 @@ Sai email hoặc mật khẩu trả cùng một thông báo `401 UNAUTHORIZED`. 
     "phone": "0901000001",
     "role": "CUSTOMER",
     "isLocked": false,
-    "ratingAvg": null,
-    "createdAt": "2026-11-21T00:20:51.301Z"
+    "ratingAvg": 4.5,
+    "createdAt": "2026-11-21T01:35:28.139Z"
   },
   "message": "Thành công"
 }
@@ -228,7 +228,7 @@ Response 201:
 {
   "success": true,
   "data": {
-    "id": 8,
+    "id": 51,
     "customerId": 2,
     "title": "Tin mẫu",
     "description": "Mô tả",
@@ -327,7 +327,7 @@ Response 201:
 {
   "success": true,
   "data": {
-    "id": 10,
+    "id": 79,
     "requestId": 7,
     "technicianId": 4,
     "price": 300000,
@@ -347,7 +347,7 @@ Response 201:
   "id": 1, "requestId": 1, "technicianId": 4, "price": 450000,
   "description": "Kiểm tra, nạp gas R32 và vệ sinh dàn lạnh. Bảo hành 1 tháng.",
   "estimatedDuration": "2-3 giờ", "status": "PENDING", "createdAt": "2026-11-21T00:20:52.143Z",
-  "technician": { "id": 4, "fullName": "Trần Quốc Huy", "ratingAvg": 4 }
+  "technician": { "id": 4, "fullName": "Trần Quốc Huy", "ratingAvg": 4.7 }
 }
 ```
 
@@ -376,13 +376,13 @@ Response 201:
 {
   "success": true,
   "data": {
-    "id": 4,
+    "id": 26,
     "requestId": 3,
     "fromUserId": 2,
     "toUserId": 4,
     "rating": 5,
     "comment": "Tốt",
-    "createdAt": "2026-11-21T00:20:53.766Z"
+    "createdAt": "2026-11-21T01:35:29.277Z"
   },
   "message": "Đánh giá thành công"
 }
@@ -395,16 +395,22 @@ Response 201:
   "success": true,
   "data": [
     {
-      "id": 4, "requestId": 3, "fromUserId": 2, "toUserId": 4, "rating": 5, "comment": "Tốt",
-      "createdAt": "2026-11-21T00:20:53.766Z",
+      "id": 26, "requestId": 3, "fromUserId": 2, "toUserId": 4, "rating": 5, "comment": "Tốt",
+      "createdAt": "2026-11-21T01:35:29.277Z",
       "fromUser": { "id": 2, "fullName": "Nguyễn Minh Anh", "role": "CUSTOMER" },
       "requestTitle": "Rò rỉ ống nước dưới bồn rửa"
+    },
+    {
+      "id": 21, "requestId": 37, "fromUserId": 10, "toUserId": 4, "rating": 5, "comment": "Tìm đúng chỗ rò, không phải đục nhiều tường.",
+      "createdAt": "2026-11-21T01:35:28.555Z",
+      "fromUser": { "id": 10, "fullName": "Phạm Đình Quang", "role": "CUSTOMER" },
+      "requestTitle": "Rò nước xuống trần nhà tầng dưới"
     }
   ],
   "message": "Thành công",
   "meta": {
-    "page": 1, "size": 10, "totalElements": 2, "totalPages": 1,
-    "user": { "id": 4, "fullName": "Trần Quốc Huy", "role": "TECHNICIAN", "ratingAvg": 4.5 }
+    "page": 1, "size": 2, "totalElements": 4, "totalPages": 2,
+    "user": { "id": 4, "fullName": "Trần Quốc Huy", "role": "TECHNICIAN", "ratingAvg": 4.8 }
   }
 }
 ```
@@ -431,7 +437,7 @@ Mọi API trong nhóm này chỉ dành cho **QTV** (vai trò khác nhận `403 F
 Mỗi phần tử là người dùng `{ id, email, fullName, phone, role, isLocked, ratingAvg, createdAt }`. `meta` có thêm `summary: { active, locked }` tính trên **tập đã lọc** (không phải một trang):
 
 ```
-"meta": { "page": 1, "size": 2, "totalElements": 3, "totalPages": 2, "summary": { "active": 3, "locked": 0 } }
+"meta": { "page": 1, "size": 2, "totalElements": 7, "totalPages": 4, "summary": { "active": 7, "locked": 0 } }
 ```
 
 **PATCH /api/admin/users/{id}/lock** — thông điệp: `Khóa tài khoản thành công`; **/unlock** — `Mở khóa tài khoản thành công`. Response 200: người dùng sau thay đổi (cấu trúc như phần tử ở trên). Gọi lại khi tài khoản đã ở đúng trạng thái vẫn trả `200`. Tài khoản quản trị viên (kể cả chính mình) trả `403 FORBIDDEN` (`Không thể khóa hoặc mở khóa tài khoản quản trị viên`). Tài khoản bị khóa bị chặn ở mọi API cần đăng nhập ngay yêu cầu kế tiếp (`403 ACCOUNT_LOCKED`, BR02).

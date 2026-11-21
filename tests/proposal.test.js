@@ -146,7 +146,8 @@ describe('US16 - Chọn kỹ thuật viên', () => {
     assert.equal(dongB.status, 'REJECTED');
     const { rows: [dongTin] } = await truyVan('SELECT status, selected_proposal_id FROM repair_request WHERE id = $1', [tin.id]);
     assert.deepEqual(dongTin, { status: 'SELECTED', selected_proposal_id: deXuatA.id });
-    const { rows: thongBao } = await truyVan('SELECT * FROM notification WHERE user_id = $1 AND related_id = $2', [kyThuatVienA.id, deXuatA.id]);
+    // relatedId là mã đề xuất hoặc mã tin tùy loại thông báo, nên luôn lọc theo type.
+    const { rows: thongBao } = await truyVan(`SELECT * FROM notification WHERE user_id = $1 AND related_id = $2 AND type = 'PROPOSAL_ACCEPTED'`, [kyThuatVienA.id, deXuatA.id]);
     assert.equal(thongBao.length, 1);
     assert.equal(thongBao[0].type, 'PROPOSAL_ACCEPTED');
     assert.equal(thongBao[0].is_read, false);
