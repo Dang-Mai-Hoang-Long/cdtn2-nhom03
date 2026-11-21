@@ -16,6 +16,8 @@ const { kiemTraKeHoach, thoiGianMongMuonCuaTin } = require('./ke-hoach');
 
 const SO_VONG_BAM_MAT_KHAU = 10;
 const BUOC_BAO_TIEN_DO = 250;
+const MOT_NGAY_MS = 24 * 60 * 60 * 1000;
+const SO_NGAY_THONG_BAO_CU = 7;
 
 function layMaDeXuat(cacMaDeXuat, khoaTin, khoaKyThuatVien) {
   const ma = cacMaDeXuat.get(`${khoaTin}:${khoaKyThuatVien}`);
@@ -34,7 +36,8 @@ async function taoTaiKhoan(danhSach) {
   const nguoiDung = {};
   for (const mau of danhSach) {
     const daTao = await khoNguoiDung.tao({ email: mau.email, passwordHash, fullName: mau.fullName, phone: mau.phone, role: mau.role });
-    nguoiDung[mau.khoa] = { id: daTao.id, role: daTao.role };
+    // Cùng dạng với req.nguoiDung do middleware xác thực nạp: service dùng fullName để ghi tên vào nội dung thông báo.
+    nguoiDung[mau.khoa] = { id: daTao.id, role: daTao.role, fullName: daTao.fullName };
   }
   return nguoiDung;
 }
@@ -107,10 +110,16 @@ async function guiCacDanhGia(danhSach, nguoiDung, cacMaTin, tienDo) {
   return cacMaDanhGia;
 }
 
-// Thông báo "đề xuất được chấp nhận" (BR16) tra theo "<mã kỹ thuật viên>:<mã đề xuất>", đọc một lần cho cả bộ.
-async function docThongBaoDuocChapNhan() {
-  const { rows } = await truyVan(`SELECT id, user_id, related_id FROM notification WHERE type = 'PROPOSAL_ACCEPTED'`);
-  return new Map(rows.map((dong) => [`${dong.user_id}:${dong.related_id}`, dong.id]));
+// Đọc một lần mọi thông báo đã sinh ra: mỗi sự kiện của dịch vụ (đề xuất mới, chấp nhận, từ chối, hoàn thành, đánh giá) tạo một dòng.
+async function docTatCaThongBao() {
+  const { rows } = await truyVan('SELECT id, user_id, type, related_id FROM notification');
+  return rows.map((dong) => ({ id: dong.id, userId: dong.user_id, type: dong.type, relatedId: dong.related_id }));
+}
+
+// Thông báo "đề xuất được chấp nhận" (BR16) tra theo "<mã kỹ thuật viên>:<mã đề xuất>".
+function lapChiMucThongBaoDuocChapNhan(cacThongBao) {
+  const duocChapNhan = cacThongBao.filter((thongBao) => thongBao.type === 'PROPOSAL_ACCEPTED');
+  return new Map(duocChapNhan.map((thongBao) => [`${thongBao.userId}:${thongBao.relatedId}`, thongBao.id]));
 }
 
 async function danhDauThongBaoDaDoc(keHoach, nguoiDung, cacMaDeXuat, cacThongBao) {
@@ -140,15 +149,44 @@ async function ganThoiGianTao(bang, cacDong) {
 }
 
 async function ganThoiGianChoKeHoach(keHoach, ma) {
-  const { nguoiDung, cacMaTin, maDeXuatTheoThuTu, cacMaDanhGia, cacThongBao, cacMaDeXuat } = ma;
+  const { nguoiDung, cacMaTin, maDeXuatTheoThuTu, cacMaDanhGia } = ma;
   await ganThoiGianTao('users', keHoach.taiKhoan.map((mau) => ({ id: nguoiDung[mau.khoa].id, luc: mau.taoLuc })));
   await ganThoiGianTao('repair_request', keHoach.tin.map((mau) => ({ id: cacMaTin[mau.khoa], luc: mau.taoLuc })));
   await ganThoiGianTao('proposal', keHoach.deXuat.map((mau, chiSo) => ({ id: maDeXuatTheoThuTu[chiSo], luc: mau.taoLuc })));
   await ganThoiGianTao('review', keHoach.danhGia.map((mau, chiSo) => ({ id: cacMaDanhGia[chiSo], luc: mau.taoLuc })));
-  const thongBao = keHoach.tin
-    .filter((mau) => mau.ktvDuocChon)
-    .map((mau) => ({ id: cacThongBao.get(`${nguoiDung[mau.ktvDuocChon].id}:${layMaDeXuat(cacMaDeXuat, mau.khoa, mau.ktvDuocChon)}`), luc: mau.chapNhanLuc }));
-  await ganThoiGianTao('notification', thongBao);
+}
+
+// Thời điểm của từng thông báo là thời điểm sự kiện gây ra nó trong kế hoạch; thông báo của dữ liệu không có thời điểm
+// (dữ liệu viết tay) giữ nguyên lúc chạy seed. Trả về [{ id, luc }] theo mọi thông báo.
+function tinhThoiGianThongBao(keHoach, ma, cacThongBao) {
+  const { nguoiDung, cacMaTin, maDeXuatTheoThuTu } = ma;
+  const tinTheoKhoa = new Map(keHoach.tin.map((mau) => [mau.khoa, mau]));
+  const tinTheoMa = new Map(keHoach.tin.map((mau) => [cacMaTin[mau.khoa], mau]));
+  const deXuatTheoMa = new Map(keHoach.deXuat.map((mau, chiSo) => [maDeXuatTheoThuTu[chiSo], mau]));
+  const danhGiaTheoNguoiNhan = new Map();
+  for (const danhGia of keHoach.danhGia) {
+    const tin = tinTheoKhoa.get(danhGia.tin);
+    const nguoiNhan = danhGia.nguoiGui === tin.khachHang ? tin.ktvDuocChon : tin.khachHang;
+    danhGiaTheoNguoiNhan.set(`${nguoiDung[nguoiNhan].id}:${cacMaTin[tin.khoa]}`, danhGia.taoLuc);
+  }
+  const thoiDiemSuKien = {
+    NEW_PROPOSAL: (thongBao) => deXuatTheoMa.get(thongBao.relatedId)?.taoLuc,
+    PROPOSAL_ACCEPTED: (thongBao) => tinTheoKhoa.get(deXuatTheoMa.get(thongBao.relatedId)?.tin)?.chapNhanLuc,
+    PROPOSAL_REJECTED: (thongBao) => tinTheoKhoa.get(deXuatTheoMa.get(thongBao.relatedId)?.tin)?.chapNhanLuc,
+    REQUEST_COMPLETED: (thongBao) => tinTheoMa.get(thongBao.relatedId)?.hoanThanhLuc,
+    REVIEW_RECEIVED: (thongBao) => danhGiaTheoNguoiNhan.get(`${thongBao.userId}:${thongBao.relatedId}`),
+  };
+  return cacThongBao.map((thongBao) => ({ id: thongBao.id, luc: thoiDiemSuKien[thongBao.type]?.(thongBao) }));
+}
+
+// Lùi ngày tạo thông báo về thời điểm sự kiện, rồi đánh dấu đã đọc mọi thông báo cũ hơn SO_NGAY_THONG_BAO_CU ngày: người dùng
+// thật không để hàng trăm thông báo chưa đọc, còn thông báo gần đây vẫn chưa đọc để thử chấm xanh và số đếm.
+async function ganThoiGianVaTrangThaiDocThongBao(keHoach, ma, cacThongBao, bayGio) {
+  const cacDong = tinhThoiGianThongBao(keHoach, ma, cacThongBao);
+  await ganThoiGianTao('notification', cacDong);
+  const nguong = bayGio.getTime() - SO_NGAY_THONG_BAO_CU * MOT_NGAY_MS;
+  const cacMaCu = cacDong.filter((dong) => dong.luc !== undefined && Date.parse(dong.luc) < nguong).map((dong) => dong.id);
+  if (cacMaCu.length > 0) await truyVan('UPDATE notification SET is_read = true WHERE id = ANY($1::int[])', [cacMaCu]);
 }
 
 // Kiểm tra kế hoạch trước, rồi mới ghi. Trả về số lượng bản ghi đã tạo.
@@ -160,10 +198,12 @@ async function thucThiKeHoach(keHoach, { bayGio = new Date(), tienDo } = {}) {
   const { maTheoThuTu: maDeXuatTheoThuTu, maHienTai: cacMaDeXuat } = await guiCacDeXuat(keHoach.deXuat, nguoiDung, cacMaTin, tienDo);
   await hoanTatCacTin(keHoach.tin, nguoiDung, cacMaTin, cacMaDeXuat, tienDo);
   const cacMaDanhGia = await guiCacDanhGia(keHoach.danhGia, nguoiDung, cacMaTin, tienDo);
-  const cacThongBao = await docThongBaoDuocChapNhan();
-  await danhDauThongBaoDaDoc(keHoach, nguoiDung, cacMaDeXuat, cacThongBao);
+  const cacThongBao = await docTatCaThongBao();
+  await danhDauThongBaoDaDoc(keHoach, nguoiDung, cacMaDeXuat, lapChiMucThongBaoDuocChapNhan(cacThongBao));
   await khoaCacTaiKhoan(keHoach.taiKhoan, nguoiDung);
-  await ganThoiGianChoKeHoach(keHoach, { nguoiDung, cacMaTin, maDeXuatTheoThuTu, cacMaDanhGia, cacThongBao, cacMaDeXuat });
+  const ma = { nguoiDung, cacMaTin, maDeXuatTheoThuTu, cacMaDanhGia };
+  await ganThoiGianChoKeHoach(keHoach, ma);
+  await ganThoiGianVaTrangThaiDocThongBao(keHoach, ma, cacThongBao, bayGio);
 
   return {
     soTaiKhoan: keHoach.taiKhoan.length,

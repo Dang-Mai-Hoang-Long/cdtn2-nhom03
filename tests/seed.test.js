@@ -133,6 +133,13 @@ describe('Seed - quy tắc nghiệp vụ của dữ liệu mẫu', () => {
     assert.equal(theoLoai.REVIEW_RECEIVED, await dem('SELECT count(*)::int AS so FROM review'));
     assert.equal(Object.keys(theoLoai).length, 5);
   });
+
+  it('nội dung thông báo ghi đủ tên người và tên tin, không lọt "undefined" hay "null"', async () => {
+    const hong = await lay(`SELECT id, content FROM notification WHERE title ~ '(undefined|null)' OR content ~ '(undefined|null)'`);
+    assert.deepEqual(hong, []);
+    const [{ ten_nguoi }] = await lay(`SELECT content AS ten_nguoi FROM notification WHERE type = 'NEW_PROPOSAL' ORDER BY id LIMIT 1`);
+    assert.match(ten_nguoi, /^Trần Quốc Huy đã gửi đề xuất 450\.000 đồng cho tin "Máy lạnh không làm mát"$/);
+  });
 });
 
 describe('Seed - mã ổn định của dữ liệu cũ (bug-log, api-contract dẫn tới những mã này)', () => {
@@ -244,7 +251,14 @@ describe('Seed - phần tự động trong CSDL: khớp kế hoạch, dòng th�
     const [{ duoc_chon }] = await lay(`SELECT count(*)::int AS duoc_chon FROM proposal WHERE status = 'ACCEPTED'`);
     assert.equal(duoc_chon, tatCaTin.filter((tin) => tin.ktvDuocChon).length);
     const [{ da_doc }] = await lay('SELECT count(*)::int AS da_doc FROM notification WHERE is_read');
-    assert.equal(da_doc, tatCaDeXuat.filter((deXuat) => deXuat.daDocThongBao).length);
+    assert.ok(da_doc >= tatCaDeXuat.filter((deXuat) => deXuat.daDocThongBao).length);
+  });
+
+  it('thông báo cũ hơn 7 ngày đã đọc, thông báo gần đây (kể cả dữ liệu viết tay) còn chưa đọc để thử chấm xanh và số đếm', async () => {
+    const dem = async (dieuKien) => (await lay(`SELECT count(*)::int AS so FROM notification WHERE ${dieuKien}`))[0].so;
+    assert.equal(await dem(`NOT is_read AND created_at < now() - interval '7 days 10 minutes'`), 0);
+    assert.ok(await dem(`is_read AND created_at < now() - interval '7 days 10 minutes'`) > 0, 'cần thông báo cũ đã đọc');
+    assert.ok(await dem(`NOT is_read AND created_at >= now() - interval '7 days'`) > 0, 'cần thông báo gần đây chưa đọc');
   });
 
   it('dòng thời gian đúng trình tự: tài khoản < tin < đề xuất < chấp nhận < đánh giá, không có thời điểm ở tương lai', async () => {
@@ -252,9 +266,18 @@ describe('Seed - phần tự động trong CSDL: khớp kế hoạch, dòng th�
       'tin sớm hơn tài khoản chủ tin': 'SELECT r.id FROM repair_request r JOIN users u ON u.id = r.customer_id WHERE r.created_at < u.created_at',
       'đề xuất sớm hơn tin': 'SELECT p.id FROM proposal p JOIN repair_request r ON r.id = p.request_id WHERE p.created_at < r.created_at',
       'đề xuất sớm hơn tài khoản kỹ thuật viên': 'SELECT p.id FROM proposal p JOIN users u ON u.id = p.technician_id WHERE p.created_at < u.created_at',
-      'thông báo sớm hơn đề xuất': `SELECT n.id FROM notification n JOIN proposal p ON p.id = n.related_id WHERE n.type = 'PROPOSAL_ACCEPTED' AND n.created_at < p.created_at`,
-      'đánh giá sớm hơn lúc chấp nhận': `SELECT rv.id FROM review rv JOIN repair_request r ON r.id = rv.request_id
-        JOIN notification n ON n.related_id = r.selected_proposal_id AND n.type = 'PROPOSAL_ACCEPTED' WHERE rv.created_at < n.created_at`,
+      'thông báo đề xuất mới, chấp nhận, từ chối sớm hơn đề xuất': `SELECT n.id FROM notification n JOIN proposal p ON p.id = n.related_id
+        WHERE n.type IN ('NEW_PROPOSAL', 'PROPOSAL_ACCEPTED', 'PROPOSAL_REJECTED') AND n.created_at < p.created_at`,
+      'thông báo từ chối khác thời điểm chấp nhận': `SELECT n.id FROM notification n JOIN proposal p ON p.id = n.related_id
+        JOIN repair_request r ON r.id = p.request_id JOIN notification a ON a.type = 'PROPOSAL_ACCEPTED' AND a.related_id = r.selected_proposal_id
+        WHERE n.type = 'PROPOSAL_REJECTED' AND n.created_at <> a.created_at`,
+      'thông báo hoàn thành sớm hơn lúc chấp nhận': `SELECT c.id FROM notification c JOIN repair_request r ON r.id = c.related_id
+        JOIN notification a ON a.type = 'PROPOSAL_ACCEPTED' AND a.related_id = r.selected_proposal_id
+        WHERE c.type = 'REQUEST_COMPLETED' AND c.created_at < a.created_at`,
+      'đánh giá sớm hơn lúc hoàn thành': `SELECT rv.id FROM review rv JOIN notification c ON c.type = 'REQUEST_COMPLETED' AND c.related_id = rv.request_id
+        WHERE rv.created_at < c.created_at`,
+      'thông báo đánh giá khác thời điểm đánh giá': `SELECT n.id FROM notification n JOIN review rv ON rv.request_id = n.related_id AND rv.to_user_id = n.user_id
+        WHERE n.type = 'REVIEW_RECEIVED' AND n.created_at <> rv.created_at`,
       'có thời điểm ở tương lai': `SELECT id FROM repair_request WHERE created_at > now() UNION ALL SELECT id FROM proposal WHERE created_at > now()
         UNION ALL SELECT id FROM review WHERE created_at > now() UNION ALL SELECT id FROM notification WHERE created_at > now()
         UNION ALL SELECT id FROM users WHERE created_at > now()`,

@@ -22,6 +22,7 @@ const TY_LE_KTV_DANH_GIA = 0.55;
 const TY_LE_DA_DOC_THONG_BAO = { HOAN_THANH: 0.7, DA_CHON: 0.3 };
 const TRE_GUI_DE_XUAT_TOI_DA_GIO = 60;
 const TRE_CHAP_NHAN_TOI_DA_GIO = 47;
+const TRE_HOAN_THANH_TOI_DA_NGAY = 3; // từ lúc chấp nhận đến lúc khách hàng xác nhận hoàn thành
 const THOI_GIAN_DANH_GIA_TOI_DA_NGAY = 12;
 const LE_AN_TOAN_PHUT = 30; // mọi thời điểm cách lúc chạy seed ít nhất chừng này
 const GIA_TOI_THIEU = 20000;
@@ -94,9 +95,9 @@ function taoDanhGia(ngauNhien, { khoaTin, nguoiGui, diemKyVong, kho, thoiDiem })
 
 // Khách hàng đánh giá kỹ thuật viên được chọn (US18) và ngược lại (US19); mỗi bên có thể bỏ qua, nên có tin chỉ một
 // bên đánh giá hoặc không ai đánh giá.
-function sinhDanhGia(ngauNhien, { nguCanh, kyThuatVienDuocChon, chapNhanMs, bayGio }) {
-  const batDau = chapNhanMs + GIO;
-  const cuoi = Math.min(chapNhanMs + THOI_GIAN_DANH_GIA_TOI_DA_NGAY * NGAY, bayGio.getTime() - LE_AN_TOAN_PHUT * PHUT);
+function sinhDanhGia(ngauNhien, { nguCanh, kyThuatVienDuocChon, hoanThanhMs, bayGio }) {
+  const batDau = hoanThanhMs + GIO;
+  const cuoi = Math.min(hoanThanhMs + THOI_GIAN_DANH_GIA_TOI_DA_NGAY * NGAY, bayGio.getTime() - LE_AN_TOAN_PHUT * PHUT);
   const thoiDiem = () => Math.min(batDau + ngauNhien.so() * Math.max(0, cuoi - batDau), cuoi);
   const cacDanhGia = [];
   if (ngauNhien.xacSuat(TY_LE_KHACH_DANH_GIA)) {
@@ -112,7 +113,8 @@ function sinhDanhGia(ngauNhien, { nguCanh, kyThuatVienDuocChon, chapNhanMs, bayG
   return cacDanhGia;
 }
 
-// Trả về { deXuat, danhGia, ktvDuocChon, chapNhanLuc } cho một tin. ktvDuocChon và chapNhanLuc chỉ có khi tin đã chọn kỹ thuật viên.
+// Trả về { deXuat, danhGia, ktvDuocChon, chapNhanLuc, hoanThanhLuc } cho một tin. ktvDuocChon và chapNhanLuc chỉ có khi tin đã chọn
+// kỹ thuật viên, hoanThanhLuc chỉ có khi tin đã hoàn thành.
 function sinhHoatDongCuaTin(ngauNhien, nguCanh, cacKyThuatVien, bayGio) {
   const gioiHanMs = bayGio.getTime() - LE_AN_TOAN_PHUT * PHUT;
   const dangHoatDong = cacKyThuatVien.filter((hoSo) => hoSo.trongSo > 0);
@@ -145,20 +147,22 @@ function sinhHoatDongCuaTin(ngauNhien, nguCanh, cacKyThuatVien, bayGio) {
 
   if (!deXuatDuocChon) return { deXuat: cacDeXuat, danhGia: [] };
 
+  // Chấp nhận sau khi mọi đề xuất của tin đã được gửi: tin ở trạng thái Đã chọn thì không nhận thêm đề xuất (BR07).
+  const deXuatMuonNhatMs = Math.max(...cacDeXuat.map((deXuat) => Date.parse(deXuat.taoLuc)));
   const chapNhanMs = Math.min(
-    Date.parse(deXuatDuocChon.deXuat.taoLuc) + GIO + ngauNhien.so() * TRE_CHAP_NHAN_TOI_DA_GIO * GIO,
+    deXuatMuonNhatMs + GIO + ngauNhien.so() * TRE_CHAP_NHAN_TOI_DA_GIO * GIO,
     bayGio.getTime() - (LE_AN_TOAN_PHUT / 3) * PHUT,
   );
   if (ngauNhien.xacSuat(TY_LE_DA_DOC_THONG_BAO[nguCanh.ketQua])) deXuatDuocChon.deXuat.daDocThongBao = true;
-  const danhGia = nguCanh.ketQua === 'HOAN_THANH'
-    ? sinhDanhGia(ngauNhien, { nguCanh, kyThuatVienDuocChon: deXuatDuocChon.kyThuatVien, chapNhanMs, bayGio })
-    : [];
-  return {
-    deXuat: cacDeXuat,
-    danhGia,
-    ktvDuocChon: deXuatDuocChon.kyThuatVien.taiKhoan.khoa,
-    chapNhanLuc: doiSangIso(chapNhanMs),
-  };
+  const ketQuaChon = { deXuat: cacDeXuat, danhGia: [], ktvDuocChon: deXuatDuocChon.kyThuatVien.taiKhoan.khoa, chapNhanLuc: doiSangIso(chapNhanMs) };
+  if (nguCanh.ketQua !== 'HOAN_THANH') return ketQuaChon;
+
+  const hoanThanhMs = Math.min(
+    chapNhanMs + GIO + ngauNhien.so() * TRE_HOAN_THANH_TOI_DA_NGAY * NGAY,
+    bayGio.getTime() - LE_AN_TOAN_PHUT * PHUT,
+  );
+  const danhGia = sinhDanhGia(ngauNhien, { nguCanh, kyThuatVienDuocChon: deXuatDuocChon.kyThuatVien, hoanThanhMs, bayGio });
+  return { ...ketQuaChon, danhGia, hoanThanhLuc: doiSangIso(hoanThanhMs) };
 }
 
 module.exports = { sinhHoatDongCuaTin };

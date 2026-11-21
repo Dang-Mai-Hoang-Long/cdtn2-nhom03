@@ -6,7 +6,7 @@
 // Dạng của kế hoạch:
 //   taiKhoan: [{ khoa, email, fullName, phone, role, biKhoa?, taoLuc? }]
 //   tin:      [{ khoa, khachHang, title, description, category, location, ketQua, ktvDuocChon?,
-//                soNgayToi + gioMongMuon  HOẶC  thoiGianMongMuon (chuỗi ISO), suaTin?, taoLuc?, chapNhanLuc? }]
+//                soNgayToi + gioMongMuon  HOẶC  thoiGianMongMuon (chuỗi ISO), suaTin?, taoLuc?, chapNhanLuc?, hoanThanhLuc? }]
 //   deXuat:   [{ tin, ktv, price, description, estimatedDuration?, rut?, sua?, daDocThongBao?, taoLuc? }]
 //   danhGia:  [{ tin, nguoiGui, rating, comment?, taoLuc? }]
 // ketQua: CHO_DE_XUAT | DA_CHON | HOAN_THANH | DA_DONG. Các trường taoLuc / chapNhanLuc là thời điểm (chuỗi ISO) để
@@ -70,10 +70,11 @@ function kiemTraTin(tinMau, taiKhoanTheoKhoa, bayGio, themLoi) {
     const duLieuTao = { ...mau, preferredTime: thoiGianMongMuonCuaTin(mau, bayGio).toISOString() };
     for (const loi of kiemTraTaoYeuCau(duLieuTao)) themLoi(viTri, `${loi.field}: ${loi.message}`);
     if (mau.suaTin) for (const loi of kiemTraSuaYeuCau(mau.suaTin)) themLoi(viTri, `suaTin.${loi.field}: ${loi.message}`);
-    for (const truong of ['taoLuc', 'chapNhanLuc']) {
+    for (const truong of ['taoLuc', 'chapNhanLuc', 'hoanThanhLuc']) {
       if (mau[truong] !== undefined && !laThoiDiemHopLe(mau[truong])) themLoi(viTri, `${truong} không phải thời điểm hợp lệ`);
     }
     if (mau.chapNhanLuc && !coKyThuatVienDuocChon) themLoi(viTri, 'chapNhanLuc chỉ dùng cho tin đã chọn kỹ thuật viên');
+    if (mau.hoanThanhLuc && mau.ketQua !== 'HOAN_THANH') themLoi(viTri, 'hoanThanhLuc chỉ dùng cho tin hoàn thành');
   }
   return tinTheoKhoa;
 }
@@ -137,24 +138,26 @@ function kiemTraThuTuThoiGian({ taiKhoan, tin, deXuat, danhGia }, bayGio, themLo
   const khongSomHon = (viTri, thoiDiem, moc, tenMoc) => {
     if (thoiDiem !== undefined && moc !== undefined && thoiDiem < moc) themLoi(viTri, `thời điểm sớm hơn ${tenMoc}`);
   };
-  const cacMoc = [...taiKhoan, ...tin, ...deXuat, ...danhGia].flatMap((mau) => [mau.taoLuc, mau.chapNhanLuc]);
+  const cacMoc = [...taiKhoan, ...tin, ...deXuat, ...danhGia].flatMap((mau) => [mau.taoLuc, mau.chapNhanLuc, mau.hoanThanhLuc]);
   for (const moc of cacMoc.filter((giaTri) => laThoiDiemHopLe(giaTri))) {
     if (Date.parse(moc) > bayGio.getTime()) themLoi('thời gian', `"${moc}" nằm ở tương lai so với lúc chạy seed`);
   }
   for (const mau of tin) {
     khongSomHon(`tin "${mau.khoa}"`, luc(mau.taoLuc), luc(taiKhoanTheoKhoa.get(mau.khachHang)?.taoLuc), 'ngày tạo của chủ tin');
+    khongSomHon(`tin "${mau.khoa}" (hoàn thành)`, luc(mau.hoanThanhLuc), luc(mau.chapNhanLuc), 'lúc chấp nhận đề xuất');
   }
   for (const mau of deXuat) {
     const viTri = `đề xuất của "${mau.ktv}" cho tin "${mau.tin}"`;
     khongSomHon(viTri, luc(mau.taoLuc), luc(tinTheoKhoa.get(mau.tin)?.taoLuc), 'ngày tạo tin');
     khongSomHon(viTri, luc(mau.taoLuc), luc(taiKhoanTheoKhoa.get(mau.ktv)?.taoLuc), 'ngày tạo tài khoản kỹ thuật viên');
-    const tinCuaDeXuat = tinTheoKhoa.get(mau.tin);
-    if (tinCuaDeXuat?.ktvDuocChon === mau.ktv && !mau.rut) {
-      khongSomHon(`tin "${mau.tin}" (chấp nhận)`, luc(tinCuaDeXuat.chapNhanLuc), luc(mau.taoLuc), 'ngày gửi đề xuất được chọn');
-    }
+    // BR07: sau khi chấp nhận, tin không còn nhận đề xuất, nên mọi đề xuất của tin (kể cả bị từ chối, đã rút) phải gửi trước đó.
+    khongSomHon(`tin "${mau.tin}" (chấp nhận)`, luc(tinTheoKhoa.get(mau.tin)?.chapNhanLuc), luc(mau.taoLuc), 'ngày gửi đề xuất của tin');
   }
   for (const mau of danhGia) {
-    khongSomHon(`đánh giá của "${mau.nguoiGui}" cho tin "${mau.tin}"`, luc(mau.taoLuc), luc(tinTheoKhoa.get(mau.tin)?.chapNhanLuc), 'lúc chấp nhận đề xuất');
+    const tinCuaDanhGia = tinTheoKhoa.get(mau.tin);
+    const viTri = `đánh giá của "${mau.nguoiGui}" cho tin "${mau.tin}"`;
+    khongSomHon(viTri, luc(mau.taoLuc), luc(tinCuaDanhGia?.chapNhanLuc), 'lúc chấp nhận đề xuất');
+    khongSomHon(viTri, luc(mau.taoLuc), luc(tinCuaDanhGia?.hoanThanhLuc), 'lúc hoàn thành');
   }
 }
 

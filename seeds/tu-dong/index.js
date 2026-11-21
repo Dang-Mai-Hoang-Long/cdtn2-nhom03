@@ -51,6 +51,7 @@ function sinhKeHoach({ soTin = SO_TIN_MAC_DINH, hatGiong = HAT_GIONG_MAC_DINH, b
       nguCanh.tin.ktvDuocChon = hoatDong.ktvDuocChon;
       nguCanh.tin.chapNhanLuc = hoatDong.chapNhanLuc;
     }
+    if (hoatDong.hoanThanhLuc) nguCanh.tin.hoanThanhLuc = hoatDong.hoanThanhLuc;
     tin.push(nguCanh.tin);
     deXuat.push(...hoatDong.deXuat);
     danhGia.push(...hoatDong.danhGia);

@@ -69,6 +69,17 @@ describe('Kế hoạch dữ liệu mẫu - kiểm tra trước khi ghi', () => {
   it('bắt thời điểm đảo thứ tự hoặc ở tương lai', () => {
     coLoiKhop(bienDoi((keHoach) => { keHoach.tin[0].taoLuc = '2026-11-10T00:00:00.000Z'; keHoach.deXuat[0].taoLuc = '2026-11-09T00:00:00.000Z'; }), /sớm hơn/);
     coLoiKhop(bienDoi((keHoach) => { keHoach.tin[0].taoLuc = '2027-01-01T00:00:00.000Z'; }), /tương lai/);
+    // BR07: đề xuất gửi sau khi tin đã chọn kỹ thuật viên.
+    coLoiKhop(bienDoi((keHoach) => {
+      Object.assign(keHoach.tin[0], { taoLuc: '2026-11-01T00:00:00.000Z', chapNhanLuc: '2026-11-02T00:00:00.000Z' });
+      keHoach.deXuat[0].taoLuc = '2026-11-03T00:00:00.000Z';
+    }), /ngày gửi đề xuất của tin/);
+    coLoiKhop(bienDoi((keHoach) => Object.assign(keHoach.tin[0], { chapNhanLuc: '2026-11-05T00:00:00.000Z', hoanThanhLuc: '2026-11-04T00:00:00.000Z' })), /lúc chấp nhận đề xuất/);
+    coLoiKhop(bienDoi((keHoach) => {
+      Object.assign(keHoach.tin[0], { chapNhanLuc: '2026-11-03T00:00:00.000Z', hoanThanhLuc: '2026-11-06T00:00:00.000Z' });
+      keHoach.danhGia[0].taoLuc = '2026-11-05T00:00:00.000Z';
+    }), /lúc hoàn thành/);
+    coLoiKhop(bienDoi((keHoach) => { keHoach.tin[0].ketQua = 'DA_CHON'; keHoach.tin[0].hoanThanhLuc = '2026-11-05T00:00:00.000Z'; keHoach.danhGia = []; }), /hoanThanhLuc chỉ dùng/);
     coLoiKhop(bienDoi((keHoach) => { keHoach.tin[0].taoLuc = 'không phải ngày'; }), /thời điểm hợp lệ/);
   });
 
@@ -140,6 +151,10 @@ describe('Dữ liệu tự động', () => {
     const cacNgay = keHoach.tin.map((tin) => Date.parse(tin.taoLuc));
     assert.ok((Math.max(...cacNgay) - Math.min(...cacNgay)) / (24 * 3600 * 1000) > 100, 'tin phải trải trên hơn 100 ngày');
     assert.deepEqual(cacNgay, [...cacNgay].sort((a, b) => a - b), 'mã tin phải tăng theo thời điểm đăng');
+    for (const tin of keHoach.tin.filter((muc) => muc.ketQua === 'HOAN_THANH')) {
+      assert.ok(tin.chapNhanLuc && tin.hoanThanhLuc, `tin ${tin.khoa} thiếu mốc chấp nhận hoặc hoàn thành`);
+      assert.ok(Date.parse(tin.hoanThanhLuc) >= Date.parse(tin.chapNhanLuc));
+    }
   });
 
   it('phân bổ lệch như thật: có khách hàng rất nhiều tin, có khách và kỹ thuật viên chưa có việc, có tài khoản bị khóa', () => {
