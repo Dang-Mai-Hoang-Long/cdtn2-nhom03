@@ -1,18 +1,24 @@
 # Dữ liệu mẫu và tài khoản demo
 
-Thư mục này tạo dữ liệu mẫu cho CSDL phát triển (`DATABASE_URL`) để thử ứng dụng ngay mà không phải đăng ký và nhập tay.
+Thư mục này tạo dữ liệu mẫu cho CSDL phát triển (`DATABASE_URL`) để thử ứng dụng ngay mà không phải đăng ký và nhập tay. Gồm hai phần:
+
+- **Phần viết tay** (`thu-cong/`): 17 tài khoản, **50 tin** mà từng tin nhắm một tình huống hoặc giá trị biên cụ thể.
+- **Phần tự động** (`tu-dong/`): sinh **1000 tin** cùng 230 tài khoản, đa dạng và lệch như dữ liệu thật, tái lập được bằng hạt giống cố định.
 
 ```bash
-npm run migrate       # dựng bảng nếu chưa có
-npm run seed          # tạo dữ liệu mẫu; dừng nếu đã có tài khoản demo
-npm run seed:reset    # xóa TOÀN BỘ dữ liệu ứng dụng rồi tạo lại từ đầu
+npm run migrate            # dựng bảng nếu chưa có
+npm run seed               # viết tay + 1000 tin tự động (khoảng 10 giây); dừng nếu đã có tài khoản demo
+npm run seed:reset         # xóa TOÀN BỘ dữ liệu ứng dụng rồi tạo lại từ đầu
+npm run seed:thu-cong      # chỉ phần viết tay (vài giây)
+npm run seed:thu-cong:reset
+npm run seed -- --so-tin=300 --hat-giong=42   # đổi số tin tự động và hạt giống
 ```
 
 `seed:reset` xóa cả dữ liệu bạn tự nhập (các bảng `users`, `repair_request`, `proposal`, `review`, `notification`; bảng `schema_migrations` được giữ nguyên). Lệnh từ chối chạy khi `NODE_ENV=production`.
 
 ## Phần viết tay: 17 tài khoản, 50 tin
 
-Mỗi tin viết tay nhắm một tình huống cụ thể để thử một chức năng hoặc một giá trị biên. Mã tin dưới đây là thứ tự trong `thu-cong/tin-sua-chua.js` (SC-001 là tin có mã 1). Bảy tin đầu, chín đề xuất đầu và ba thông báo đầu giữ nguyên mã từ phiên bản trước vì `docs/bug-log.md` và `docs/api-contract.md` dẫn tới các mã đó.
+Mỗi tin viết tay nhắm một tình huống cụ thể để thử một chức năng hoặc một giá trị biên. Mã tin dưới đây là thứ tự trong `thu-cong/tin-sua-chua.js` (SC-001 là tin có mã 1). Bảy tin đầu, bảy tài khoản đầu và chín đề xuất đầu giữ nguyên mã từ phiên bản trước vì `docs/bug-log.md` và `docs/api-contract.md` dẫn tới các mã đó. Mã thông báo thì không còn ổn định: từ khi mỗi đề xuất mới cũng tạo thông báo, các thông báo "được chấp nhận" của ba đề xuất đầu chỉ ổn định về người nhận và đề xuất (kiểm tra bằng `tests/seed.test.js`).
 
 ### Tài khoản demo
 
@@ -68,11 +74,30 @@ Mật khẩu chung: `Demo@123` (chỉ dành cho môi trường phát triển).
 | Địa phương khác TP. Hồ Chí Minh | SC-045 (Đà Nẵng), SC-046, SC-047, SC-048 đến SC-050 (Hà Nội) | Bộ lọc theo địa điểm |
 | Phân trang (10 mục mỗi trang) | khach1 (12 tin), ktv5 (15 đề xuất) | Trang 2 của danh sách |
 
+## Phần tự động: 1000 tin, 230 tài khoản
+
+Sinh bởi `tu-dong/` bằng bộ số giả ngẫu nhiên có hạt giống cố định (không dùng `Math.random`): cùng số tin, hạt giống và thời điểm chạy thì cùng dữ liệu. Tài khoản: `auto.kh001@demo.vn` đến `auto.kh150@demo.vn` (khách hàng) và `auto.ktv001@demo.vn` đến `auto.ktv080@demo.vn` (kỹ thuật viên), mật khẩu `Demo@123`. Số tài khoản tỷ lệ theo số tin (khoảng 15% khách hàng, 8% kỹ thuật viên so với số tin).
+
+| Khía cạnh | Cách sinh |
+| --- | --- |
+| Trạng thái tin | Khoảng 35% chờ đề xuất, 12% đã chọn, 38% hoàn thành, 15% đã đóng |
+| Phân bổ | Lệch như thật: khách hàng có từ 0 đến hơn 30 tin, kỹ thuật viên có từ 0 đến hơn 100 đề xuất; khoảng 12% khách hàng và 10% kỹ thuật viên chưa có việc nào; 4% tài khoản bị khóa |
+| Nội dung | 6 loại dịch vụ chính (mỗi loại 8 thiết bị, 10 sự cố, 6 đầu việc) cộng 6 loại ngoài danh sách của giao diện; 7 địa phương (TP. Hồ Chí Minh, Hà Nội, Đà Nẵng, Cần Thơ, Hải Phòng, Đồng Nai, Khánh Hòa); một phần nhỏ có địa chỉ chi tiết, mô tả dài, ký tự đặc biệt |
+| Đề xuất | 0 đến 8 đề xuất mỗi tin theo trạng thái; kỹ thuật viên đúng chuyên môn được ưu tiên; khoảng 8% bị rút, một phần trong đó được gửi lại với giá khác; khoảng 10% được sửa giá; giá từ vài chục nghìn đến hàng chục triệu, có giá lẻ và có đề xuất không ghi thời gian dự kiến |
+| Đánh giá | Khách hàng đánh giá khoảng 85% tin hoàn thành, kỹ thuật viên khoảng 55%, nên có tin chỉ một bên hoặc không bên nào đánh giá; điểm sao bám theo "chất lượng" của từng kỹ thuật viên nên có người điểm cao, có người điểm thấp |
+| Dòng thời gian | Trải trên hơn 100 ngày. Tài khoản tạo trước hoạt động đầu tiên của chính nó, rồi tin, đề xuất, chấp nhận, hoàn thành, đánh giá theo đúng thứ tự; mọi đề xuất của tin gửi trước lúc chấp nhận (BR07); không có thời điểm ở tương lai; mã tin tăng theo thời điểm đăng |
+
+Dữ liệu tự động chỉ dùng các tài khoản tự động, không đụng tới tài khoản và tin viết tay, nên điểm trung bình và số liệu của dữ liệu viết tay không bị nhiễu.
+
+## Thông báo trong dữ liệu mẫu
+
+Thông báo do chính các service tạo ra khi chạy seed (đề xuất mới, được chấp nhận, bị từ chối, hoàn thành, đánh giá; xem `docs/api-contract.md` mục 2.3.6), không chèn tay. Với dữ liệu tự động, ngày tạo thông báo được lùi về đúng thời điểm sự kiện gây ra nó, và **thông báo cũ hơn 7 ngày được đánh dấu đã đọc** để tài khoản bận không có hàng trăm thông báo chưa đọc. Thông báo của dữ liệu viết tay và thông báo gần đây vẫn chưa đọc (trừ những đề xuất được đánh dấu `daDocThongBao`): ví dụ `khach1@demo.vn` có khoảng 26 chưa đọc, đủ để thử chấm xanh và số đếm trên chuông. Chuông chỉ liệt kê 20 thông báo mới nhất, chưa có nút xem thêm.
+
 ## Cách hoạt động
 
 - Dữ liệu viết tay nằm trong `thu-cong/` (`tai-khoan.js`, `tin-sua-chua.js`, `de-xuat.js`, `danh-gia.js`). Sửa các file này để đổi dữ liệu mẫu. Mã tài khoản, tin, đề xuất theo đúng thứ tự trong mảng, các tài liệu dẫn tới những mã đó nên chỉ thêm mục mới ở cuối mảng. Chuỗi dài đúng giới hạn tạo bằng `chuoiDaiDung` (`thu-cong/tien-ich.js`).
 - Mọi nguồn dữ liệu cùng trả về một "kế hoạch" (tài khoản, tin, đề xuất, đánh giá). `ke-hoach.js` kiểm tra kế hoạch bằng chính các validator của API trước khi ghi gì vào CSDL; `thuc-thi.js` thực thi kế hoạch; `chay-seed.js` là lệnh chạy.
 - `thuc-thi.js` tạo dữ liệu bằng đúng các service của ứng dụng (đăng tin, sửa tin, gửi đề xuất, rút, chấp nhận, xác nhận hoàn thành, đánh giá, khóa tài khoản), không chèn SQL trực tiếp, trừ việc lùi ngày tạo về quá khứ khi kế hoạch có `taoLuc`. Nhờ đó các quy tắc nghiệp vụ BR01 đến BR16 được áp dụng như khi dùng thật: đề xuất khác tự bị từ chối khi chọn kỹ thuật viên, kỹ thuật viên được chọn nhận thông báo, điểm trung bình được tính lại. Tài khoản chèn qua `user.repository` (cùng hàm mà dịch vụ đăng ký gọi) với một mật khẩu băm dùng chung.
 - Thời gian mong muốn của tin viết tay tính theo lúc chạy seed, nên tin chưa hoàn thành nằm trong tương lai (trừ SC-016 cố ý đã quá hạn).
-- `npm test` có `tests/seed.test.js` chạy seed trên CSDL test, kiểm tra các quy tắc nghiệp vụ và các tình huống trong bảng phủ ở trên.
+- Kiểm thử: `tests/seed-ke-hoach.test.js` (không cần CSDL) kiểm tra bộ kiểm tra kế hoạch bắt đúng từng loại lỗi và bộ sinh tái lập được, hợp lệ ở nhiều quy mô, đủ đa dạng; `tests/seed.test.js` chạy 50 tin viết tay cùng 150 tin tự động trên CSDL test, kiểm tra quy tắc nghiệp vụ, các tình huống trong bảng phủ, số thông báo theo từng loại và dòng thời gian trong CSDL.
 - Seed không nằm trong một transaction. Kế hoạch được kiểm tra trước khi ghi nên lỗi dữ liệu dừng ngay mà chưa ghi gì; nếu vẫn lỗi giữa chừng (mất kết nối...), chạy `npm run seed:reset`.

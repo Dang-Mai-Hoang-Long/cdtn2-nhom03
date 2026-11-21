@@ -163,11 +163,12 @@ Test dùng `TEST_DATABASE_URL`, xóa và dựng lại bảng ở `suachua_test` 
 Thư mục `seeds/` tạo dữ liệu mẫu và tài khoản demo bằng chính các service của ứng dụng, nên mọi người có dữ liệu giống nhau mà không cần gửi file:
 
 ```powershell
-npm run seed          # tạo dữ liệu mẫu; dừng nếu đã có tài khoản demo
-npm run seed:reset    # xóa TOÀN BỘ dữ liệu ứng dụng rồi tạo lại
+npm run seed                # 50 tin viết tay + 1000 tin tự động (khoảng 10 giây); dừng nếu đã có tài khoản demo
+npm run seed:reset          # xóa TOÀN BỘ dữ liệu ứng dụng rồi tạo lại
+npm run seed:thu-cong       # chỉ 50 tin viết tay (vài giây), khi không cần nhiều dữ liệu
 ```
 
-Danh sách tài khoản demo (mật khẩu chung `Demo@123`) và các tin mẫu ở `seeds/README.md`. Phần 4.1 trở đi dùng khi bạn muốn đồng nghiệp có đúng dữ liệu bạn đã tự nhập.
+Danh sách tài khoản demo (mật khẩu chung `Demo@123`), bảng tình huống của phần viết tay và cách sinh phần tự động ở `seeds/README.md`. Phần tự động có hơn 200 tài khoản (`auto.kh001@demo.vn`, `auto.ktv001@demo.vn`, ...) và cho cùng dữ liệu ở mọi máy. Phần 4.1 trở đi dùng khi bạn muốn đồng nghiệp có đúng dữ liệu bạn đã tự nhập.
 
 ### 4.1. Người có dữ liệu: xuất ra file
 

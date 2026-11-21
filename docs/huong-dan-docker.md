@@ -41,11 +41,12 @@ Dịch vụ `api` tự chạy `npm run migrate` mỗi lần khởi động nên 
 CSDL mới còn trống. Tạo dữ liệu mẫu bằng thư mục `seeds/`:
 
 ```powershell
-docker compose exec api npm run seed          # dừng nếu đã có tài khoản demo
-docker compose exec api npm run seed:reset    # xóa toàn bộ dữ liệu rồi tạo lại
+docker compose exec api npm run seed               # 50 tin viết tay + 1000 tin tự động; dừng nếu đã có tài khoản demo
+docker compose exec api npm run seed:reset         # xóa toàn bộ dữ liệu rồi tạo lại
+docker compose exec api npm run seed:thu-cong      # chỉ 50 tin viết tay (nhanh)
 ```
 
-Danh sách tài khoản demo (mật khẩu chung `Demo@123`) ở `seeds/README.md`, ví dụ quản trị viên `admin@demo.vn`, khách hàng `khach1@demo.vn`, kỹ thuật viên `ktv1@demo.vn`.
+Danh sách tài khoản demo (mật khẩu chung `Demo@123`) ở `seeds/README.md`, ví dụ quản trị viên `admin@demo.vn`, khách hàng `khach1@demo.vn`, kỹ thuật viên `ktv1@demo.vn`; phần tự động thêm các tài khoản `auto.kh001@demo.vn`, `auto.ktv001@demo.vn`, ...
 
 ## 4. Chạy test
 
