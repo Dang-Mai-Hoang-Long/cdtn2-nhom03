@@ -1,8 +1,9 @@
-# Chạy cả dự án bằng một lệnh: docker compose up --build
+# Chạy cả dự án: cp .env.example .env (một lần), rồi docker compose up --build
+#   Mật khẩu CSDL và khóa JWT lấy từ file .env (không ghi cứng trong file này); thiếu thì compose dừng và báo rõ.
 #   Giao diện : http://localhost:5173
 #   API       : http://localhost:3000/api/health
-#   CSDL      : 127.0.0.1:5433 (user nhom03, mật khẩu nhom03, CSDL suachua_dev) - đổi cổng bằng biến DB_PORT
-# Các cổng chỉ mở ở 127.0.0.1 vì mật khẩu CSDL dành cho phát triển. Chi tiết: docs/huong-dan-docker.md
+#   CSDL      : 127.0.0.1:5433 (user nhom03, mật khẩu = DB_PASSWORD trong .env, CSDL suachua_dev) - đổi cổng bằng biến DB_PORT
+# Các cổng chỉ mở ở 127.0.0.1 vì mật khẩu CSDL mẫu dành cho phát triển. Chi tiết: docs/huong-dan-docker.md
 name: cdtn2-nhom03
 
 services:
@@ -10,7 +11,7 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: nhom03
-      POSTGRES_PASSWORD: nhom03
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?Chưa có DB_PASSWORD, hãy chạy lệnh cp .env.example .env}"
       POSTGRES_DB: suachua_dev
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -28,14 +29,14 @@ services:
   api:
     build: .
     image: cdtn2-nhom03:dev
-    # Dựng bảng (chạy migration chưa chạy) rồi mới khởi động API.
-    command: sh -c "npm run migrate && npm start"
+    # Dựng bảng (chạy migration chưa chạy), nạp dữ liệu mẫu nếu CSDL còn trống (đã có thì bỏ qua), rồi mới khởi động API.
+    command: sh -c "npm run migrate && npm run seed -- --neu-chua-co && npm start"
     environment:
       PORT: "3000"
-      DATABASE_URL: postgres://nhom03:nhom03@db:5432/suachua_dev
-      TEST_DATABASE_URL: postgres://nhom03:nhom03@db:5432/suachua_test
-      # Khóa dành cho phát triển; đặt biến JWT_SECRET (trong .env hoặc môi trường) để dùng khóa riêng.
-      JWT_SECRET: ${JWT_SECRET:-khoa-jwt-chi-dung-khi-phat-trien-bang-docker}
+      DATABASE_URL: postgres://nhom03:${DB_PASSWORD}@db:5432/suachua_dev
+      TEST_DATABASE_URL: postgres://nhom03:${DB_PASSWORD}@db:5432/suachua_test
+      # Khóa ký token, từ .env (ít nhất 32 ký tự); không có giá trị mặc định ghi cứng.
+      JWT_SECRET: "${JWT_SECRET:?Chưa có JWT_SECRET, hãy chạy lệnh cp .env.example .env}"
       JWT_EXPIRES_IN: 1d
       CLIENT_URL: http://localhost:5173
     ports:
@@ -62,6 +63,12 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173/').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
 
 volumes:
   pgdata:

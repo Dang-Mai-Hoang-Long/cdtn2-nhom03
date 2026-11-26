@@ -2,6 +2,7 @@
 // (tu-dong/, mặc định 1000 tin). Bộ thực thi (thuc-thi.js) tạo qua service nên mọi quy tắc nghiệp vụ được áp dụng.
 // Cách dùng: npm run seed                  dừng nếu đã có tài khoản demo
 //            npm run seed:reset            xóa TOÀN BỘ dữ liệu ứng dụng rồi tạo lại
+//            npm run seed -- --neu-chua-co chỉ tạo khi CSDL chưa có tài khoản demo, có rồi thì bỏ qua và thoát bình thường (Docker dùng cờ này để khởi động lại không lỗi)
 //            npm run seed:thu-cong         chỉ phần viết tay (nhanh, vài giây)
 //            npm run seed -- --so-tin=300  đổi số tin tự động; --hat-giong=N đổi hạt giống (cùng hạt giống thì cùng dữ liệu)
 const { truyVan, dongKetNoi } = require('../src/db');
@@ -70,9 +71,20 @@ function inKetQua(ketQua, thoiGianGiay) {
 
 if (require.main === module) {
   const batDau = Date.now();
+  const cacThamSo = process.argv.slice(2);
   const tienDo = (buoc, daXong, tong) => console.log(`  ${buoc}: ${daXong}/${tong}`);
-  chayDuLieuMau({ ...docTuyChon(process.argv.slice(2)), tienDo })
-    .then((ketQua) => inKetQua(ketQua, Math.round((Date.now() - batDau) / 1000)))
+  const chay = async () => {
+    if (cacThamSo.includes('--neu-chua-co') && !cacThamSo.includes('--reset')) {
+      kiemTraMoiTruong();
+      if (await daCoTaiKhoanDemo()) {
+        console.log('CSDL đã có dữ liệu mẫu, bỏ qua bước nạp (--neu-chua-co).');
+        return null;
+      }
+    }
+    return chayDuLieuMau({ ...docTuyChon(cacThamSo), tienDo });
+  };
+  chay()
+    .then((ketQua) => ketQua && inKetQua(ketQua, Math.round((Date.now() - batDau) / 1000)))
     .catch((loi) => {
       console.error(loi.message);
       process.exitCode = 1;
