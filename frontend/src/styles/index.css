@@ -1261,6 +1261,132 @@ p.muc-thong-bao {
   color: var(--p-muted);
 }
 
+/* ---------- Hồ sơ người dùng và đánh giá ---------- */
+a.the-tai-khoan {
+  color: inherit;
+  text-decoration: none;
+}
+a.the-tai-khoan:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.lien-ket-tai-khoan-nho {
+  display: none;
+}
+.hang-hanh-dong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 24px;
+}
+.truong-chi-doc {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+.truong-chi-doc .mo-ta-phu {
+  margin: 0;
+}
+.tong-quan-diem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.tong-quan-diem > div {
+  display: grid;
+  gap: 4px;
+}
+.tong-quan-diem .mo-ta-phu {
+  margin: 0;
+}
+.diem-lon {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.hang-sao-hien-thi {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+}
+.hang-sao-hien-thi svg {
+  width: 18px;
+  height: 18px;
+  stroke-linejoin: round;
+}
+.sao-day {
+  fill: var(--p-ink);
+  stroke: var(--p-ink);
+  stroke-width: 1;
+}
+.sao-rong {
+  fill: none;
+  stroke: var(--line-2);
+  stroke-width: 1.5;
+}
+.phan-bo-sao {
+  display: grid;
+  gap: 8px;
+  margin-top: 24px;
+}
+.dong-phan-bo {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+.dong-phan-bo > span:last-child {
+  text-align: right;
+}
+.thanh-phan-bo {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--p-surface);
+  overflow: hidden;
+}
+.thanh-phan-bo > span {
+  display: block;
+  height: 100%;
+  background: var(--p-action);
+}
+.danh-sach-danh-gia {
+  display: grid;
+  margin-bottom: 16px;
+}
+.danh-gia-muc {
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.danh-gia-muc:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.dau-danh-gia {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px 16px;
+  color: var(--p-muted);
+  font-size: 14px;
+}
+.noi-dung-danh-gia {
+  margin: 8px 0;
+  max-width: 68ch;
+  overflow-wrap: anywhere;
+}
+.nguon-danh-gia {
+  margin: 0;
+  color: var(--p-muted);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
 /* ---------- Hover chỉ cho con trỏ chuột ---------- */
 @media (hover: hover) and (pointer: fine) {
   .nut:hover:not(:disabled) {
@@ -1418,6 +1544,13 @@ p.muc-thong-bao {
   }
   .nhan-nut-thong-bao {
     display: none;
+  }
+  .lien-ket-tai-khoan-nho {
+    display: inline-flex;
+  }
+  .hang-hanh-dong {
+    flex-direction: column;
+    align-items: flex-end;
   }
   .bieu-tuong-chuong {
     display: block;

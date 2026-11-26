@@ -85,7 +85,7 @@ Backend dùng đúng **22 mã** sau. Các mã dùng chung nhiều tình huống 
 | **ACCOUNT_LOCKED**            | 403      | Đăng nhập đúng mật khẩu nhưng tài khoản bị khóa; hoặc mọi API cần đăng nhập mà tài khoản đang bị khóa (BR02, kiểm tra lại ở mỗi yêu cầu)                                                                              |
 | **NOT_OWNER**                 | 403      | Không phải chủ sở hữu hoặc không tham gia: tin của người khác, đề xuất không phải của mình/không thuộc tin của mình, thông báo của người khác, đánh giá công việc không tham gia (BR03, BR09, BR11, BR13)             |
 | **NOT_FOUND**                 | 404      | Đường dẫn không tồn tại (ngoài các API trong tài liệu này)                                                                                                                                                           |
-| **USER_NOT_FOUND**            | 404      | Không tìm thấy người dùng (`GET /api/reviews/user/{userId}`, khóa/mở khóa tài khoản)                                                                                                                                 |
+| **USER_NOT_FOUND**            | 404      | Không tìm thấy người dùng (`GET /api/users/{id}`, `GET /api/reviews/user/{userId}`, khóa/mở khóa tài khoản)                                                                                                                                 |
 | **REQUEST_NOT_FOUND**         | 404      | Không tìm thấy tin sửa chữa                                                                                                                                                                                          |
 | **PROPOSAL_NOT_FOUND**        | 404      | Không tìm thấy đề xuất                                                                                                                                                                                               |
 | **NOTIFICATION_NOT_FOUND**    | 404      | Không tìm thấy thông báo                                                                                                                                                                                             |
@@ -509,6 +509,50 @@ Rút đề xuất, sửa đề xuất, sửa tin và đóng tin **không** tạo
 
 Mọi đường dẫn khác trả `404 NOT_FOUND` (`Không tìm thấy đường dẫn`). Backend không phục vụ giao diện: giao diện chạy riêng (Vite, cổng 5173) và chuyển tiếp `/api` sang backend.
 
+#### **2.3.8. UserController – /api/users**
+
+| **Method** | **Endpoint**    | **Vai trò**  | **Mô tả**                                         | **Success** | **Error Code thường gặp**   |
+| ---------- | --------------- | ------------ | ------------------------------------------------- | ----------- | --------------------------- |
+| **GET**    | /api/users/{id} | mọi vai trò  | Xem hồ sơ một người dùng (thông tin tài khoản và số liệu đánh giá) | 200         | UNAUTHORIZED, USER_NOT_FOUND |
+| **PATCH**  | /api/users/me   | mọi vai trò  | Tự sửa họ tên và số điện thoại của chính mình      | 200         | VALIDATION_ERROR, UNAUTHORIZED, ACCOUNT_LOCKED |
+
+**GET /api/users/{id}** — thông điệp: `Thành công`. Người đã đăng nhập, vai trò nào cũng gọi được; phần nào hiện cho ai do backend quyết định:
+
+| Trường | Ai thấy | Ý nghĩa |
+| ------ | ------- | ------- |
+| `id`, `fullName`, `role`, `createdAt` | mọi vai trò | Mã, họ tên, vai trò, ngày tham gia |
+| `ratingAvg` | mọi vai trò | Điểm trung bình (một chữ số thập phân), `null` khi chưa có đánh giá |
+| `reviewCount` | mọi vai trò | Số đánh giá người này **nhận được** (khớp `meta.totalElements` của `GET /api/reviews/user/{userId}`) |
+| `ratingCounts` | mọi vai trò | Số đánh giá theo từng mức sao, đủ khóa `"1"` đến `"5"` (mức không có thì `0`); tổng bằng `reviewCount` |
+| `completedCount` | mọi vai trò | Số công việc đã hoàn thành: khách hàng là số tin của mình ở `COMPLETED`; kỹ thuật viên là số tin `COMPLETED` đã chọn đề xuất của mình; quản trị viên luôn `0` |
+| `email`, `phone`, `isLocked` | **chỉ quản trị viên và chính chủ** | Người khác không nhận ba trường này (không có khóa trong JSON). Số điện thoại khách hàng vẫn theo BR15 ở các API tin và công việc |
+
+Quy tắc: tài khoản **quản trị viên** chỉ quản trị viên xem được, người dùng thường nhận `404 USER_NOT_FOUND` như khi mã không tồn tại (BR01). Tài khoản **bị khóa** vẫn xem được hồ sơ (lịch sử và đánh giá còn nguyên); chỉ quản trị viên thấy `isLocked`. Mã không phải số nguyên dương hoặc lớn hơn 2147483647 trả `404 USER_NOT_FOUND`. Đánh giá chi tiết của người đó lấy bằng `GET /api/reviews/user/{userId}` (mục 2.3.4); giao diện tải hồ sơ trước và bỏ qua đánh giá khi hồ sơ trả `404`, vì API đánh giá vẫn trả `200` cho mã quản trị viên.
+
+```
+GET /api/users/15 (khách hàng đang đăng nhập xem kỹ thuật viên)
+{
+  "success": true,
+  "data": {
+    "id": 15, "fullName": "Dương Văn Tài", "role": "TECHNICIAN", "ratingAvg": 4,
+    "reviewCount": 4, "ratingCounts": { "1": 0, "2": 1, "3": 0, "4": 1, "5": 2 },
+    "completedCount": 5, "createdAt": "2026-11-26T07:14:07.000Z"
+  },
+  "message": "Thành công"
+}
+```
+
+Quản trị viên hoặc chính chủ nhận thêm `"email"`, `"phone"`, `"isLocked"`.
+
+**PATCH /api/users/me** — thông điệp: `Cập nhật thông tin thành công`. Người đã đăng nhập tự sửa thông tin của **chính mình**; không có đường dẫn sửa theo mã người dùng nên không sửa được tài khoản người khác (kể cả quản trị viên sửa người dùng). Request Body:
+
+| Trường | Quy tắc |
+| ------ | ------- |
+| `fullName` | Chuỗi 1 đến 100 ký tự sau khi bỏ khoảng trắng hai đầu |
+| `phone` | Cùng quy tắc khi đăng ký: 9 đến 15 chữ số, cho phép `+`, dấu cách, `.`, `-`; tối đa 20 ký tự sau khi bỏ khoảng trắng hai đầu |
+
+Gửi trường nào thì sửa trường đó; cần ít nhất một trong hai, thiếu cả hai trả `400 VALIDATION_ERROR` với `details: [{ "field": "body", ... }]`. Giá trị được cắt khoảng trắng hai đầu trước khi lưu, ký tự đặc biệt giữ nguyên văn. Email (dùng để đăng nhập), mật khẩu, vai trò, `isLocked`, `ratingAvg` **không sửa được**: gửi kèm thì bị bỏ qua. Response 200: người dùng sau khi sửa, cùng cấu trúc `GET /api/auth/me` (không có mật khẩu). Chưa đăng nhập nhận `401 UNAUTHORIZED`; tài khoản bị khóa nhận `403 ACCOUNT_LOCKED` (BR02).
+
 ### 2.4. Entities chính
 
 Các thực thể dữ liệu tương ứng với bảng trong cơ sở dữ liệu (API dùng camelCase). Tên bảng người dùng trong CSDL là `users`.
@@ -668,7 +712,7 @@ Tóm tắt các điểm contract này khác bản đầu; chi tiết, lý do và
 - `page` bắt đầu từ **1** (bản đầu ghi mặc định 0) và bị kẹp ở 1.000.000 thay vì báo lỗi.
 - Thân yêu cầu lớn hơn 100 KB trả `400 VALIDATION_ERROR`, không phải `413`. Không dùng `204`.
 - `PATCH /api/proposals/{id}/close` là **rút đề xuất** (trạng thái `WITHDRAWN`), không phải đóng tin; đóng tin là `PATCH /api/requests/{id}/close`.
-- Thêm API ngoài bản đầu: `GET /api/proposals/my`, `GET /`, `GET /api/health`.
+- Thêm API ngoài bản đầu: `GET /api/proposals/my`, `GET /`, `GET /api/health`, `GET /api/users/{id}` (hồ sơ người dùng) và `PATCH /api/users/me` (tự sửa họ tên, số điện thoại), mục 2.3.8.
 - Thêm trường ngoài bản đầu: `proposalCount`, `hasProposed`, `canPropose`, `myProposalId`, `myProposalStatus`, `hasReviewed`, `meta.summary` (admin), `meta.user` (đánh giá).
 - Bản đầu liệt kê `CONTACT_NOT_VISIBLE` là mã lỗi của `GET /api/requests/{id}`; thực tế API vẫn trả `200` và chỉ bỏ trường `customer.phone` khi kỹ thuật viên chưa được chọn.
 - `PATCH /api/requests/{id}` trả `REQUEST_NOT_EDITABLE` (409) khi tin không còn sửa được, không dùng `REQUEST_ALREADY_SELECTED`/`REQUEST_NOT_WAITING` như bảng lỗi bản đầu.

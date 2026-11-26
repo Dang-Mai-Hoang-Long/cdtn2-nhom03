@@ -133,5 +133,7 @@ Sprint 3 (11 user story còn lại) cũng đã có backend, giao diện nối AP
 | US15, US22, US23 | Xem chi tiết, sửa, rút đề xuất; danh sách đề xuất của tôi | `GET /api/proposals/:id`, `GET /api/proposals/my`, `PATCH /api/proposals/:id`, `PATCH /api/proposals/:id/close` |
 | US18, US19 | Đánh giá hai chiều | `POST /api/reviews`, `GET /api/reviews/user/:userId` |
 | US20 | Thông báo khi đề xuất được chấp nhận | `GET /api/notifications`, `/unread-count`, `PATCH /api/notifications/:id/read` |
+| Mở rộng | Xem hồ sơ người dùng: thông tin tài khoản, điểm và danh sách đánh giá đã nhận | `GET /api/users/:id`, `GET /api/reviews/user/:userId` |
+| Mở rộng | Tự sửa họ tên và số điện thoại của tài khoản (email, mật khẩu, vai trò không đổi được) | `PATCH /api/users/me` |
 
 Cả 23 user story đã nối API thật; không còn màn hình dùng dữ liệu minh họa.

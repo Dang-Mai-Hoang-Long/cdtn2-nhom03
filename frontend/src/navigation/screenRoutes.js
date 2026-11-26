@@ -17,7 +17,16 @@ export const danhSachManHinh = [
   { maManHinh: '14', duongDan: 'technician/work/:id/review', tieuDe: 'Đánh giá khách hàng', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
   { maManHinh: '13', duongDan: 'technician/work/:id', tieuDe: 'Công việc được chọn', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
   { maManHinh: '16', duongDan: 'admin/users', tieuDe: 'Quản lý tài khoản', vaiTro: 'Quản trị viên', nhomVaiTro: 'Quản trị viên', mucDieuHuong: ['Quản lý tài khoản'] },
+  // Màn hình dùng chung: cần đăng nhập, mọi vai trò đều vào được; thanh điều hướng theo vai trò của người xem.
+  { maManHinh: '19', duongDan: 'users/:id', tieuDe: 'Hồ sơ người dùng', vaiTro: 'Mọi vai trò', nhomVaiTro: 'Mọi vai trò', mucDieuHuong: [] },
 ];
+
+export const NHOM_MOI_VAI_TRO = 'Mọi vai trò';
+export const MUC_DIEU_HUONG_THEO_VAI_TRO = {
+  CUSTOMER: ['Tin của tôi', 'Đăng tin'],
+  TECHNICIAN: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'],
+  ADMIN: ['Quản lý tài khoản'],
+};
 
 export const manHinhTheoMucMenu = {
   'Tin của tôi': '03',
