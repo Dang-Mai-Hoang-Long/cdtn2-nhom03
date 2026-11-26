@@ -6,6 +6,9 @@ const { xuLyKhongTimThayDuongDan, xuLyLoi } = require("./utils/error-handler");
 
 const app = express();
 
+// Không báo cho bên ngoài biết backend dùng Express (bớt thông tin cho kẻ dò lỗ hổng theo phiên bản).
+app.disable("x-powered-by");
+
 app.use(cors({ origin: cauHinh.clientUrl }));
 app.use(express.json());
 

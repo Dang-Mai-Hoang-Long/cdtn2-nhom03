@@ -44,7 +44,8 @@ function xuLyLoi(loi, req, res, next) {
     message: loiTraVe.message,
     code: loiTraVe.maLoi,
     timestamp: new Date().toISOString(),
-    path: req.originalUrl,
+    // Bỏ phần sau dấu ? để không phản chiếu lại chuỗi truy vấn (có thể chứa token hay thông tin cá nhân người gọi tự đặt vào URL).
+    path: req.originalUrl.split('?')[0],
   };
   if (loiTraVe.chiTiet?.length) noiDung.details = loiTraVe.chiTiet;
   res.status(loiTraVe.maHttp).json(noiDung);
