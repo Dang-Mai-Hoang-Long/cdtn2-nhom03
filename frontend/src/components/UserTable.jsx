@@ -8,7 +8,7 @@ export default function BangNguoiDung({ danhSach, maDangXuLy, onDoiTrangThai }) 
     <td><strong>{nguoiDung.fullName}</strong></td>
     <td>{nguoiDung.email}</td>
     <td>{NHAN_VAI_TRO[nguoiDung.role]}</td>
-    <td><NhanTrangThai sacThai={nguoiDung.isLocked ? '' : 'nhan-nhat'}>{nguoiDung.isLocked ? 'Bị khóa' : 'Hoạt động'}</NhanTrangThai></td>
+    <td><NhanTrangThai sacThai={nguoiDung.isLocked ? 'nhan-khoa' : 'nhan-nhat'}>{nguoiDung.isLocked ? 'Bị khóa' : 'Hoạt động'}</NhanTrangThai></td>
     <td><Nut laNutPhu disabled={maDangXuLy === nguoiDung.id} onClick={() => onDoiTrangThai(nguoiDung)}>{nguoiDung.isLocked ? 'Mở khóa' : 'Khóa'}</Nut></td>
   </tr>)}</tbody></table></div>;
 }

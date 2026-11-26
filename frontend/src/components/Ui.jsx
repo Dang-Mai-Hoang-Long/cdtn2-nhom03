@@ -77,8 +77,11 @@ export function TienTrinh({ trangThai }) {
   return <div className="tien-trinh">{cacBuoc.map((buoc, viTri) => <div key={buoc} className={viTri <= buocHienTai ? 'hoan-thanh' : ''}><span>{viTri < buocHienTai || trangThai === 'COMPLETED' ? '✓' : viTri + 1}</span><strong>{buoc}</strong></div>)}</div>;
 }
 
+// Mỗi trạng thái một sắc thái: chờ đề xuất (xanh), đã chọn kỹ thuật viên (vàng), hoàn thành (đen), đã đóng (viền xám).
+const SAC_THAI_YEU_CAU = { WAITING_PROPOSAL: '', SELECTED: 'nhan-chon', COMPLETED: 'nhan-dam', CLOSED: 'nhan-nhat' };
+
 export function NhanTrangThaiYeuCau({ trangThai }) {
-  return <NhanTrangThai sacThai={trangThai === 'COMPLETED' ? 'nhan-dam' : ''}>{NHAN_TRANG_THAI_YEU_CAU[trangThai] ?? trangThai}</NhanTrangThai>;
+  return <NhanTrangThai sacThai={SAC_THAI_YEU_CAU[trangThai] ?? ''}>{NHAN_TRANG_THAI_YEU_CAU[trangThai] ?? trangThai}</NhanTrangThai>;
 }
 
 export function PhanTrang({ phanTrang, onChuyenTrang }) {
