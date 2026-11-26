@@ -209,7 +209,7 @@ Năm bug dưới đây do đợt kiểm bảo mật ngày 26/11/2026 phát hiệ
 ## BUG-06 — Dừng CSDL làm tiến trình API thoát
 
 - **Mã và mức độ:** BUG-06 · **Major** — dịch vụ chết khi CSDL khởi động lại hoặc mất kết nối, chặn mọi chức năng cho tới khi bật lại thủ công.
-- **Phát hiện bởi:** TC-35 (bước "tắt CSDL rồi gọi API" của đề), chạy trên Docker.
+- **Phát hiện bởi:** kiểm tra A02 (bước "tắt CSDL rồi gọi API" của đề), chạy trên Docker.
 - **Triệu chứng:** `docker compose stop db` thì container `api` chuyển `Exited (1)`; gọi API sau đó không kết nối được (curl `000`) thay vì nhận `500 INTERNAL_ERROR` gọn.
 - **Cách tái lập:** `cp .env.example .env`; `docker compose up -d --build`; `docker compose stop db`; `curl.exe -s -o NUL -w "%{http_code}" -X POST http://localhost:3000/api/auth/login -H "Content-Type: application/json" -d '{\"email\":\"khach1@demo.vn\",\"password\":\"Demo@123\"}'`; `docker compose ps -a`. Nhật ký `api`: `Unhandled 'error' event … Emitted 'error' event on BoundPool instance`.
 - **Nguyên nhân gốc:** [src/db.js](../src/db.js) tạo `Pool` mà không lắng nghe sự kiện `error`. Kết nối rảnh bị PostgreSQL cắt (`terminating connection due to administrator command`) phát `error` lên pool; không có trình lắng nghe thì Node coi là ngoại lệ chưa bắt và thoát tiến trình.
@@ -219,12 +219,12 @@ Năm bug dưới đây do đợt kiểm bảo mật ngày 26/11/2026 phát hiệ
 ## BUG-07 — Token ký thuật toán khác HS256 vẫn được chấp nhận
 
 - **Mã và mức độ:** BUG-07 · **Minor** — cần biết khóa mới giả được token nên chưa vượt quyền được, nhưng trái yêu cầu "chỉ định rõ thuật toán" của đề.
-- **Phát hiện bởi:** TC-38 (A07) và A6 mục 3.
+- **Phát hiện bởi:** kiểm tra bảo mật A07 và A6 mục 3.
 - **Triệu chứng:** token HS512 ký đúng khóa gọi `GET /api/auth/me` nhận `200`.
 - **Cách tái lập:** `node -e "console.log(require('jsonwebtoken').sign({userId:2,role:'CUSTOMER'}, process.env.JWT_SECRET, {algorithm:'HS512'}))"` rồi gửi token đó trong tiêu đề `Authorization: Bearer`.
 - **Nguyên nhân gốc:** `jwt.verify(token, secret)` ở [auth.middleware.js](../src/middlewares/auth.middleware.js) không truyền `algorithms`, nên chấp nhận mọi thuật toán HMAC.
 - **Cách sửa:** `jwt.verify(…, { algorithms: ['HS256'] })` và `jwt.sign(…, { algorithm: 'HS256' })` ([auth.service.js](../src/services/auth.service.js)).
-- **Commit và xác nhận:** [c0e6cbf](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/commit/c0e6cbf) · chạy lại TC-38: token HS512 → `401`; token HS256 đăng nhập thường vẫn `200`; `npm test` 157/157.
+- **Commit và xác nhận:** [c0e6cbf](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/commit/c0e6cbf) · chạy lại kiểm tra A07: token HS512 → `401`; token HS256 đăng nhập thường vẫn `200`; `npm test` 157/157.
 
 ## BUG-08 — Khóa JWT ngắn vẫn được chấp nhận
 
@@ -239,7 +239,7 @@ Năm bug dưới đây do đợt kiểm bảo mật ngày 26/11/2026 phát hiệ
 ## BUG-09 — Phản hồi HTTP lộ thông tin không cần thiết
 
 - **Mã và mức độ:** BUG-09 · **Minor** — lộ tên framework và phản chiếu lại chuỗi truy vấn của người gọi.
-- **Phát hiện bởi:** TC-35 (A02) và TC-38 (token trong URL).
+- **Phát hiện bởi:** kiểm tra bảo mật A02 và A07 (token trong URL).
 - **Triệu chứng:** mọi phản hồi có `X-Powered-By: Express`; `GET /api/auth/me?token=abc.def.ghi` trả `"path":"/api/auth/me?token=abc.def.ghi"`, tức token đặt nhầm vào URL bị trả ngược trong thân phản hồi (và dễ đi vào nhật ký của proxy).
 - **Cách tái lập:** `curl.exe -s -i http://localhost:3000/api/health` (xem tiêu đề); `curl.exe -s "http://localhost:3000/api/auth/me?token=abc.def.ghi"`.
 - **Nguyên nhân gốc:** [src/app.js](../src/app.js) để Express bật `X-Powered-By` mặc định; [error-handler.js](../src/utils/error-handler.js) ghi `req.originalUrl` nguyên chuỗi truy vấn vào trường `path`.
@@ -266,15 +266,15 @@ Không phải bug đã chốt. **DEV** = hành vi khác tiêu chí chấp nhận
 
 | Mục | Quyết định | Lý do và minh chứng |
 |---|---|---|
-| DEV-01 | Chấp nhận; sửa tiêu chí US03 thành "đăng xuất xóa phiên ở phía người dùng, token hết hạn sau 1 ngày" | Thu hồi token cần thêm trạng thái phía máy chủ ở mọi lần xác thực. Rủi ro đã giảm: hạn token cấu hình được (`JWT_EXPIRES_IN`), khóa tài khoản có hiệu lực ngay (TC-38), giao diện xóa token (TC-45). TC-03: FAIL theo tiêu chí gốc, PASS theo tiêu chí đã cập nhật |
-| DEV-02 | Chấp nhận; sửa tiêu chí US15 thành "chủ tin hoặc kỹ thuật viên đã gửi đề xuất đó" | Chuông thông báo cần mở đề xuất. Người khác vẫn bị `403` (TC-34: kỹ thuật viên B xem đề xuất của A). TC-15: PASS theo tiêu chí đã cập nhật |
+| DEV-01 | Chấp nhận; sửa tiêu chí US03 thành "đăng xuất xóa phiên ở phía người dùng, token hết hạn sau 1 ngày" | Thu hồi token cần thêm trạng thái phía máy chủ ở mọi lần xác thực. Rủi ro đã giảm: hạn token cấu hình được (`JWT_EXPIRES_IN`), khóa tài khoản có hiệu lực ngay (kiểm tra A07), giao diện xóa token (kiểm tra giao diện đăng xuất). TC-03: FAIL theo tiêu chí gốc, PASS theo tiêu chí đã cập nhật |
+| DEV-02 | Chấp nhận; sửa tiêu chí US15 thành "chủ tin hoặc kỹ thuật viên đã gửi đề xuất đó" | Chuông thông báo cần mở đề xuất. Người khác vẫn bị `403` (kiểm tra A01: kỹ thuật viên B xem đề xuất của A). TC-15: PASS theo tiêu chí đã cập nhật |
 | DEV-03 | Giữ `WITHDRAWN`; tiêu chí US23 đổi theo | Tên đã dùng ở API, CSDL, giao diện; [api-contract.md](api-contract.md) đã liệt kê đủ tập trạng thái đề xuất |
-| UI-01 | Xác minh trên trình duyệt và giữ chuyển hướng im lặng | TC-41 (Chrome 158, bản Docker): sai vai trò và chưa đăng nhập đều được chuyển thẳng về màn chính của vai trò hoặc `#/login`, không hiện nội dung bị cấm. Màn bị cấm không có lối đi trên thanh điều hướng của vai trò đó; quyền thật do backend chặn (`403`, TC-34 và bước gọi thẳng API trong TC-41) |
+| UI-01 | Xác minh trên trình duyệt và giữ chuyển hướng im lặng | kiểm tra giao diện phân quyền (Chrome 158, bản Docker): sai vai trò và chưa đăng nhập đều được chuyển thẳng về màn chính của vai trò hoặc `#/login`, không hiện nội dung bị cấm. Màn bị cấm không có lối đi trên thanh điều hướng của vai trò đó; quyền thật do backend chặn (`403`, kiểm tra A01 và bước gọi thẳng API trong kiểm tra giao diện phân quyền) |
 | TD-01 | Ghi nhận hạn chế đã biết | `npm test` luôn chạy cả bộ theo thứ tự cố định nên ổn định (157/157 ở mọi lần chạy ngày 26/11); chỉ người chạy riêng một suite phải kèm suite tiền đề |
 | OBS-01 | Giới hạn đặt ở reverse proxy, không đặt trong ứng dụng | Khóa theo email cho kẻ tấn công khóa nạn nhân; giới hạn theo IP trong ứng dụng sai sau proxy và gộp người dùng chung NAT. Nginx `limit_req` đã chạy thử: 12 lần sai → `401` ×6 rồi `429` ×6 ([deployment-guide.md](deployment-guide.md) mục 8) |
 | OBS-02 | Giữ | Ô chọn ngày của giao diện đã chặn ngày quá khứ (`min` = hôm nay); API chấp nhận vì dữ liệu mẫu cố ý có tin quá hạn và US06 không yêu cầu |
-| OBS-03 | Giữ | Chỉ ảnh hưởng độ chính xác bộ lọc; `%` trả đúng những tin mà người gọi vốn được xem, không lộ gì thêm. Chuỗi SQL ở bộ lọc cho 0 bản ghi (TC-37) |
-| OBS-04 | Giữ | `0x1`, `1.0` vẫn đi qua kiểm tra chủ sở hữu (TC-34) nên không vượt quyền, chỉ là nhiều cách viết cho một mã |
+| OBS-03 | Giữ | Chỉ ảnh hưởng độ chính xác bộ lọc; `%` trả đúng những tin mà người gọi vốn được xem, không lộ gì thêm. Chuỗi SQL ở bộ lọc cho 0 bản ghi (kiểm tra A05) |
+| OBS-04 | Giữ | `0x1`, `1.0` vẫn đi qua kiểm tra chủ sở hữu (kiểm tra A01) nên không vượt quyền, chỉ là nhiều cách viết cho một mã |
 | OBS-05 | Giữ; ghi rõ vào API docs | Cột giá là `DECIMAL(15,1)`; tiền VND không có phần thập phân và ô nhập giá của giao diện dùng bàn phím số (ví dụ 450000). Báo cáo Mục 6 ghi trong ghi chú của `POST /api/proposals` |
 | OBS-06 | Đã thống nhất tài liệu | [api-contract.md](api-contract.md) nay ghi `page` bắt đầu từ 1 |
 

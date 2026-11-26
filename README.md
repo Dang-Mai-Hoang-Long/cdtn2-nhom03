@@ -114,7 +114,7 @@ Bộ kiểm thử xóa và tạo lại toàn bộ bảng trong `TEST_DATABASE_UR
 Kiểm tra bảo mật và hiệu năng (cần CSDL phát triển đã nạp dữ liệu mẫu; hai script tự bật backend riêng nên không đụng backend đang chạy):
 
 ```bash
-node scripts/kiem-tra-bao-mat.js   # kiểm soát truy cập, token, tiêm mã, thông báo lỗi, nhật ký (72 bước PASS/FAIL)
+node scripts/kiem-tra-bao-mat.js   # kiểm soát truy cập, token, tiêm mã, thông báo lỗi, nhật ký (66 bước PASS/FAIL)
 node scripts/do-hieu-nang.js       # 100 người dùng ảo trên 1050 tin, so với ngưỡng 3 giây
 ```
 

@@ -711,47 +711,47 @@ Thư mục [screenshots/sau-sua-loi/](screenshots/sau-sua-loi/) có **6 ảnh PN
 - **TC-27 nên mở rộng** thêm 5 endpoint nhận mã mà nhóm sửa lỗi tìm ra (`PATCH /api/requests/{id}`, `/complete`, `PATCH /api/proposals/{id}`, `/close`, `PATCH /api/admin/users/{id}/unlock`); hiện chúng được kiểm bởi test hồi quy `tests/ma-so.test.js` chứ chưa có bước `S-27-x` riêng.
 - **Giao diện vẫn chưa chạy trên trình duyệt** (như §7 mục 1); runner chụp ảnh và 129 bước bổ sung vẫn là script tạm ngoài repo (§7 mục 2).
 
-## 9. Kiểm thử bảo mật, giao diện, hiệu năng và Docker (2026-11-26)
+## 9. Kiểm tra bảo mật, giao diện, hiệu năng và Docker (2026-11-26)
 
-Đợt này làm theo checklist bảo mật của Week 7 và Week 8 ([checklist-bao-mat.md](checklist-bao-mat.md)). Bản được kiểm: `a9466b7` (nhánh `huy`) cộng các sửa lỗi BUG-06…BUG-10 ([bug-log.md](bug-log.md)). Đã chạy thật: năm test case bảo mật mới TC-34…TC-38 bằng `node scripts/kiem-tra-bao-mat.js` (66 bước PASS), chín test case giao diện TC-39…TC-47 trên trình duyệt Chrome 158 (51 bước PASS), đo hiệu năng bằng `node scripts/do-hieu-nang.js` và phép thử máy trắng bằng Docker.
+Đợt này làm theo checklist bảo mật của Week 7 và Week 8 ([checklist-bao-mat.md](checklist-bao-mat.md)). Bản được kiểm: `a9466b7` (nhánh `huy`) cộng các sửa lỗi BUG-06…BUG-10 ([bug-log.md](bug-log.md)). Đã chạy thật: năm kiểm tra bảo mật OWASP (A01, A02, A04, A05, A07) bằng `node scripts/kiem-tra-bao-mat.js` (66 bước PASS), chín nhóm kiểm tra giao diện trên trình duyệt Chrome 158 (51 bước PASS), đo hiệu năng bằng `node scripts/do-hieu-nang.js` và phép thử máy trắng bằng Docker. Đây là kết quả kiểm tra bổ sung, **không tính thêm test case**: bộ test case của báo cáo vẫn là 33 test case.
 
 ### 9.1. Môi trường
 
 Windows 11 Pro; Node.js v24.22.0; PostgreSQL 18.6 (CSDL phát triển, `suachua_dev`, 1050 tin) cho script kiểm bảo mật và đo hiệu năng; Docker 29.9.2 với `postgres:16-alpine` (PostgreSQL 16.16) cho phép thử máy trắng, kiểm thử giao diện và `npm test` trong container. Máy: Intel Core i5-14600KF, 32 GB RAM; backend, CSDL và máy đo cùng chạy trên một máy qua loopback.
 
-### 9.2. Test case bảo mật (A01, A02, A04, A05, A07)
+### 9.2. Kiểm tra bảo mật (A01, A02, A04, A05, A07)
 
-| Mã | Mục OWASP 2025 | Cách chạy | Kết quả thực tế | Kết luận |
-|---|---|---|---|---|
-| TC-34 | A01 Broken Access Control | `node scripts/kiem-tra-bao-mat.js --phan=TC-34`, hoặc các yêu cầu `TC-34` trong [api-examples.http](api-examples.http) | 18 bước: mọi thao tác trên dữ liệu của người khác → `403 NOT_OWNER`/`FORBIDDEN`, dữ liệu không đổi; `role=ADMIN` bị bỏ qua | PASS |
-| TC-35 | A02 Security Misconfiguration | `--phan=TC-35`; Docker: dừng `db` | 11 bước: lỗi gọn, không vết ngăn xếp/tên bảng/chuỗi kết nối; CORS chỉ địa chỉ giao diện; không còn `X-Powered-By`; dừng `db` thì `api` sống | PASS (sau khi sửa BUG-06, BUG-09) |
-| TC-36 | A04 Cryptographic Failures | `--phan=TC-36`; `SELECT … left(password_hash, 29)` | 247/247 bcrypt `$2b$10$`; không phản hồi API nào chứa mật khẩu/chuỗi băm | PASS |
-| TC-37 | A05 Injection | `--phan=TC-37` | 8 bước: `' OR 1=1 --` → 0 bản ghi; `DROP TABLE` không tác dụng; tiêm vào đăng nhập → 401; `<script>` lưu nguyên văn | PASS |
-| TC-38 | A07 Authentication Failures | `--phan=TC-38` | 16 bước: không token, sửa chữ ký, sửa payload, hết hạn, khóa khác, `alg=none`, HS512, token trong URL → 401; sai mật khẩu và sai email cùng thông điệp; khóa tài khoản có hiệu lực ngay | PASS (sau khi sửa BUG-07) |
+| Mục OWASP 2025 | Cách chạy | Kết quả thực tế | Kết luận |
+|---|---|---|---|
+| A01 Broken Access Control | `node scripts/kiem-tra-bao-mat.js --phan=A01`, hoặc các yêu cầu nhóm A01 trong [api-examples.http](api-examples.http) | 18 bước: mọi thao tác trên dữ liệu của người khác → `403 NOT_OWNER`/`FORBIDDEN`, dữ liệu không đổi; `role=ADMIN` bị bỏ qua | PASS |
+| A02 Security Misconfiguration | `--phan=A02`; Docker: dừng `db` | 11 bước: lỗi gọn, không vết ngăn xếp/tên bảng/chuỗi kết nối; CORS chỉ địa chỉ giao diện; không còn `X-Powered-By`; dừng `db` thì `api` sống | PASS (sau khi sửa BUG-06, BUG-09) |
+| A04 Cryptographic Failures | `--phan=A04`; `SELECT … left(password_hash, 29)` | 247/247 bcrypt `$2b$10$`; không phản hồi API nào chứa mật khẩu/chuỗi băm | PASS |
+| A05 Injection | `--phan=A05` | 8 bước: `' OR 1=1 --` → 0 bản ghi; `DROP TABLE` không tác dụng; tiêm vào đăng nhập → 401; `<script>` lưu nguyên văn | PASS |
+| A07 Authentication Failures | `--phan=A07` | 16 bước: không token, sửa chữ ký, sửa payload, hết hạn, khóa khác, `alg=none`, HS512, token trong URL → 401; sai mật khẩu và sai email cùng thông điệp; khóa tài khoản có hiệu lực ngay | PASS (sau khi sửa BUG-07) |
 
-Phát hiện khi chạy lần đầu (trước khi sửa): TC-35 thấy `api` thoát khi dừng `db` (BUG-06) và `X-Powered-By` (BUG-09); TC-38 thấy token HS512 được chấp nhận (BUG-07), token trong URL bị trả ngược trong `path` (BUG-09).
+Phát hiện khi chạy lần đầu (trước khi sửa): kiểm tra A02 thấy `api` thoát khi dừng `db` (BUG-06) và `X-Powered-By` (BUG-09); kiểm tra A07 thấy token HS512 được chấp nhận (BUG-07), token trong URL bị trả ngược trong `path` (BUG-09).
 
-### 9.3. Test case giao diện trên trình duyệt
+### 9.3. Kiểm tra giao diện trên trình duyệt
 
 Chạy bằng Chrome 158 điều khiển qua giao thức DevTools, trên bản Docker (`http://localhost:5173`).
 
-| Mã | Nội dung | Kết quả |
-|---|---|---|
-| TC-39 | Đăng nhập sai mật khẩu, tài khoản bị khóa, đúng mật khẩu | PASS (4 bước) |
-| TC-40 | Đăng tin: lỗi dưới từng ô khi để trống, đăng thành công | PASS (5 bước) |
-| TC-41 | Phân quyền ở giao diện (UI-01) và gọi thẳng API bỏ qua giao diện | PASS (9 bước) |
-| TC-42 | Kỹ thuật viên gửi đề xuất, khách hàng chấp nhận, số điện thoại chỉ hiện với người được chọn | PASS (8 bước) |
-| TC-43 | XSS: thẻ `<script>` và `<img onerror>` hiện thành chữ trên 4 màn hình | PASS (5 bước, không có `alert`) |
-| TC-44 | Quản trị viên khóa và mở khóa tài khoản | PASS (6 bước) |
-| TC-45 | Đăng xuất và nút Quay lại của trình duyệt | PASS (2 bước) |
-| TC-46 | Cỡ điện thoại 390 px: 9 màn hình không cuộn ngang | PASS (9 bước) |
-| TC-47 | NFR3 mô phỏng (không phải người dùng thật): đăng nhập rồi đăng tin | PASS (2 bước); máy chạy 0,4 giây, ước tính người thật 117 giây theo mô hình thao tác (ngưỡng 180 giây) |
+| Nội dung | Kết quả |
+|---|---|
+| Đăng nhập sai mật khẩu, tài khoản bị khóa, đúng mật khẩu | PASS (4 bước) |
+| Đăng tin: lỗi dưới từng ô khi để trống, đăng thành công | PASS (5 bước) |
+| Phân quyền ở giao diện (UI-01) và gọi thẳng API bỏ qua giao diện | PASS (9 bước) |
+| Kỹ thuật viên gửi đề xuất, khách hàng chấp nhận, số điện thoại chỉ hiện với người được chọn | PASS (8 bước) |
+| XSS: thẻ `<script>` và `<img onerror>` hiện thành chữ trên 4 màn hình | PASS (5 bước, không có `alert`) |
+| Quản trị viên khóa và mở khóa tài khoản | PASS (6 bước) |
+| Đăng xuất và nút Quay lại của trình duyệt | PASS (2 bước) |
+| Cỡ điện thoại 390 px: 9 màn hình không cuộn ngang | PASS (9 bước) |
+| NFR3 mô phỏng (không phải người dùng thật): đăng nhập rồi đăng tin | PASS (2 bước); máy chạy 0,4 giây, ước tính người thật 117 giây theo mô hình thao tác (ngưỡng 180 giây) |
 
-Không có lỗi JavaScript hay `console.error` trong cả phiên. Chi tiết từng bước và ảnh chụp: báo cáo `BaoCaoKiemThu.docx`, Mục 5.
+Không có lỗi JavaScript hay `console.error` trong cả phiên. Chi tiết từng bước và ảnh chụp: báo cáo `BaoCaoKiemThu.docx`, Mục 5 và mục 7.4.
 
 ### 9.4. Đóng DEV, UI, TD và OBS
 
-Mỗi mục có quyết định kèm lý do ở [bug-log.md](bug-log.md) Phần B. Kết quả của hai test case lệch có chủ đích: **TC-03** FAIL theo tiêu chí gốc (token cũ vẫn dùng được sau đăng xuất), **PASS** theo tiêu chí đã cập nhật (xóa phiên ở phía người dùng, TC-45; khóa tài khoản có hiệu lực ngay, TC-38); **TC-15** FAIL theo tiêu chí gốc, **PASS** theo tiêu chí đã cập nhật (chủ tin hoặc người gửi đề xuất; người khác 403, TC-34). Tổng 33 test case cũ giữ nguyên kết quả lịch sử, cộng 14 test case mới (TC-34…TC-47) đều PASS.
+Mỗi mục có quyết định kèm lý do ở [bug-log.md](bug-log.md) Phần B. Hai test case lệch có chủ đích của các đợt trước: **TC-03** FAIL theo tiêu chí gốc (token cũ vẫn dùng được sau đăng xuất), **PASS** theo tiêu chí đã cập nhật (xóa phiên ở phía người dùng, kiểm tra giao diện đăng xuất; khóa tài khoản có hiệu lực ngay, kiểm tra A07); **TC-15** FAIL theo tiêu chí gốc, **PASS** theo tiêu chí đã cập nhật (chủ tin hoặc người gửi đề xuất; người khác 403, kiểm tra A01). Các kết quả lịch sử của 33 test case được giữ nguyên; những kiểm tra của đợt 26/11/2026 (mục 9.2, 9.3) đều PASS và không làm thay đổi số test case.
 
 ### 9.5. Hiệu năng (NFR1) — `node scripts/do-hieu-nang.js`
 

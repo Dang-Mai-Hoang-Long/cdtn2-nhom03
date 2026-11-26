@@ -6,7 +6,7 @@
 @baseUrl = http://localhost:3000/api
 @json = application/json
 
-# Hai biến dưới đây dùng cho phần kiểm thử bảo mật ở cuối tệp (TC-38): chạy lệnh node ghi ở yêu cầu tương ứng rồi dán kết quả.
+# Hai biến dưới đây dùng cho phần kiểm thử bảo mật ở cuối tệp (phần A07): chạy lệnh node ghi ở yêu cầu tương ứng rồi dán kết quả.
 @tokenHetHan = (dán token đã hết hạn)
 @tokenHS512 = (dán token ký HS512)
 
@@ -989,7 +989,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "message": "Đăng xuất thành công"
 #   }
 
-### Chuẩn bị TC-34: khách hàng 2 đăng một tin
+### Chuẩn bị kiểm tra A01: khách hàng 2 đăng một tin
 # @name bm_tinKhach2
 POST {{baseUrl}}/requests
 Content-Type: {{json}}
@@ -1021,7 +1021,7 @@ Authorization: Bearer {{dnKhach2.response.body.$.data.token}}
 #     "message": "Tạo tin thành công"
 #   }
 
-### TC-34 A01: khách hàng 1 XEM tin của khách hàng 2
+### A01: khách hàng 1 XEM tin của khách hàng 2
 # Mong đợi 403 NOT_OWNER.
 # @name bm_a01_xem
 GET {{baseUrl}}/requests/{{bm_tinKhach2.response.body.$.data.id}}
@@ -1039,7 +1039,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "path": "/api/requests/1056"
 #   }
 
-### TC-34 A01: khách hàng 1 SỬA tin của khách hàng 2
+### A01: khách hàng 1 SỬA tin của khách hàng 2
 # Mong đợi 403 NOT_OWNER; tin không đổi.
 # @name bm_a01_sua
 PATCH {{baseUrl}}/requests/{{bm_tinKhach2.response.body.$.data.id}}
@@ -1061,7 +1061,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "path": "/api/requests/1056"
 #   }
 
-### TC-34 A01: khách hàng 1 ĐÓNG tin của khách hàng 2
+### A01: khách hàng 1 ĐÓNG tin của khách hàng 2
 # Mong đợi 403.
 # @name bm_a01_dong
 PATCH {{baseUrl}}/requests/{{bm_tinKhach2.response.body.$.data.id}}/close
@@ -1079,7 +1079,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "path": "/api/requests/1056/close"
 #   }
 
-### TC-34 A01: khách hàng 1 xem đề xuất của tin khách hàng 2
+### A01: khách hàng 1 xem đề xuất của tin khách hàng 2
 # Mong đợi 403 (BR09).
 # @name bm_a01_dx
 GET {{baseUrl}}/proposals/request/{{bm_tinKhach2.response.body.$.data.id}}
@@ -1097,7 +1097,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "path": "/api/proposals/request/1056"
 #   }
 
-### TC-34 A01: khách hàng 1 đánh dấu đã đọc thông báo của kỹ thuật viên
+### A01: khách hàng 1 đánh dấu đã đọc thông báo của kỹ thuật viên
 # Mong đợi 403 NOT_OWNER.
 # @name bm_a01_tb
 PATCH {{baseUrl}}/notifications/{{thongBao.response.body.$.data.0.id}}/read
@@ -1115,7 +1115,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "path": "/api/notifications/4408/read"
 #   }
 
-### TC-34 A01: khách hàng gọi API quản trị
+### A01: khách hàng gọi API quản trị
 # Mong đợi 403 FORBIDDEN (BR01).
 # @name bm_a01_admin
 GET {{baseUrl}}/admin/users
@@ -1133,7 +1133,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "path": "/api/admin/users"
 #   }
 
-### TC-34 A01: kỹ thuật viên đăng tin (chức năng của khách hàng)
+### A01: kỹ thuật viên đăng tin (chức năng của khách hàng)
 # Mong đợi 403.
 # @name bm_a01_vaitro
 POST {{baseUrl}}/requests
@@ -1159,7 +1159,7 @@ Authorization: Bearer {{dnKtv.response.body.$.data.token}}
 #     "path": "/api/requests"
 #   }
 
-### TC-34 A01: gửi kèm role=ADMIN khi sửa hồ sơ
+### A01: gửi kèm role=ADMIN khi sửa hồ sơ
 # Mong đợi 200 nhưng trường role bị bỏ qua; yêu cầu kế tiếp cho thấy vẫn là CUSTOMER.
 # @name bm_a01_role
 PATCH {{baseUrl}}/users/me
@@ -1187,7 +1187,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "message": "Cập nhật thông tin thành công"
 #   }
 
-### TC-34 A01: kiểm tra lại vai trò
+### A01: kiểm tra lại vai trò
 # @name bm_a01_role2
 GET {{baseUrl}}/auth/me
 Content-Type: {{json}}
@@ -1209,7 +1209,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "message": "Thành công"
 #   }
 
-### TC-35 A02: gửi JSON hỏng
+### A02: gửi JSON hỏng
 # Mong đợi 400, không có vết ngăn xếp.
 # @name bm_a02_json
 POST {{baseUrl}}/auth/login
@@ -1228,7 +1228,7 @@ Content-Type: {{json}}
 #     "path": "/api/auth/login"
 #   }
 
-### TC-35 A02: mã sai kiểu
+### A02: mã sai kiểu
 # Mong đợi 404 gọn gàng.
 # @name bm_a02_id
 GET {{baseUrl}}/requests/abc
@@ -1246,7 +1246,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "path": "/api/requests/abc"
 #   }
 
-### TC-35 A02: đường dẫn không tồn tại
+### A02: đường dẫn không tồn tại
 # @name bm_a02_404
 GET {{baseUrl}}/duong-dan-khong-ton-tai
 Content-Type: {{json}}
@@ -1262,7 +1262,7 @@ Content-Type: {{json}}
 #     "path": "/api/duong-dan-khong-ton-tai"
 #   }
 
-### TC-35 A02: CORS từ nguồn lạ
+### A02: CORS từ nguồn lạ
 # Mong đợi Access-Control-Allow-Origin là địa chỉ giao diện đã cấu hình (không phản chiếu nguồn lạ, không phải *) và KHÔNG có X-Powered-By.
 # @name bm_a02_cors
 GET {{baseUrl}}/health
@@ -1280,7 +1280,7 @@ Origin: http://evil.example
 #     "message": "Thành công"
 #   }
 
-### TC-37 A05: chuỗi ' OR 1=1 -- ở bộ lọc
+### A05: chuỗi ' OR 1=1 -- ở bộ lọc
 # Mong đợi 200 với 0 bản ghi (chuỗi được coi là chữ thường), không trả toàn bộ tin.
 # @name bm_a05_loc
 GET {{baseUrl}}/requests?category=%27%20OR%201%3D1%20--&size=1
@@ -1300,7 +1300,7 @@ Authorization: Bearer {{dnKtv.response.body.$.data.token}}
 #     }
 #   }
 
-### TC-37 A05: tiêm SQL vào ô email đăng nhập
+### A05: tiêm SQL vào ô email đăng nhập
 # Mong đợi 401, không có token.
 # @name bm_a05_dn
 POST {{baseUrl}}/auth/login
@@ -1322,8 +1322,8 @@ Content-Type: {{json}}
 #     "path": "/api/auth/login"
 #   }
 
-### TC-37 A05: đăng tin chứa thẻ script
-# Mong đợi 201, lưu nguyên văn; giao diện hiển thị thành chữ (xem TC-43).
+### A05: đăng tin chứa thẻ script
+# Mong đợi 201, lưu nguyên văn; giao diện hiển thị thành chữ (xem báo cáo, mục "Giao diện trên trình duyệt").
 # @name bm_a05_xss
 POST {{baseUrl}}/requests
 Content-Type: {{json}}
@@ -1355,7 +1355,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}
 #     "message": "Tạo tin thành công"
 #   }
 
-### TC-38 A07: không gửi token
+### A07: không gửi token
 # Mong đợi 401 UNAUTHORIZED.
 # @name bm_a07_khong
 GET {{baseUrl}}/auth/me
@@ -1372,7 +1372,7 @@ Content-Type: {{json}}
 #     "path": "/api/auth/me"
 #   }
 
-### TC-38 A07: token bị sửa chữ ký (thêm một ký tự)
+### A07: token bị sửa chữ ký (thêm một ký tự)
 # Mong đợi 401.
 # @name bm_a07_sua
 GET {{baseUrl}}/auth/me
@@ -1390,7 +1390,7 @@ Authorization: Bearer {{dnKhach.response.body.$.data.token}}x
 #     "path": "/api/auth/me"
 #   }
 
-### TC-38 A07: token alg=none (không chữ ký) giả quản trị viên
+### A07: token alg=none (không chữ ký) giả quản trị viên
 # Mong đợi 401. Token dán sẵn là chuỗi không có chữ ký, không phải khóa thật.
 # @name bm_a07_none
 GET {{baseUrl}}/admin/users
@@ -1408,7 +1408,7 @@ Authorization: Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VySWQiOjEsInJvbG
 #     "path": "/api/admin/users"
 #   }
 
-### TC-38 A07: token đã hết hạn (ký đúng khóa)
+### A07: token đã hết hạn (ký đúng khóa)
 # Tạo token rồi dán vào biến @tokenHetHan ở đầu tệp: node -e "console.log(require('jsonwebtoken').sign({userId:2,role:'CUSTOMER'}, process.env.JWT_SECRET, {expiresIn:-10}))" . Mong đợi 401.
 # @name bm_a07_het
 GET {{baseUrl}}/auth/me
@@ -1426,7 +1426,7 @@ Authorization: Bearer {{tokenHetHan}}
 #     "path": "/api/auth/me"
 #   }
 
-### TC-38 A07: token HS512 ký đúng khóa (hệ thống ghim HS256)
+### A07: token HS512 ký đúng khóa (hệ thống ghim HS256)
 # Tạo token rồi dán vào biến @tokenHS512 ở đầu tệp: node -e "console.log(require('jsonwebtoken').sign({userId:2,role:'CUSTOMER'}, process.env.JWT_SECRET, {algorithm:'HS512'}))" . Mong đợi 401.
 # @name bm_a07_hs512
 GET {{baseUrl}}/auth/me
@@ -1444,7 +1444,7 @@ Authorization: Bearer {{tokenHS512}}
 #     "path": "/api/auth/me"
 #   }
 
-### TC-38 A07: token đặt trong URL (?token=...)
+### A07: token đặt trong URL (?token=...)
 # Mong đợi 401: chỉ nhận token qua tiêu đề Authorization.
 # @name bm_a07_url
 GET {{baseUrl}}/auth/me?token={{dnKhach.response.body.$.data.token}}
@@ -1461,7 +1461,7 @@ Content-Type: {{json}}
 #     "path": "/api/auth/me"
 #   }
 
-### TC-38 A07: đăng nhập sai mật khẩu
+### A07: đăng nhập sai mật khẩu
 # Mong đợi 401, cùng thông điệp với email không tồn tại.
 # @name bm_a07_sai
 POST {{baseUrl}}/auth/login
@@ -1483,7 +1483,7 @@ Content-Type: {{json}}
 #     "path": "/api/auth/login"
 #   }
 
-### TC-38 A07: đăng nhập tài khoản đã bị khóa
+### A07: đăng nhập tài khoản đã bị khóa
 # Mong đợi 403 ACCOUNT_LOCKED.
 # @name bm_a07_khoa
 POST {{baseUrl}}/auth/login
