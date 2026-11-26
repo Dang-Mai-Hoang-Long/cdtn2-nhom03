@@ -1,5 +1,8 @@
 require('dotenv').config({ quiet: true });
 
+// Khóa HS256 ngắn dễ bị dò ra bằng cách thử hàng loạt; 32 ký tự là mức tối thiểu của RFC 7518 (256 bit).
+const DO_DAI_TOI_THIEU_JWT_SECRET = 32;
+
 const laMoiTruongKiemThu = process.env.NODE_ENV === 'test';
 
 const cauHinh = {
@@ -16,6 +19,9 @@ if (!cauHinh.databaseUrl) {
 }
 if (!cauHinh.jwtSecret) {
   throw new Error('Thiếu biến môi trường JWT_SECRET');
+}
+if (cauHinh.jwtSecret.length < DO_DAI_TOI_THIEU_JWT_SECRET) {
+  throw new Error(`JWT_SECRET quá ngắn (cần ít nhất ${DO_DAI_TOI_THIEU_JWT_SECRET} ký tự), tạo khóa mới: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`);
 }
 
 module.exports = cauHinh;
