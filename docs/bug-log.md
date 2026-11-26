@@ -15,6 +15,8 @@ Hai phần: **Phần A — năm bug do test case phát hiện** (BUG-01…BUG-05
 
 Các mục DEV, UI, TD, OBS chưa nằm trong phạm vi sửa lỗi ([project-notes.md](project-notes.md), mục "Quyết định khi sửa lỗi ở Sprint 4") nên vẫn như cũ, trừ ghi chú cập nhật ở OBS-04 và OBS-05 (Phần B).
 
+**Cập nhật 2026-11-26:** đợt kiểm bảo mật và chạy Docker tìm thêm 5 bug (**BUG-06…BUG-10**, Phần A bổ sung bên dưới), đã sửa và chạy lại; các mục DEV, UI, TD, OBS đều có quyết định chốt (bảng đầu Phần B). Kết quả: [checklist-bao-mat.md](checklist-bao-mat.md), [test-report.md](test-report.md) §9.
+
 Mức độ đo bằng **tác động tới người dùng** (cùng thang với [test-plan.md](test-plan.md) §1): **Critical** = mất hoặc lộ dữ liệu, vượt quyền, hoặc chặn luồng chính của tính năng Must have · **Major** = tính năng Must have hỏng với dữ liệu thực tế và không có cách vòng · **Minor** = chỉ xảy ra với dữ liệu hiếm hoặc cố ý, hoặc có cách vòng; không lộ dữ liệu.
 
 | Bug | Mức độ | Phát hiện bởi | Trạng thái | Commit sửa |
@@ -200,9 +202,81 @@ Goi POST http://localhost:3000/api/requests $khach $lon
 
 ---
 
+# Phần A (bổ sung 2026-11-26) — Bug phát hiện khi kiểm thử bảo mật và chạy Docker
+
+Năm bug dưới đây do đợt kiểm bảo mật ngày 26/11/2026 phát hiện trên bản `a9466b7` ([checklist-bao-mat.md](checklist-bao-mat.md)). Cách tái lập dùng `docker compose` hoặc `node scripts/kiem-tra-bao-mat.js`; ảnh chụp trước và sau khi sửa nằm trong báo cáo `BaoCaoKiemThu.docx`, Mục 5. Mỗi bug một commit riêng; link commit ở dòng 7 của từng bug.
+
+## BUG-06 — Dừng CSDL làm tiến trình API thoát
+
+- **Mã và mức độ:** BUG-06 · **Major** — dịch vụ chết khi CSDL khởi động lại hoặc mất kết nối, chặn mọi chức năng cho tới khi bật lại thủ công.
+- **Phát hiện bởi:** TC-35 (bước "tắt CSDL rồi gọi API" của đề), chạy trên Docker.
+- **Triệu chứng:** `docker compose stop db` thì container `api` chuyển `Exited (1)`; gọi API sau đó không kết nối được (curl `000`) thay vì nhận `500 INTERNAL_ERROR` gọn.
+- **Cách tái lập:** `cp .env.example .env`; `docker compose up -d --build`; `docker compose stop db`; `curl.exe -s -o NUL -w "%{http_code}" -X POST http://localhost:3000/api/auth/login -H "Content-Type: application/json" -d '{\"email\":\"khach1@demo.vn\",\"password\":\"Demo@123\"}'`; `docker compose ps -a`. Nhật ký `api`: `Unhandled 'error' event … Emitted 'error' event on BoundPool instance`.
+- **Nguyên nhân gốc:** [src/db.js](../src/db.js) tạo `Pool` mà không lắng nghe sự kiện `error`. Kết nối rảnh bị PostgreSQL cắt (`terminating connection due to administrator command`) phát `error` lên pool; không có trình lắng nghe thì Node coi là ngoại lệ chưa bắt và thoát tiến trình.
+- **Cách sửa:** thêm `pool.on('error', …)` chỉ ghi thông điệp lỗi (không ghi chuỗi kết nối); pool tự tạo kết nối mới ở lần truy vấn sau.
+- **Commit và xác nhận:** [8edee39](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/commit/8edee39) · chạy lại: `api` vẫn `healthy` khi `db` dừng, đăng nhập trả `500 INTERNAL_ERROR` rồi `200` ngay khi `db` bật lại; `npm test` 157/157.
+
+## BUG-07 — Token ký thuật toán khác HS256 vẫn được chấp nhận
+
+- **Mã và mức độ:** BUG-07 · **Minor** — cần biết khóa mới giả được token nên chưa vượt quyền được, nhưng trái yêu cầu "chỉ định rõ thuật toán" của đề.
+- **Phát hiện bởi:** TC-38 (A07) và A6 mục 3.
+- **Triệu chứng:** token HS512 ký đúng khóa gọi `GET /api/auth/me` nhận `200`.
+- **Cách tái lập:** `node -e "console.log(require('jsonwebtoken').sign({userId:2,role:'CUSTOMER'}, process.env.JWT_SECRET, {algorithm:'HS512'}))"` rồi gửi token đó trong tiêu đề `Authorization: Bearer`.
+- **Nguyên nhân gốc:** `jwt.verify(token, secret)` ở [auth.middleware.js](../src/middlewares/auth.middleware.js) không truyền `algorithms`, nên chấp nhận mọi thuật toán HMAC.
+- **Cách sửa:** `jwt.verify(…, { algorithms: ['HS256'] })` và `jwt.sign(…, { algorithm: 'HS256' })` ([auth.service.js](../src/services/auth.service.js)).
+- **Commit và xác nhận:** [c0e6cbf](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/commit/c0e6cbf) · chạy lại TC-38: token HS512 → `401`; token HS256 đăng nhập thường vẫn `200`; `npm test` 157/157.
+
+## BUG-08 — Khóa JWT ngắn vẫn được chấp nhận
+
+- **Mã và mức độ:** BUG-08 · **Minor** — khóa ngắn dễ bị dò hàng loạt.
+- **Phát hiện bởi:** A6 mục 2 ("`JWT_SECRET` dài ít nhất 32 ký tự, hệ thống dừng khi thiếu").
+- **Triệu chứng:** backend khởi động bình thường với `JWT_SECRET=ngan`.
+- **Cách tái lập:** `node -e "process.env.JWT_SECRET='ngan'; require('./src/config/env')"` không báo lỗi.
+- **Nguyên nhân gốc:** [src/config/env.js](../src/config/env.js) chỉ kiểm khóa có tồn tại, không kiểm độ dài.
+- **Cách sửa:** từ chối khóa ngắn hơn 32 ký tự (mức 256 bit của RFC 7518 cho HS256) kèm lệnh tạo khóa mới.
+- **Commit và xác nhận:** [e7ac722](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/commit/e7ac722) · chạy lại: khóa `ngan` → `Error: JWT_SECRET quá ngắn`, khóa rỗng → `Thiếu biến môi trường JWT_SECRET`, khóa mẫu 41 ký tự nạp được; `npm test` 157/157.
+
+## BUG-09 — Phản hồi HTTP lộ thông tin không cần thiết
+
+- **Mã và mức độ:** BUG-09 · **Minor** — lộ tên framework và phản chiếu lại chuỗi truy vấn của người gọi.
+- **Phát hiện bởi:** TC-35 (A02) và TC-38 (token trong URL).
+- **Triệu chứng:** mọi phản hồi có `X-Powered-By: Express`; `GET /api/auth/me?token=abc.def.ghi` trả `"path":"/api/auth/me?token=abc.def.ghi"`, tức token đặt nhầm vào URL bị trả ngược trong thân phản hồi (và dễ đi vào nhật ký của proxy).
+- **Cách tái lập:** `curl.exe -s -i http://localhost:3000/api/health` (xem tiêu đề); `curl.exe -s "http://localhost:3000/api/auth/me?token=abc.def.ghi"`.
+- **Nguyên nhân gốc:** [src/app.js](../src/app.js) để Express bật `X-Powered-By` mặc định; [error-handler.js](../src/utils/error-handler.js) ghi `req.originalUrl` nguyên chuỗi truy vấn vào trường `path`.
+- **Cách sửa:** `app.disable('x-powered-by')`; `path: req.originalUrl.split('?')[0]`.
+- **Commit và xác nhận:** [796953d](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/commit/796953d) · chạy lại: không còn `X-Powered-By`; `path` = `/api/auth/me`; hai test cũ kiểm `path` vẫn PASS, `npm test` 157/157.
+
+## BUG-10 — Bí mật ghi cứng trong `docker-compose.yml`, `.env.example` để trống
+
+- **Mã và mức độ:** BUG-10 · **Major** — nếu triển khai nguyên trạng, ai biết khóa mặc định công khai trong repo đều ký được token quản trị viên.
+- **Phát hiện bởi:** mục 1 của checklist (rà secret trong repo và lịch sử) và phép thử máy trắng của Week 8 (`cp .env.example .env` rồi `docker compose up -d --build`).
+- **Triệu chứng:** `docker-compose.yml` ghi cứng `POSTGRES_PASSWORD: nhom03` và `JWT_SECRET: ${JWT_SECRET:-khoa-jwt-chi-dung-khi-phat-trien-bang-docker}`; `.env.example` để trống mọi giá trị nên cài tay phải tự điền; dữ liệu mẫu phải chạy thêm một lệnh thứ ba.
+- **Cách tái lập:** `git log -p --all | Select-String "khoa-jwt-chi-dung|POSTGRES_PASSWORD: nhom03"` (ảnh M1).
+- **Nguyên nhân gốc:** cấu hình phát triển được viết thẳng vào tệp compose cho tiện chạy.
+- **Cách sửa:** compose đọc `DB_PASSWORD` và `JWT_SECRET` từ `.env` và dừng, báo rõ, nếu thiếu; `.env.example` có giá trị mẫu chạy được; `api` tự nạp dữ liệu mẫu nếu CSDL còn trống (`npm run seed -- --neu-chua-co`, khởi động lại thì bỏ qua); thêm healthcheck cho `web`.
+- **Commit và xác nhận:** [0684afd](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/commit/0684afd) · chạy lại trên bản sao sạch: `cp .env.example .env` rồi `docker compose up -d --build` mất 64 giây, cả `db`, `api`, `web` `healthy`, 247 tài khoản/1050 tin tự nạp, khởi động lại `api` không lỗi, `npm test` 157/157 trong container PostgreSQL 16.16. Khóa mặc định cũ không còn được dùng ở đâu.
+
+---
+
 # Phần B — Lệch so với tiêu chí, ghi nhận và hạn chế khác
 
-Không phải bug đã chốt. **DEV** = hành vi khác tiêu chí chấp nhận trong `ProductBacklog_Nhom03.xlsx`; **UI** = phát hiện khi rà soát mã giao diện, chưa chạy trên trình duyệt; **TD** = chất lượng của chính bộ test; **OBS** = ghi nhận, không tính là FAIL. Mỗi mục gồm: **Mức độ · Phát hiện bởi · Triệu chứng · Nguyên nhân gốc · Cách xử lý · File ảnh hưởng**. Tất cả các mục này **vẫn mở** sau khi đóng 5 bug (ngoài phạm vi sửa lỗi); các liên kết mã nguồn dưới đây gắn với commit `76b2752` nên không lệch dòng khi mã thay đổi về sau.
+Không phải bug đã chốt. **DEV** = hành vi khác tiêu chí chấp nhận trong `ProductBacklog_Nhom03.xlsx`; **UI** = phát hiện khi rà soát mã giao diện (đã xác minh trên trình duyệt ngày 26/11/2026); **TD** = chất lượng của chính bộ test; **OBS** = ghi nhận, không tính là FAIL. Mỗi mục gồm: **Mức độ · Phát hiện bởi · Triệu chứng · Nguyên nhân gốc · Cách xử lý · File ảnh hưởng**. Ngày 26/11/2026 mỗi mục đã có quyết định chốt (bảng ngay dưới); các liên kết mã nguồn dưới đây gắn với commit `76b2752` nên không lệch dòng khi mã thay đổi về sau.
+
+**Quyết định chốt ngày 2026-11-26.** Mỗi mục có một quyết định kèm lý do; nội dung từng mục bên dưới giữ nguyên như lúc ghi ngày 20/11/2026 (liên kết mã nguồn vẫn gắn với `76b2752`). Mọi mục chỉ thuộc loại ghi nhận hoặc chấp nhận có lý do, không còn mục nào để ngỏ.
+
+| Mục | Quyết định | Lý do và minh chứng |
+|---|---|---|
+| DEV-01 | Chấp nhận; sửa tiêu chí US03 thành "đăng xuất xóa phiên ở phía người dùng, token hết hạn sau 1 ngày" | Thu hồi token cần thêm trạng thái phía máy chủ ở mọi lần xác thực. Rủi ro đã giảm: hạn token cấu hình được (`JWT_EXPIRES_IN`), khóa tài khoản có hiệu lực ngay (TC-38), giao diện xóa token (TC-45). TC-03: FAIL theo tiêu chí gốc, PASS theo tiêu chí đã cập nhật |
+| DEV-02 | Chấp nhận; sửa tiêu chí US15 thành "chủ tin hoặc kỹ thuật viên đã gửi đề xuất đó" | Chuông thông báo cần mở đề xuất. Người khác vẫn bị `403` (TC-34: kỹ thuật viên B xem đề xuất của A). TC-15: PASS theo tiêu chí đã cập nhật |
+| DEV-03 | Giữ `WITHDRAWN`; tiêu chí US23 đổi theo | Tên đã dùng ở API, CSDL, giao diện; [api-contract.md](api-contract.md) đã liệt kê đủ tập trạng thái đề xuất |
+| UI-01 | Xác minh trên trình duyệt và giữ chuyển hướng im lặng | TC-41 (Chrome 158, bản Docker): sai vai trò và chưa đăng nhập đều được chuyển thẳng về màn chính của vai trò hoặc `#/login`, không hiện nội dung bị cấm. Màn bị cấm không có lối đi trên thanh điều hướng của vai trò đó; quyền thật do backend chặn (`403`, TC-34 và bước gọi thẳng API trong TC-41) |
+| TD-01 | Ghi nhận hạn chế đã biết | `npm test` luôn chạy cả bộ theo thứ tự cố định nên ổn định (157/157 ở mọi lần chạy ngày 26/11); chỉ người chạy riêng một suite phải kèm suite tiền đề |
+| OBS-01 | Giới hạn đặt ở reverse proxy, không đặt trong ứng dụng | Khóa theo email cho kẻ tấn công khóa nạn nhân; giới hạn theo IP trong ứng dụng sai sau proxy và gộp người dùng chung NAT. Nginx `limit_req` đã chạy thử: 12 lần sai → `401` ×6 rồi `429` ×6 ([deployment-guide.md](deployment-guide.md) mục 8) |
+| OBS-02 | Giữ | Ô chọn ngày của giao diện đã chặn ngày quá khứ (`min` = hôm nay); API chấp nhận vì dữ liệu mẫu cố ý có tin quá hạn và US06 không yêu cầu |
+| OBS-03 | Giữ | Chỉ ảnh hưởng độ chính xác bộ lọc; `%` trả đúng những tin mà người gọi vốn được xem, không lộ gì thêm. Chuỗi SQL ở bộ lọc cho 0 bản ghi (TC-37) |
+| OBS-04 | Giữ | `0x1`, `1.0` vẫn đi qua kiểm tra chủ sở hữu (TC-34) nên không vượt quyền, chỉ là nhiều cách viết cho một mã |
+| OBS-05 | Giữ; ghi rõ vào API docs | Cột giá là `DECIMAL(15,1)`; tiền VND không có phần thập phân và ô nhập giá của giao diện dùng bàn phím số (ví dụ 450000). Báo cáo Mục 6 ghi trong ghi chú của `POST /api/proposals` |
+| OBS-06 | Đã thống nhất tài liệu | [api-contract.md](api-contract.md) nay ghi `page` bắt đầu từ 1 |
 
 ## DEV-01. Token cũ vẫn dùng được sau khi đăng xuất
 

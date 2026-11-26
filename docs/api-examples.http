@@ -1,0 +1,1506 @@
+# Ví dụ gọi API — chạy trong VS Code bằng tiện ích "REST Client" (humao.rest-client), hoặc đọc như tài liệu.
+# Mỗi yêu cầu có kèm phản hồi THẬT đã lưu từ một lần chạy (2026-11-26, Docker: docker compose up -d --build, dữ liệu mẫu 1050 tin), rút gọn để dễ đọc.
+# Chạy từ trên xuống dưới trên CSDL vừa nạp dữ liệu mẫu: các yêu cầu dùng biến {{tên.response.body...}} lấy kết quả của yêu cầu trước.
+# Hợp đồng đầy đủ: docs/api-contract.md. Mật khẩu tài khoản mẫu là Demo@123 (chỉ dùng cho phát triển).
+
+@baseUrl = http://localhost:3000/api
+@json = application/json
+
+# Hai biến dưới đây dùng cho phần kiểm thử bảo mật ở cuối tệp (TC-38): chạy lệnh node ghi ở yêu cầu tương ứng rồi dán kết quả.
+@tokenHetHan = (dán token đã hết hạn)
+@tokenHS512 = (dán token ký HS512)
+
+### GET /api/health
+# Chỉ cho biết backend đang chạy, không chạm CSDL. Không cần token.
+# @name suc_khoe
+GET {{baseUrl}}/health
+Content-Type: {{json}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "status": "ok"
+#     },
+#     "message": "Thành công"
+#   }
+
+### POST /api/auth/register
+# Đăng ký và đăng nhập luôn (trả token). Email dùng {{$timestamp}} để chạy lại nhiều lần.
+# @name dangKy
+POST {{baseUrl}}/auth/register
+Content-Type: {{json}}
+
+{
+  "email": "khach.moi.{{$timestamp}}@demo.vn",
+  "password": "Demo@123",
+  "fullName": "Khách Mới",
+  "phone": "0912345678",
+  "role": "CUSTOMER"
+}
+
+# Phản hồi thật đã lưu: HTTP 201
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 248,
+#       "email": "khach.moi.1795688482192@demo.vn",
+#       "fullName": "Khách Mới",
+#       "phone": "0912345678",
+#       "role": "CUSTOMER",
+#       "token": "eyJhbGciOiJIUzI1NiIsInR5…(rút gọn)"
+#     },
+#     "message": "Đăng ký thành công"
+#   }
+
+### Đăng nhập khach1@demo.vn
+# Không cần token. Lưu token cho các bước sau.
+# @name dnKhach
+POST {{baseUrl}}/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "khach1@demo.vn",
+  "password": "Demo@123"
+}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "token": "eyJhbGciOiJIUzI1NiIsInR5…(rút gọn)",
+#       "user": {
+#         "id": 2,
+#         "email": "khach1@demo.vn",
+#         "fullName": "Nguyễn Minh Anh",
+#         "phone": "0901000001",
+#         "role": "CUSTOMER",
+#         "isLocked": false,
+#         "ratingAvg": 4.5
+#       }
+#     },
+#     "message": "Đăng nhập thành công"
+#   }
+
+### Đăng nhập ktv1@demo.vn
+# Không cần token. Lưu token cho các bước sau.
+# @name dnKtv
+POST {{baseUrl}}/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "ktv1@demo.vn",
+  "password": "Demo@123"
+}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "token": "eyJhbGciOiJIUzI1NiIsInR5…(rút gọn)",
+#       "user": {
+#         "id": 4,
+#         "email": "ktv1@demo.vn",
+#         "fullName": "Trần Quốc Huy",
+#         "phone": "0902000001",
+#         "role": "TECHNICIAN",
+#         "isLocked": false,
+#         "ratingAvg": 4.7
+#       }
+#     },
+#     "message": "Đăng nhập thành công"
+#   }
+
+### Đăng nhập khach2@demo.vn
+# Không cần token. Lưu token cho các bước sau.
+# @name dnKhach2
+POST {{baseUrl}}/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "khach2@demo.vn",
+  "password": "Demo@123"
+}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "token": "eyJhbGciOiJIUzI1NiIsInR5…(rút gọn)",
+#       "user": {
+#         "id": 3,
+#         "email": "khach2@demo.vn",
+#         "fullName": "Lê Thị Hoa",
+#         "phone": "0901000002",
+#         "role": "CUSTOMER",
+#         "isLocked": false,
+#         "ratingAvg": 4.5
+#       }
+#     },
+#     "message": "Đăng nhập thành công"
+#   }
+
+### Đăng nhập admin@demo.vn
+# Không cần token. Lưu token cho các bước sau.
+# @name dnAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "admin@demo.vn",
+  "password": "Demo@123"
+}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "token": "eyJhbGciOiJIUzI1NiIsInR5…(rút gọn)",
+#       "user": {
+#         "id": 1,
+#         "email": "admin@demo.vn",
+#         "fullName": "Quản Trị Demo",
+#         "phone": "0900000001",
+#         "role": "ADMIN",
+#         "isLocked": false,
+#         "ratingAvg": null
+#       }
+#     },
+#     "message": "Đăng nhập thành công"
+#   }
+
+### GET /api/auth/me
+# Người dùng hiện tại theo token.
+# @name toi
+GET {{baseUrl}}/auth/me
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2,
+#       "email": "khach1@demo.vn",
+#       "fullName": "Nguyễn Minh Anh",
+#       "phone": "0901000001",
+#       "role": "CUSTOMER",
+#       "isLocked": false,
+#       "ratingAvg": 4.5,
+#       "createdAt": "2026-11-26T10:19:07.696Z"
+#     },
+#     "message": "Thành công"
+#   }
+
+### POST /api/requests
+# Chỉ khách hàng. Trạng thái ban đầu WAITING_PROPOSAL.
+# @name taoTin
+POST {{baseUrl}}/requests
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+{
+  "title": "Máy lạnh không làm mát",
+  "description": "Máy chạy nhưng gió không lạnh từ hôm qua.",
+  "category": "Sửa máy lạnh",
+  "location": "Quận 3, TP. Hồ Chí Minh",
+  "preferredTime": "{{$datetime iso8601 2 d}}"
+}
+
+# Phản hồi thật đã lưu: HTTP 201
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 1054,
+#       "customerId": 2,
+#       "title": "Máy lạnh không làm mát",
+#       "description": "Máy chạy nhưng gió không lạnh từ hôm qua.",
+#       "category": "Sửa máy lạnh",
+#       "location": "Quận 3, TP. Hồ Chí Minh",
+#       "preferredTime": "2026-11-28T10:21:22.537Z",
+#       "status": "WAITING_PROPOSAL",
+#       "selectedProposalId": null,
+#       "createdAt": "2026-11-26T10:21:22.539Z"
+#     },
+#     "message": "Tạo tin thành công"
+#   }
+
+### POST /api/requests (tin thứ hai, dùng cho đóng tin)
+# @name taoTin2
+POST {{baseUrl}}/requests
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+{
+  "title": "Vòi nước bếp rò rỉ",
+  "description": "Nhỏ giọt cả ngày.",
+  "category": "Sửa ống nước",
+  "location": "Quận 7, TP. Hồ Chí Minh",
+  "preferredTime": "{{$datetime iso8601 3 d}}"
+}
+
+# Phản hồi thật đã lưu: HTTP 201
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 1055,
+#       "customerId": 2,
+#       "title": "Vòi nước bếp rò rỉ",
+#       "description": "Nhỏ giọt cả ngày.",
+#       "category": "Sửa ống nước",
+#       "location": "Quận 7, TP. Hồ Chí Minh",
+#       "preferredTime": "2026-11-29T10:21:22.555Z",
+#       "status": "WAITING_PROPOSAL",
+#       "selectedProposalId": null,
+#       "createdAt": "2026-11-26T10:21:22.557Z"
+#     },
+#     "message": "Tạo tin thành công"
+#   }
+
+### GET /api/requests/my
+# Phân trang: page từ 1, size mặc định 10 (tối đa 100), sort=createdAt,asc để cũ nhất trước.
+# @name tinCuaToi
+GET {{baseUrl}}/requests/my?size=2
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": [
+#       {
+#         "id": 1055,
+#         "customerId": 2,
+#         "title": "Vòi nước bếp rò rỉ",
+#         "description": "Nhỏ giọt cả ngày.",
+#         "category": "Sửa ống nước",
+#         "location": "Quận 7, TP. Hồ Chí Minh",
+#         "preferredTime": "2026-11-29T10:21:22.555Z",
+#         "status": "WAITING_PROPOSAL",
+#         "selectedProposalId": null,
+#         "createdAt": "2026-11-26T10:21:22.557Z",
+#         "proposalCount": 0
+#       },
+#       "… (1 phần tử nữa, rút gọn)"
+#     ],
+#     "message": "Thành công",
+#     "meta": {
+#       "page": 1,
+#       "size": 2,
+#       "totalElements": 16,
+#       "totalPages": 8
+#     }
+#   }
+
+### GET /api/requests
+# Chỉ kỹ thuật viên; lọc thêm category, location.
+# @name tinDangCho
+GET {{baseUrl}}/requests?size=2
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": [
+#       {
+#         "id": 1055,
+#         "customerId": 2,
+#         "title": "Vòi nước bếp rò rỉ",
+#         "description": "Nhỏ giọt cả ngày.",
+#         "category": "Sửa ống nước",
+#         "location": "Quận 7, TP. Hồ Chí Minh",
+#         "preferredTime": "2026-11-29T10:21:22.555Z",
+#         "status": "WAITING_PROPOSAL",
+#         "selectedProposalId": null,
+#         "createdAt": "2026-11-26T10:21:22.557Z",
+#         "proposalCount": 0
+#       },
+#       "… (1 phần tử nữa, rút gọn)"
+#     ],
+#     "message": "Thành công",
+#     "meta": {
+#       "page": 1,
+#       "size": 2,
+#       "totalElements": 353,
+#       "totalPages": 177
+#     }
+#   }
+
+### GET /api/requests/{id}
+# @name chiTietTin
+GET {{baseUrl}}/requests/{{taoTin.response.body.$.data.id}}
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 1054,
+#       "customerId": 2,
+#       "title": "Máy lạnh không làm mát",
+#       "description": "Máy chạy nhưng gió không lạnh từ hôm qua.",
+#       "category": "Sửa máy lạnh",
+#       "location": "Quận 3, TP. Hồ Chí Minh",
+#       "preferredTime": "2026-11-28T10:21:22.537Z",
+#       "status": "WAITING_PROPOSAL",
+#       "selectedProposalId": null,
+#       "createdAt": "2026-11-26T10:21:22.539Z",
+#       "customer": {
+#         "id": 2,
+#         "fullName": "Nguyễn Minh Anh",
+#         "phone": "0901000001"
+#       },
+#       "hasReviewed": false
+#     },
+#     "message": "Thành công"
+#   }
+
+### PATCH /api/requests/{id}
+# Chỉ chủ tin, khi chưa chọn kỹ thuật viên (409 REQUEST_NOT_EDITABLE nếu đã chọn).
+# @name suaTin
+PATCH {{baseUrl}}/requests/{{taoTin.response.body.$.data.id}}
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+{
+  "title": "Máy lạnh không làm mát (đã sửa)"
+}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 1054,
+#       "customerId": 2,
+#       "title": "Máy lạnh không làm mát (đã sửa)",
+#       "description": "Máy chạy nhưng gió không lạnh từ hôm qua.",
+#       "category": "Sửa máy lạnh",
+#       "location": "Quận 3, TP. Hồ Chí Minh",
+#       "preferredTime": "2026-11-28T10:21:22.537Z",
+#       "status": "WAITING_PROPOSAL",
+#       "selectedProposalId": null,
+#       "createdAt": "2026-11-26T10:21:22.539Z"
+#     },
+#     "message": "Chỉnh sửa tin thành công"
+#   }
+
+### POST /api/proposals
+# Chỉ kỹ thuật viên; mỗi người một đề xuất hiệu lực cho một tin (409 ALREADY_PROPOSED).
+# @name guiDeXuat
+POST {{baseUrl}}/proposals
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+{
+  "requestId": {{taoTin.response.body.$.data.id}},
+  "price": 450000,
+  "description": "Kiểm tra gas, vệ sinh dàn lạnh, thay ống thoát nước.",
+  "estimatedDuration": "2-3 giờ"
+}
+
+# Phản hồi thật đã lưu: HTTP 201
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2193,
+#       "requestId": 1054,
+#       "technicianId": 4,
+#       "price": 450000,
+#       "description": "Kiểm tra gas, vệ sinh dàn lạnh, thay ống thoát nước.",
+#       "estimatedDuration": "2-3 giờ",
+#       "status": "PENDING",
+#       "createdAt": "2026-11-26T10:21:22.580Z"
+#     },
+#     "message": "Gửi đề xuất thành công"
+#   }
+
+### POST /api/proposals (đề xuất thứ hai, dùng cho rút đề xuất)
+# @name guiDeXuat2
+POST {{baseUrl}}/proposals
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+{
+  "requestId": {{taoTin2.response.body.$.data.id}},
+  "price": 200000,
+  "description": "Thay gioăng vòi.",
+  "estimatedDuration": "1 giờ"
+}
+
+# Phản hồi thật đã lưu: HTTP 201
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2194,
+#       "requestId": 1055,
+#       "technicianId": 4,
+#       "price": 200000,
+#       "description": "Thay gioăng vòi.",
+#       "estimatedDuration": "1 giờ",
+#       "status": "PENDING",
+#       "createdAt": "2026-11-26T10:21:22.587Z"
+#     },
+#     "message": "Gửi đề xuất thành công"
+#   }
+
+### GET /api/proposals/my
+# @name deXuatCuaToi
+GET {{baseUrl}}/proposals/my?size=2
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": [
+#       {
+#         "id": 2194,
+#         "requestId": 1055,
+#         "technicianId": 4,
+#         "price": 200000,
+#         "description": "Thay gioăng vòi.",
+#         "estimatedDuration": "1 giờ",
+#         "status": "PENDING",
+#         "createdAt": "2026-11-26T10:21:22.587Z",
+#         "request": {
+#           "id": 1055,
+#           "title": "Vòi nước bếp rò rỉ",
+#           "status": "WAITING_PROPOSAL",
+#           "category": "Sửa ống nước",
+#           "location": "Quận 7, TP. Hồ Chí Minh"
+#         }
+#       },
+#       "… (1 phần tử nữa, rút gọn)"
+#     ],
+#     "message": "Thành công",
+#     "meta": {
+#       "page": 1,
+#       "size": 2,
+#       "totalElements": 21,
+#       "totalPages": 11
+#     }
+#   }
+
+### GET /api/proposals/request/{requestId}
+# Chỉ chủ tin (BR09).
+# @name deXuatCuaTin
+GET {{baseUrl}}/proposals/request/{{taoTin.response.body.$.data.id}}
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": [
+#       {
+#         "id": 2193,
+#         "requestId": 1054,
+#         "technicianId": 4,
+#         "price": 450000,
+#         "description": "Kiểm tra gas, vệ sinh dàn lạnh, thay ống thoát nước.",
+#         "estimatedDuration": "2-3 giờ",
+#         "status": "PENDING",
+#         "createdAt": "2026-11-26T10:21:22.580Z",
+#         "technician": {
+#           "id": 4,
+#           "fullName": "Trần Quốc Huy",
+#           "ratingAvg": 4.7
+#         }
+#       }
+#     ],
+#     "message": "Thành công"
+#   }
+
+### GET /api/proposals/{id}
+# Chủ tin hoặc kỹ thuật viên đã gửi đề xuất đó.
+# @name chiTietDeXuat
+GET {{baseUrl}}/proposals/{{guiDeXuat.response.body.$.data.id}}
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2193,
+#       "requestId": 1054,
+#       "technicianId": 4,
+#       "price": 450000,
+#       "description": "Kiểm tra gas, vệ sinh dàn lạnh, thay ống thoát nước.",
+#       "estimatedDuration": "2-3 giờ",
+#       "status": "PENDING",
+#       "createdAt": "2026-11-26T10:21:22.580Z",
+#       "technician": {
+#         "id": 4,
+#         "fullName": "Trần Quốc Huy",
+#         "ratingAvg": 4.7
+#       },
+#       "request": {
+#         "id": 1054,
+#         "title": "Máy lạnh không làm mát (đã sửa)",
+#         "status": "WAITING_PROPOSAL",
+#         "customerId": 2
+#       }
+#     },
+#     "message": "Thành công"
+#   }
+
+### PATCH /api/proposals/{id}
+# Chỉ người gửi, khi đề xuất còn PENDING.
+# @name suaDeXuat
+PATCH {{baseUrl}}/proposals/{{guiDeXuat.response.body.$.data.id}}
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+{
+  "price": 480000
+}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2193,
+#       "requestId": 1054,
+#       "technicianId": 4,
+#       "price": 480000,
+#       "description": "Kiểm tra gas, vệ sinh dàn lạnh, thay ống thoát nước.",
+#       "estimatedDuration": "2-3 giờ",
+#       "status": "PENDING",
+#       "createdAt": "2026-11-26T10:21:22.580Z"
+#     },
+#     "message": "Chỉnh sửa đề xuất thành công"
+#   }
+
+### PATCH /api/proposals/{id}/close
+# Rút đề xuất (trạng thái WITHDRAWN), không phải đóng tin.
+# @name rutDeXuat
+PATCH {{baseUrl}}/proposals/{{guiDeXuat2.response.body.$.data.id}}/close
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2194,
+#       "requestId": 1055,
+#       "technicianId": 4,
+#       "price": 200000,
+#       "description": "Thay gioăng vòi.",
+#       "estimatedDuration": "1 giờ",
+#       "status": "WITHDRAWN",
+#       "createdAt": "2026-11-26T10:21:22.587Z"
+#     },
+#     "message": "Rút đề xuất thành công"
+#   }
+
+### PATCH /api/requests/{id}/close
+# Chỉ chủ tin, khi tin chưa chọn kỹ thuật viên.
+# @name dongTin
+PATCH {{baseUrl}}/requests/{{taoTin2.response.body.$.data.id}}/close
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 1055,
+#       "customerId": 2,
+#       "title": "Vòi nước bếp rò rỉ",
+#       "description": "Nhỏ giọt cả ngày.",
+#       "category": "Sửa ống nước",
+#       "location": "Quận 7, TP. Hồ Chí Minh",
+#       "preferredTime": "2026-11-29T10:21:22.555Z",
+#       "status": "CLOSED",
+#       "selectedProposalId": null,
+#       "createdAt": "2026-11-26T10:21:22.557Z"
+#     },
+#     "message": "Đóng tin thành công"
+#   }
+
+### PATCH /api/proposals/{id}/accept
+# Chỉ chủ tin. Tin chuyển SELECTED; các đề xuất khác chuyển REJECTED; kỹ thuật viên được chọn nhận thông báo.
+# @name chapNhan
+PATCH {{baseUrl}}/proposals/{{guiDeXuat.response.body.$.data.id}}/accept
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2193,
+#       "requestId": 1054,
+#       "technicianId": 4,
+#       "price": 480000,
+#       "description": "Kiểm tra gas, vệ sinh dàn lạnh, thay ống thoát nước.",
+#       "estimatedDuration": "2-3 giờ",
+#       "status": "ACCEPTED",
+#       "createdAt": "2026-11-26T10:21:22.580Z"
+#     },
+#     "message": "Chấp nhận đề xuất thành công"
+#   }
+
+### PATCH /api/requests/{id}/complete
+# Chỉ chủ tin đã chọn kỹ thuật viên. Tin chuyển COMPLETED.
+# @name hoanThanh
+PATCH {{baseUrl}}/requests/{{taoTin.response.body.$.data.id}}/complete
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 1054,
+#       "customerId": 2,
+#       "title": "Máy lạnh không làm mát (đã sửa)",
+#       "description": "Máy chạy nhưng gió không lạnh từ hôm qua.",
+#       "category": "Sửa máy lạnh",
+#       "location": "Quận 3, TP. Hồ Chí Minh",
+#       "preferredTime": "2026-11-28T10:21:22.537Z",
+#       "status": "COMPLETED",
+#       "selectedProposalId": 2193,
+#       "createdAt": "2026-11-26T10:21:22.539Z"
+#     },
+#     "message": "Xác nhận hoàn thành thành công"
+#   }
+
+### POST /api/reviews (khách đánh giá kỹ thuật viên)
+# Chỉ hai bên của công việc đã hoàn thành (403 NOT_OWNER nếu không tham gia); mỗi bên đánh giá một lần (409 ALREADY_REVIEWED).
+# @name danhGiaKtv
+POST {{baseUrl}}/reviews
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+{
+  "requestId": {{taoTin.response.body.$.data.id}},
+  "rating": 5,
+  "comment": "Làm nhanh, gọn gàng."
+}
+
+# Phản hồi thật đã lưu: HTTP 201
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 567,
+#       "requestId": 1054,
+#       "fromUserId": 2,
+#       "toUserId": 4,
+#       "rating": 5,
+#       "comment": "Làm nhanh, gọn gàng.",
+#       "createdAt": "2026-11-26T10:21:22.639Z"
+#     },
+#     "message": "Đánh giá thành công"
+#   }
+
+### POST /api/reviews (kỹ thuật viên đánh giá khách hàng)
+# @name danhGiaKhach
+POST {{baseUrl}}/reviews
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+{
+  "requestId": {{taoTin.response.body.$.data.id}},
+  "rating": 4,
+  "comment": "Khách thân thiện, có mặt đúng giờ."
+}
+
+# Phản hồi thật đã lưu: HTTP 201
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 568,
+#       "requestId": 1054,
+#       "fromUserId": 4,
+#       "toUserId": 2,
+#       "rating": 4,
+#       "comment": "Khách thân thiện, có mặt đúng giờ.",
+#       "createdAt": "2026-11-26T10:21:22.647Z"
+#     },
+#     "message": "Đánh giá thành công"
+#   }
+
+### GET /api/reviews/user/{userId}
+# Đánh giá đã nhận của một người dùng (kèm thống kê).
+# @name danhGiaCuaNguoi
+GET {{baseUrl}}/reviews/user/{{dnKtv.response.body.$.data.user.id}}?size=2
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": [
+#       {
+#         "id": 567,
+#         "requestId": 1054,
+#         "fromUserId": 2,
+#         "toUserId": 4,
+#         "rating": 5,
+#         "comment": "Làm nhanh, gọn gàng.",
+#         "createdAt": "2026-11-26T10:21:22.639Z",
+#         "fromUser": {
+#           "id": 2,
+#           "fullName": "Nguyễn Minh Anh",
+#           "role": "CUSTOMER"
+#         },
+#         "requestTitle": "Máy lạnh không làm mát (đã sửa)"
+#       },
+#       "… (1 phần tử nữa, rút gọn)"
+#     ],
+#     "message": "Thành công",
+#     "meta": {
+#       "page": 1,
+#       "size": 2,
+#       "totalElements": 4,
+#       "totalPages": 2,
+#       "user": {
+#         "id": 4,
+#         "fullName": "Trần Quốc Huy",
+#         "role": "TECHNICIAN",
+#         "ratingAvg": 4.8
+#       }
+#     }
+#   }
+
+### GET /api/notifications
+# @name thongBao
+GET {{baseUrl}}/notifications?size=2
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": [
+#       {
+#         "id": 4408,
+#         "userId": 4,
+#         "type": "REVIEW_RECEIVED",
+#         "title": "Bạn nhận được một đánh giá mới",
+#         "content": "Nguyễn Minh Anh đã đánh giá 5 sao cho công việc \"Máy lạnh không làm mát (đã sửa)\"",
+#         "isRead": false,
+#         "relatedId": 1054,
+#         "createdAt": "2026-11-26T10:21:22.639Z"
+#       },
+#       "… (1 phần tử nữa, rút gọn)"
+#     ],
+#     "message": "Thành công",
+#     "meta": {
+#       "page": 1,
+#       "size": 2,
+#       "totalElements": 19,
+#       "totalPages": 10
+#     }
+#   }
+
+### GET /api/notifications/unread-count
+# @name chuaDoc
+GET {{baseUrl}}/notifications/unread-count
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "count": 17
+#     },
+#     "message": "Thành công"
+#   }
+
+### PATCH /api/notifications/{id}/read
+# Chỉ chủ thông báo (403 NOT_OWNER).
+# @name daDoc
+PATCH {{baseUrl}}/notifications/{{thongBao.response.body.$.data.0.id}}/read
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 4408,
+#       "userId": 4,
+#       "type": "REVIEW_RECEIVED",
+#       "title": "Bạn nhận được một đánh giá mới",
+#       "content": "Nguyễn Minh Anh đã đánh giá 5 sao cho công việc \"Máy lạnh không làm mát (đã sửa)\"",
+#       "isRead": true,
+#       "relatedId": 1054,
+#       "createdAt": "2026-11-26T10:21:22.639Z"
+#     },
+#     "message": "Đã đánh dấu đã đọc"
+#   }
+
+### GET /api/users/{id}
+# Hồ sơ công khai; email và số điện thoại chỉ hiện với chính chủ và quản trị viên.
+# @name hoSo
+GET {{baseUrl}}/users/{{dnKtv.response.body.$.data.user.id}}
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 4,
+#       "fullName": "Trần Quốc Huy",
+#       "role": "TECHNICIAN",
+#       "ratingAvg": 4.8,
+#       "reviewCount": 4,
+#       "ratingCounts": {
+#         "1": 0,
+#         "2": 0,
+#         "3": 0,
+#         "4": 1,
+#         "5": 3
+#       },
+#       "completedCount": 4,
+#       "createdAt": "2026-11-26T10:19:07.703Z"
+#     },
+#     "message": "Thành công"
+#   }
+
+### PATCH /api/users/me
+# Chỉ sửa fullName và phone của chính mình; trường khác (role, email…) bị bỏ qua.
+# @name suaHoSo
+PATCH {{baseUrl}}/users/me
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+{
+  "fullName": "Nguyễn Minh Anh",
+  "phone": "0901000001"
+}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2,
+#       "email": "khach1@demo.vn",
+#       "fullName": "Nguyễn Minh Anh",
+#       "phone": "0901000001",
+#       "role": "CUSTOMER",
+#       "isLocked": false,
+#       "ratingAvg": 4.3,
+#       "createdAt": "2026-11-26T10:19:07.696Z"
+#     },
+#     "message": "Cập nhật thông tin thành công"
+#   }
+
+### GET /api/admin/users
+# Chỉ quản trị viên; lọc q, role, status.
+# @name dsTaiKhoan
+GET {{baseUrl}}/admin/users?size=2
+Content-Type: {{json}}
+Authorization: Bearer {{dnAdmin.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": [
+#       {
+#         "id": 248,
+#         "email": "khach.moi.1795688482192@demo.vn",
+#         "fullName": "Khách Mới",
+#         "phone": "0912345678",
+#         "role": "CUSTOMER",
+#         "isLocked": false,
+#         "ratingAvg": null,
+#         "createdAt": "2026-11-26T10:21:22.244Z"
+#       },
+#       "… (1 phần tử nữa, rút gọn)"
+#     ],
+#     "message": "Thành công",
+#     "meta": {
+#       "page": 1,
+#       "size": 2,
+#       "totalElements": 246,
+#       "totalPages": 123,
+#       "summary": {
+#         "active": 235,
+#         "locked": 11
+#       }
+#     }
+#   }
+
+### PATCH /api/admin/users/{id}/lock
+# Khóa có hiệu lực ngay với token đang dùng (BR02); không khóa được quản trị viên.
+# @name khoa
+PATCH {{baseUrl}}/admin/users/{{dnKhach2.response.body.$.data.user.id}}/lock
+Content-Type: {{json}}
+Authorization: Bearer {{dnAdmin.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 3,
+#       "email": "khach2@demo.vn",
+#       "fullName": "Lê Thị Hoa",
+#       "phone": "0901000002",
+#       "role": "CUSTOMER",
+#       "isLocked": true,
+#       "ratingAvg": 4.5,
+#       "createdAt": "2026-11-26T10:19:07.699Z"
+#     },
+#     "message": "Khóa tài khoản thành công"
+#   }
+
+### PATCH /api/admin/users/{id}/unlock
+# @name moKhoa
+PATCH {{baseUrl}}/admin/users/{{dnKhach2.response.body.$.data.user.id}}/unlock
+Content-Type: {{json}}
+Authorization: Bearer {{dnAdmin.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 3,
+#       "email": "khach2@demo.vn",
+#       "fullName": "Lê Thị Hoa",
+#       "phone": "0901000002",
+#       "role": "CUSTOMER",
+#       "isLocked": false,
+#       "ratingAvg": 4.5,
+#       "createdAt": "2026-11-26T10:19:07.699Z"
+#     },
+#     "message": "Mở khóa tài khoản thành công"
+#   }
+
+### POST /api/auth/logout
+# Phía server không thu hồi token (JWT không lưu phiên, DEV-01); giao diện xóa token khỏi trình duyệt.
+# @name dangXuat
+POST {{baseUrl}}/auth/logout
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": null,
+#     "message": "Đăng xuất thành công"
+#   }
+
+### Chuẩn bị TC-34: khách hàng 2 đăng một tin
+# @name bm_tinKhach2
+POST {{baseUrl}}/requests
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach2.response.body.$.data.token}}
+
+{
+  "title": "Tin của khách hàng 2",
+  "description": "Dùng để thử quyền truy cập.",
+  "category": "Sửa điện",
+  "location": "Quận 1, TP. Hồ Chí Minh",
+  "preferredTime": "{{$datetime iso8601 2 d}}"
+}
+
+# Phản hồi thật đã lưu: HTTP 201
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 1056,
+#       "customerId": 3,
+#       "title": "Tin của khách hàng 2",
+#       "description": "Dùng để thử quyền truy cập.",
+#       "category": "Sửa điện",
+#       "location": "Quận 1, TP. Hồ Chí Minh",
+#       "preferredTime": "2026-11-28T10:21:22.694Z",
+#       "status": "WAITING_PROPOSAL",
+#       "selectedProposalId": null,
+#       "createdAt": "2026-11-26T10:21:22.695Z"
+#     },
+#     "message": "Tạo tin thành công"
+#   }
+
+### TC-34 A01: khách hàng 1 XEM tin của khách hàng 2
+# Mong đợi 403 NOT_OWNER.
+# @name bm_a01_xem
+GET {{baseUrl}}/requests/{{bm_tinKhach2.response.body.$.data.id}}
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 403
+#   {
+#     "success": false,
+#     "status": 403,
+#     "error": "Forbidden",
+#     "message": "Bạn không có quyền truy cập tin sửa chữa này",
+#     "code": "NOT_OWNER",
+#     "timestamp": "2026-11-26T10:21:22.702Z",
+#     "path": "/api/requests/1056"
+#   }
+
+### TC-34 A01: khách hàng 1 SỬA tin của khách hàng 2
+# Mong đợi 403 NOT_OWNER; tin không đổi.
+# @name bm_a01_sua
+PATCH {{baseUrl}}/requests/{{bm_tinKhach2.response.body.$.data.id}}
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+{
+  "title": "Bị sửa trái phép"
+}
+
+# Phản hồi thật đã lưu: HTTP 403
+#   {
+#     "success": false,
+#     "status": 403,
+#     "error": "Forbidden",
+#     "message": "Bạn không có quyền truy cập tin sửa chữa này",
+#     "code": "NOT_OWNER",
+#     "timestamp": "2026-11-26T10:21:22.705Z",
+#     "path": "/api/requests/1056"
+#   }
+
+### TC-34 A01: khách hàng 1 ĐÓNG tin của khách hàng 2
+# Mong đợi 403.
+# @name bm_a01_dong
+PATCH {{baseUrl}}/requests/{{bm_tinKhach2.response.body.$.data.id}}/close
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 403
+#   {
+#     "success": false,
+#     "status": 403,
+#     "error": "Forbidden",
+#     "message": "Bạn không có quyền truy cập tin sửa chữa này",
+#     "code": "NOT_OWNER",
+#     "timestamp": "2026-11-26T10:21:22.708Z",
+#     "path": "/api/requests/1056/close"
+#   }
+
+### TC-34 A01: khách hàng 1 xem đề xuất của tin khách hàng 2
+# Mong đợi 403 (BR09).
+# @name bm_a01_dx
+GET {{baseUrl}}/proposals/request/{{bm_tinKhach2.response.body.$.data.id}}
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 403
+#   {
+#     "success": false,
+#     "status": 403,
+#     "error": "Forbidden",
+#     "message": "Bạn không có quyền truy cập tin sửa chữa này",
+#     "code": "NOT_OWNER",
+#     "timestamp": "2026-11-26T10:21:22.711Z",
+#     "path": "/api/proposals/request/1056"
+#   }
+
+### TC-34 A01: khách hàng 1 đánh dấu đã đọc thông báo của kỹ thuật viên
+# Mong đợi 403 NOT_OWNER.
+# @name bm_a01_tb
+PATCH {{baseUrl}}/notifications/{{thongBao.response.body.$.data.0.id}}/read
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 403
+#   {
+#     "success": false,
+#     "status": 403,
+#     "error": "Forbidden",
+#     "message": "Bạn không có quyền với thông báo này",
+#     "code": "NOT_OWNER",
+#     "timestamp": "2026-11-26T10:21:22.713Z",
+#     "path": "/api/notifications/4408/read"
+#   }
+
+### TC-34 A01: khách hàng gọi API quản trị
+# Mong đợi 403 FORBIDDEN (BR01).
+# @name bm_a01_admin
+GET {{baseUrl}}/admin/users
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 403
+#   {
+#     "success": false,
+#     "status": 403,
+#     "error": "Forbidden",
+#     "message": "Bạn không có quyền thực hiện thao tác này",
+#     "code": "FORBIDDEN",
+#     "timestamp": "2026-11-26T10:21:22.715Z",
+#     "path": "/api/admin/users"
+#   }
+
+### TC-34 A01: kỹ thuật viên đăng tin (chức năng của khách hàng)
+# Mong đợi 403.
+# @name bm_a01_vaitro
+POST {{baseUrl}}/requests
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+{
+  "title": "t",
+  "description": "d",
+  "category": "Khác",
+  "location": "l",
+  "preferredTime": "{{$datetime iso8601 2 d}}"
+}
+
+# Phản hồi thật đã lưu: HTTP 403
+#   {
+#     "success": false,
+#     "status": 403,
+#     "error": "Forbidden",
+#     "message": "Bạn không có quyền thực hiện thao tác này",
+#     "code": "FORBIDDEN",
+#     "timestamp": "2026-11-26T10:21:22.718Z",
+#     "path": "/api/requests"
+#   }
+
+### TC-34 A01: gửi kèm role=ADMIN khi sửa hồ sơ
+# Mong đợi 200 nhưng trường role bị bỏ qua; yêu cầu kế tiếp cho thấy vẫn là CUSTOMER.
+# @name bm_a01_role
+PATCH {{baseUrl}}/users/me
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+{
+  "fullName": "Nguyễn Minh Anh",
+  "role": "ADMIN"
+}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2,
+#       "email": "khach1@demo.vn",
+#       "fullName": "Nguyễn Minh Anh",
+#       "phone": "0901000001",
+#       "role": "CUSTOMER",
+#       "isLocked": false,
+#       "ratingAvg": 4.3,
+#       "createdAt": "2026-11-26T10:19:07.696Z"
+#     },
+#     "message": "Cập nhật thông tin thành công"
+#   }
+
+### TC-34 A01: kiểm tra lại vai trò
+# @name bm_a01_role2
+GET {{baseUrl}}/auth/me
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 2,
+#       "email": "khach1@demo.vn",
+#       "fullName": "Nguyễn Minh Anh",
+#       "phone": "0901000001",
+#       "role": "CUSTOMER",
+#       "isLocked": false,
+#       "ratingAvg": 4.3,
+#       "createdAt": "2026-11-26T10:19:07.696Z"
+#     },
+#     "message": "Thành công"
+#   }
+
+### TC-35 A02: gửi JSON hỏng
+# Mong đợi 400, không có vết ngăn xếp.
+# @name bm_a02_json
+POST {{baseUrl}}/auth/login
+Content-Type: {{json}}
+
+{"email": "a@b.vn", "password": 
+
+# Phản hồi thật đã lưu: HTTP 400
+#   {
+#     "success": false,
+#     "status": 400,
+#     "error": "Bad Request",
+#     "message": "Dữ liệu gửi lên không phải JSON hợp lệ",
+#     "code": "VALIDATION_ERROR",
+#     "timestamp": "2026-11-26T10:21:22.727Z",
+#     "path": "/api/auth/login"
+#   }
+
+### TC-35 A02: mã sai kiểu
+# Mong đợi 404 gọn gàng.
+# @name bm_a02_id
+GET {{baseUrl}}/requests/abc
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 404
+#   {
+#     "success": false,
+#     "status": 404,
+#     "error": "Not Found",
+#     "message": "Không tìm thấy tin sửa chữa",
+#     "code": "REQUEST_NOT_FOUND",
+#     "timestamp": "2026-11-26T10:21:22.730Z",
+#     "path": "/api/requests/abc"
+#   }
+
+### TC-35 A02: đường dẫn không tồn tại
+# @name bm_a02_404
+GET {{baseUrl}}/duong-dan-khong-ton-tai
+Content-Type: {{json}}
+
+# Phản hồi thật đã lưu: HTTP 404
+#   {
+#     "success": false,
+#     "status": 404,
+#     "error": "Not Found",
+#     "message": "Không tìm thấy đường dẫn",
+#     "code": "NOT_FOUND",
+#     "timestamp": "2026-11-26T10:21:22.731Z",
+#     "path": "/api/duong-dan-khong-ton-tai"
+#   }
+
+### TC-35 A02: CORS từ nguồn lạ
+# Mong đợi Access-Control-Allow-Origin là địa chỉ giao diện đã cấu hình (không phản chiếu nguồn lạ, không phải *) và KHÔNG có X-Powered-By.
+# @name bm_a02_cors
+GET {{baseUrl}}/health
+Content-Type: {{json}}
+Origin: http://evil.example
+
+# Phản hồi thật đã lưu: HTTP 200
+#   (tiêu đề) access-control-allow-origin: http://localhost:5173
+#   (tiêu đề) x-powered-by: (không có)
+#   {
+#     "success": true,
+#     "data": {
+#       "status": "ok"
+#     },
+#     "message": "Thành công"
+#   }
+
+### TC-37 A05: chuỗi ' OR 1=1 -- ở bộ lọc
+# Mong đợi 200 với 0 bản ghi (chuỗi được coi là chữ thường), không trả toàn bộ tin.
+# @name bm_a05_loc
+GET {{baseUrl}}/requests?category=%27%20OR%201%3D1%20--&size=1
+Content-Type: {{json}}
+Authorization: Bearer {{dnKtv.response.body.$.data.token}}
+
+# Phản hồi thật đã lưu: HTTP 200
+#   {
+#     "success": true,
+#     "data": [],
+#     "message": "Thành công",
+#     "meta": {
+#       "page": 1,
+#       "size": 1,
+#       "totalElements": 0,
+#       "totalPages": 0
+#     }
+#   }
+
+### TC-37 A05: tiêm SQL vào ô email đăng nhập
+# Mong đợi 401, không có token.
+# @name bm_a05_dn
+POST {{baseUrl}}/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "admin@demo.vn' OR '1'='1",
+  "password": "x' OR '1'='1"
+}
+
+# Phản hồi thật đã lưu: HTTP 401
+#   {
+#     "success": false,
+#     "status": 401,
+#     "error": "Unauthorized",
+#     "message": "Email hoặc mật khẩu không đúng",
+#     "code": "UNAUTHORIZED",
+#     "timestamp": "2026-11-26T10:21:22.739Z",
+#     "path": "/api/auth/login"
+#   }
+
+### TC-37 A05: đăng tin chứa thẻ script
+# Mong đợi 201, lưu nguyên văn; giao diện hiển thị thành chữ (xem TC-43).
+# @name bm_a05_xss
+POST {{baseUrl}}/requests
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}
+
+{
+  "title": "Thử XSS <script>alert(1)</script>",
+  "description": "<img src=x onerror=alert(2)>",
+  "category": "Khác",
+  "location": "Quận 1",
+  "preferredTime": "{{$datetime iso8601 2 d}}"
+}
+
+# Phản hồi thật đã lưu: HTTP 201
+#   {
+#     "success": true,
+#     "data": {
+#       "id": 1057,
+#       "customerId": 2,
+#       "title": "Thử XSS <script>alert(1)</script>",
+#       "description": "<img src=x onerror=alert(2)>",
+#       "category": "Khác",
+#       "location": "Quận 1",
+#       "preferredTime": "2026-11-28T10:21:22.739Z",
+#       "status": "WAITING_PROPOSAL",
+#       "selectedProposalId": null,
+#       "createdAt": "2026-11-26T10:21:22.741Z"
+#     },
+#     "message": "Tạo tin thành công"
+#   }
+
+### TC-38 A07: không gửi token
+# Mong đợi 401 UNAUTHORIZED.
+# @name bm_a07_khong
+GET {{baseUrl}}/auth/me
+Content-Type: {{json}}
+
+# Phản hồi thật đã lưu: HTTP 401
+#   {
+#     "success": false,
+#     "status": 401,
+#     "error": "Unauthorized",
+#     "message": "Bạn cần đăng nhập để tiếp tục",
+#     "code": "UNAUTHORIZED",
+#     "timestamp": "2026-11-26T10:21:22.745Z",
+#     "path": "/api/auth/me"
+#   }
+
+### TC-38 A07: token bị sửa chữ ký (thêm một ký tự)
+# Mong đợi 401.
+# @name bm_a07_sua
+GET {{baseUrl}}/auth/me
+Content-Type: {{json}}
+Authorization: Bearer {{dnKhach.response.body.$.data.token}}x
+
+# Phản hồi thật đã lưu: HTTP 401
+#   {
+#     "success": false,
+#     "status": 401,
+#     "error": "Unauthorized",
+#     "message": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn",
+#     "code": "UNAUTHORIZED",
+#     "timestamp": "2026-11-26T10:21:22.747Z",
+#     "path": "/api/auth/me"
+#   }
+
+### TC-38 A07: token alg=none (không chữ ký) giả quản trị viên
+# Mong đợi 401. Token dán sẵn là chuỗi không có chữ ký, không phải khóa thật.
+# @name bm_a07_none
+GET {{baseUrl}}/admin/users
+Content-Type: {{json}}
+Authorization: Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VySWQiOjEsInJvbGUiOiJBRE1JTiJ9.
+
+# Phản hồi thật đã lưu: HTTP 401
+#   {
+#     "success": false,
+#     "status": 401,
+#     "error": "Unauthorized",
+#     "message": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn",
+#     "code": "UNAUTHORIZED",
+#     "timestamp": "2026-11-26T10:21:22.749Z",
+#     "path": "/api/admin/users"
+#   }
+
+### TC-38 A07: token đã hết hạn (ký đúng khóa)
+# Tạo token rồi dán vào biến @tokenHetHan ở đầu tệp: node -e "console.log(require('jsonwebtoken').sign({userId:2,role:'CUSTOMER'}, process.env.JWT_SECRET, {expiresIn:-10}))" . Mong đợi 401.
+# @name bm_a07_het
+GET {{baseUrl}}/auth/me
+Content-Type: {{json}}
+Authorization: Bearer {{tokenHetHan}}
+
+# Phản hồi thật đã lưu: HTTP 401
+#   {
+#     "success": false,
+#     "status": 401,
+#     "error": "Unauthorized",
+#     "message": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn",
+#     "code": "UNAUTHORIZED",
+#     "timestamp": "2026-11-26T10:21:22.750Z",
+#     "path": "/api/auth/me"
+#   }
+
+### TC-38 A07: token HS512 ký đúng khóa (hệ thống ghim HS256)
+# Tạo token rồi dán vào biến @tokenHS512 ở đầu tệp: node -e "console.log(require('jsonwebtoken').sign({userId:2,role:'CUSTOMER'}, process.env.JWT_SECRET, {algorithm:'HS512'}))" . Mong đợi 401.
+# @name bm_a07_hs512
+GET {{baseUrl}}/auth/me
+Content-Type: {{json}}
+Authorization: Bearer {{tokenHS512}}
+
+# Phản hồi thật đã lưu: HTTP 401
+#   {
+#     "success": false,
+#     "status": 401,
+#     "error": "Unauthorized",
+#     "message": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn",
+#     "code": "UNAUTHORIZED",
+#     "timestamp": "2026-11-26T10:21:22.751Z",
+#     "path": "/api/auth/me"
+#   }
+
+### TC-38 A07: token đặt trong URL (?token=...)
+# Mong đợi 401: chỉ nhận token qua tiêu đề Authorization.
+# @name bm_a07_url
+GET {{baseUrl}}/auth/me?token={{dnKhach.response.body.$.data.token}}
+Content-Type: {{json}}
+
+# Phản hồi thật đã lưu: HTTP 401
+#   {
+#     "success": false,
+#     "status": 401,
+#     "error": "Unauthorized",
+#     "message": "Bạn cần đăng nhập để tiếp tục",
+#     "code": "UNAUTHORIZED",
+#     "timestamp": "2026-11-26T10:21:22.753Z",
+#     "path": "/api/auth/me"
+#   }
+
+### TC-38 A07: đăng nhập sai mật khẩu
+# Mong đợi 401, cùng thông điệp với email không tồn tại.
+# @name bm_a07_sai
+POST {{baseUrl}}/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "khach1@demo.vn",
+  "password": "SaiMatKhau"
+}
+
+# Phản hồi thật đã lưu: HTTP 401
+#   {
+#     "success": false,
+#     "status": 401,
+#     "error": "Unauthorized",
+#     "message": "Email hoặc mật khẩu không đúng",
+#     "code": "UNAUTHORIZED",
+#     "timestamp": "2026-11-26T10:21:22.802Z",
+#     "path": "/api/auth/login"
+#   }
+
+### TC-38 A07: đăng nhập tài khoản đã bị khóa
+# Mong đợi 403 ACCOUNT_LOCKED.
+# @name bm_a07_khoa
+POST {{baseUrl}}/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "bikhoa@demo.vn",
+  "password": "Demo@123"
+}
+
+# Phản hồi thật đã lưu: HTTP 403
+#   {
+#     "success": false,
+#     "status": 403,
+#     "error": "Forbidden",
+#     "message": "Tài khoản đã bị khóa, vui lòng liên hệ quản trị viên",
+#     "code": "ACCOUNT_LOCKED",
+#     "timestamp": "2026-11-26T10:21:22.854Z",
+#     "path": "/api/auth/login"
+#   }

@@ -57,7 +57,7 @@ Ngoài phạm vi:
    npm --prefix frontend install
    ```
 
-3. Tạo file `.env` từ `.env.example` (file mẫu để trống) và điền: `PORT=3000`, `DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_dev`, `TEST_DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_test`, `JWT_SECRET` là một chuỗi ngẫu nhiên, `JWT_EXPIRES_IN=1d`, `CLIENT_URL=http://localhost:5173`.
+3. Tạo file `.env` từ file mẫu: `cp .env.example .env` (PowerShell: `Copy-Item .env.example .env`). File mẫu đã có giá trị chạy được ngay trên máy cá nhân (khớp với CSDL ở bước 1); `JWT_SECRET` mẫu chỉ để phát triển và phải đủ 32 ký tự trở lên, nên khi triển khai thật hãy tạo khóa mới: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Đừng commit `.env`.
 
 4. Tạo bảng:
 
@@ -77,7 +77,7 @@ Ngoài phạm vi:
 
 Tài khoản quản trị viên không đăng ký được qua giao diện (BR01); tạo trực tiếp trong CSDL khi cần (`npm run create-admin`) hoặc dùng tài khoản demo từ `npm run seed`.
 
-Không muốn cài Node.js và PostgreSQL? Chạy cả dự án bằng Docker: `docker compose up --build`, rồi mở http://localhost:5173. Chi tiết ở `docs/huong-dan-docker.md`.
+Không muốn cài Node.js và PostgreSQL? Chạy cả dự án bằng Docker, hai lệnh: `cp .env.example .env` rồi `docker compose up -d --build`. Bảng và dữ liệu mẫu được dựng tự động; mở http://localhost:5173. Chi tiết ở `docs/huong-dan-docker.md`.
 
 ## 4. Cấu trúc thư mục
 
@@ -110,6 +110,15 @@ npm test
 ```
 
 Bộ kiểm thử xóa và tạo lại toàn bộ bảng trong `TEST_DATABASE_URL` mỗi lần chạy, vì vậy không trỏ biến này vào CSDL đang dùng.
+
+Kiểm tra bảo mật và hiệu năng (cần CSDL phát triển đã nạp dữ liệu mẫu; hai script tự bật backend riêng nên không đụng backend đang chạy):
+
+```bash
+node scripts/kiem-tra-bao-mat.js   # kiểm soát truy cập, token, tiêm mã, thông báo lỗi, nhật ký (72 bước PASS/FAIL)
+node scripts/do-hieu-nang.js       # 100 người dùng ảo trên 1050 tin, so với ngưỡng 3 giây
+```
+
+Tiêu chí và kết quả: `docs/checklist-bao-mat.md`. Ví dụ gọi API (kèm phản hồi thật đã lưu, mở bằng tiện ích REST Client của VS Code): `docs/api-examples.http`.
 
 ## 6. Trạng thái hiện tại
 
