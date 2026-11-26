@@ -17,7 +17,7 @@ async function xacThuc(req, res, next) {
 
     let noiDungToken;
     try {
-      noiDungToken = jwt.verify(token, cauHinh.jwtSecret);
+      noiDungToken = jwt.verify(token, cauHinh.jwtSecret, { algorithms: ['HS256'] });
     } catch {
       throw new LoiUngDung(401, 'UNAUTHORIZED', 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn');
     }

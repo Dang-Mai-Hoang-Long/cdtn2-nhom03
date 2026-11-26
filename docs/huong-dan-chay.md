@@ -93,18 +93,20 @@ Copy-Item .env.example .env
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-File mẫu `.env.example` để trống mọi giá trị, nên mở `.env` và điền như sau (hai địa chỉ CSDL đúng nếu bạn làm đúng mục 3.2):
+File mẫu `.env.example` đã có sẵn giá trị chạy được trên máy cá nhân (hai địa chỉ CSDL đúng nếu bạn làm đúng mục 3.2), nên không cần điền gì thêm. Nội dung `.env` sau khi sao chép:
 
 ```ini
 PORT=3000
 DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_dev
 TEST_DATABASE_URL=postgres://nhom03:nhom03@localhost:5432/suachua_test
-JWT_SECRET=<dán chuỗi vừa in ra ở trên>
+JWT_SECRET=khoa-mau-chi-de-phat-trien-doi-truoc-khi-trien-khai-0123456789
 JWT_EXPIRES_IN=1d
 CLIENT_URL=http://localhost:5173
 ```
 
-Mỗi người có thể dùng `JWT_SECRET` riêng; đổi giá trị thì các phiên đăng nhập cũ hết hiệu lực. Thiếu `DATABASE_URL` hoặc `JWT_SECRET` thì backend không khởi động. Đừng commit `.env`.
+`JWT_SECRET` mẫu chỉ dành cho phát triển (cả nhóm cùng biết); muốn dùng khóa riêng thì dán chuỗi do lệnh `node -e` ở trên in ra. Khóa phải từ 32 ký tự trở lên, ngắn hơn thì backend từ chối khởi động.
+
+Mỗi người có thể dùng `JWT_SECRET` riêng; đổi giá trị thì các phiên đăng nhập cũ hết hiệu lực. Thiếu `DATABASE_URL` hoặc `JWT_SECRET`, hoặc `JWT_SECRET` ngắn hơn 32 ký tự, thì backend không khởi động. Đừng commit `.env`.
 
 ### 3.5. Dựng bảng
 
@@ -253,6 +255,7 @@ Khi cần nhập dữ liệu có dấu tiếng Việt, viết vào file `.sql` l
 | `password authentication failed for user "nhom03"` | Chưa tạo user `nhom03` (mục 3.2) hoặc mật khẩu trong `.env` không khớp. |
 | `database "suachua_dev" does not exist` | Chưa tạo CSDL (mục 3.2). |
 | `ECONNREFUSED 127.0.0.1:5432` | Dịch vụ PostgreSQL chưa chạy hoặc đang dùng cổng khác. Mở *Services* của Windows và khởi động dịch vụ `postgresql-x64-16`; nếu đổi cổng thì sửa trong `.env`. |
+| `JWT_SECRET quá ngắn (cần ít nhất 32 ký tự)` | Khóa trong `.env` ngắn. Tạo khóa mới bằng lệnh `node -e` ở mục 3.4 (hoặc dùng lại giá trị mẫu của `.env.example`). |
 | `Thiếu biến môi trường DATABASE_URL` hoặc `JWT_SECRET` | Chưa có `.env`, hoặc chạy lệnh ngoài thư mục gốc dự án (mục 3.4). |
 | `relation "users" does not exist` | Chưa chạy `npm run migrate`, hoặc đã chạy nhưng trỏ vào CSDL khác. |
 | `Migration 00X_... thất bại` | Xem nội dung lỗi phía sau. Thường do CSDL không còn đúng trạng thái; đặt lại theo mục 5.3. |

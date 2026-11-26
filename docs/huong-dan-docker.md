@@ -13,7 +13,8 @@ Cách nhanh nhất để một lập trình viên mới chạy được cả d�
 git clone https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03
 cd cdtn2-nhom03
 git switch <tên nhánh đang làm việc>
-docker compose up --build
+cp .env.example .env        # PowerShell: Copy-Item .env.example .env (một lần)
+docker compose up -d --build
 ```
 
 Lần đầu mất vài phút vì phải tải image và cài thư viện. Khi thấy `Backend đang chạy tại ...` (dịch vụ `api`) và `VITE ... ready` (dịch vụ `web`), mở:
@@ -34,11 +35,13 @@ docker compose down                 # dừng và xóa container, vẫn giữ d�
 docker compose down -v              # xóa luôn dữ liệu CSDL (làm lại từ đầu)
 ```
 
-Dịch vụ `api` tự chạy `npm run migrate` mỗi lần khởi động nên bảng luôn được dựng đủ; dịch vụ `db` tự tạo thêm CSDL `suachua_test` ở lần đầu.
+Dịch vụ `api` tự chạy `npm run migrate` rồi nạp dữ liệu mẫu nếu CSDL còn trống (`npm run seed -- --neu-chua-co`; đã có dữ liệu thì bỏ qua và khởi động bình thường) mỗi lần khởi động; dịch vụ `db` tự tạo thêm CSDL `suachua_test` ở lần đầu. Cả ba dịch vụ có healthcheck: `docker compose ps` phải báo `(healthy)` ở cả `db`, `api` và `web`.
+
+Mật khẩu CSDL (`DB_PASSWORD`) và khóa ký token (`JWT_SECRET`, từ 32 ký tự) lấy từ file `.env`, không ghi cứng trong `docker-compose.yml`; thiếu thì `docker compose` dừng ngay và báo "Chưa có DB_PASSWORD, hãy chạy lệnh cp .env.example .env". Mật khẩu CSDL chỉ được đặt khi volume CSDL được tạo lần đầu: muốn đổi, chạy `docker compose down -v` rồi dựng lại.
 
 ## 3. Dữ liệu mẫu và tài khoản demo
 
-CSDL mới còn trống. Tạo dữ liệu mẫu bằng thư mục `seeds/`:
+Dữ liệu mẫu được nạp tự động ở lần chạy đầu tiên (247 tài khoản, 1050 tin, 2191 đề xuất, 566 đánh giá). Muốn làm lại hoặc chỉ nạp phần nhỏ, dùng thư mục `seeds/`:
 
 ```powershell
 docker compose exec api npm run seed               # 50 tin viết tay + 1000 tin tự động; dừng nếu đã có tài khoản demo
@@ -90,6 +93,8 @@ Image chứa bản sao mã tại lúc build và **không tự nạp lại** khi 
 
 | Thông báo | Nguyên nhân và cách xử lý |
 | --- | --- |
+| `Chưa có DB_PASSWORD` hoặc `Chưa có JWT_SECRET` | Chưa có file `.env`. Chạy `cp .env.example .env` (PowerShell: `Copy-Item .env.example .env`). |
+| `JWT_SECRET quá ngắn` trong `docker compose logs api` | `JWT_SECRET` trong `.env` ngắn hơn 32 ký tự. Tạo khóa mới: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. |
 | `failed to connect to the docker API` | Docker Desktop chưa chạy. Mở nó và đợi báo đã sẵn sàng. |
 | `additional privileges requested: pass "--allow=fs.read=Dockerfile"` khi build | Gặp khi chạy trong Git Bash trên Windows (đường dẫn kiểu `/d/...`). Chạy trong PowerShell hoặc CMD (terminal mặc định của VS Code), hoặc vào thư mục bằng đường dẫn kiểu Windows (`cd D:\duong\dan\cdtn2-nhom03`) rồi chạy lại. |
 | `port is already allocated` hoặc `address already in use` | Cổng 3000, 5173 hoặc 5433 đang bị chương trình khác dùng (ví dụ `npm run dev` chạy trên máy). Tắt nó, hoặc đổi cổng CSDL bằng `DB_PORT`. |
@@ -99,4 +104,4 @@ Image chứa bản sao mã tại lúc build và **không tự nạp lại** khi 
 
 ## 8. Lưu ý
 
-Cấu hình này dành cho **phát triển**: mật khẩu CSDL đơn giản, khóa JWT mặc định công khai trong repo, giao diện chạy bằng máy chủ phát triển của Vite. Không dùng để triển khai thật.
+Cấu hình này dành cho **phát triển**: `.env.example` chứa mật khẩu CSDL và khóa JWT mẫu công khai trong repo (mọi người cùng biết), giao diện chạy bằng máy chủ phát triển của Vite. Không dùng để triển khai thật; cách triển khai thật (HTTPS, khóa riêng, giới hạn đăng nhập) ở `docs/deployment-guide.md` mục 8. Đã kiểm tra: dừng container `db` thì `api` vẫn sống và trả `500 INTERNAL_ERROR` gọn, `db` bật lại thì đăng nhập được ngay (`docs/checklist-bao-mat.md`, mục 5).

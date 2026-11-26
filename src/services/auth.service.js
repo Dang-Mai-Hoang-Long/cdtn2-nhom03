@@ -11,7 +11,7 @@ function chuanHoaEmail(email) {
 }
 
 function taoToken(nguoiDung) {
-  return jwt.sign({ userId: nguoiDung.id, role: nguoiDung.role }, cauHinh.jwtSecret, { expiresIn: cauHinh.jwtExpiresIn });
+  return jwt.sign({ userId: nguoiDung.id, role: nguoiDung.role }, cauHinh.jwtSecret, { algorithm: 'HS256', expiresIn: cauHinh.jwtExpiresIn });
 }
 
 // US01
