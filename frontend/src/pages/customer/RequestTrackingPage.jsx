@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai, TomTatYeuCau, TienTrinh, NhanTrangThaiYeuCau } from '../../components/Ui.jsx';
+import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai, TomTatYeuCau, TienTrinh, NhanTrangThaiYeuCau, LienKetNguoiDung } from '../../components/Ui.jsx';
 import { layChiTietYeuCau, xacNhanHoanThanh } from '../../api/requestApi.js';
 import { layDanhSachDeXuatCuaYeuCau } from '../../api/proposalApi.js';
 import { layThongDiepLoi } from '../../api/httpClient.js';
@@ -53,7 +53,7 @@ export default function TrangTheoDoiYeuCau({ thamSo }) {
       <KhungNoiDung tieuDe="Thông tin yêu cầu"><TomTatYeuCau yeuCau={yeuCau} /></KhungNoiDung>
       <div className="cot-noi-dung">
         {deXuatDuocChon && <KhungNoiDung tieuDe="Đề xuất đã chấp nhận">
-          <div className="dau-the-de-xuat"><strong>{deXuatDuocChon.technician.fullName}</strong><NhanTrangThai sacThai="nhan-dam">Đã chấp nhận</NhanTrangThai></div>
+          <div className="dau-the-de-xuat"><strong><LienKetNguoiDung id={deXuatDuocChon.technician.id}>{deXuatDuocChon.technician.fullName}</LienKetNguoiDung></strong><NhanTrangThai sacThai="nhan-dam">Đã chấp nhận</NhanTrangThai></div>
           <div className="luoi-truong-nhap cach-tren">
             <div><span className="nhan-mo-ta">Chi phí đề xuất</span><strong>{dinhDangTien(deXuatDuocChon.price)}</strong></div>
             <div><span className="nhan-mo-ta">Thời gian dự kiến</span><strong>{deXuatDuocChon.estimatedDuration || '—'}</strong></div>
@@ -63,7 +63,7 @@ export default function TrangTheoDoiYeuCau({ thamSo }) {
           {yeuCau.status === 'COMPLETED' && <ThongBao loai="thanh-cong">{yeuCau.hasReviewed ? 'Công việc đã hoàn thành. Bạn đã đánh giá kỹ thuật viên.' : 'Công việc đã hoàn thành.'}</ThongBao>}
           {yeuCau.status === 'COMPLETED' && !yeuCau.hasReviewed && <Nut maManHinhDich="08" thamSoDich={{ id: yeuCau.id }}>Đánh giá kỹ thuật viên</Nut>}
         </KhungNoiDung>}
-        {cacDeXuatKhac.length > 0 && <KhungNoiDung tieuDe="Các đề xuất khác">{cacDeXuatKhac.map((deXuat) => <div className="de-xuat-thu-gon" key={deXuat.id}><strong>{deXuat.technician.fullName} · {dinhDangTien(deXuat.price)}</strong><NhanTrangThai>{NHAN_TRANG_THAI_DE_XUAT[deXuat.status]}</NhanTrangThai></div>)}</KhungNoiDung>}
+        {cacDeXuatKhac.length > 0 && <KhungNoiDung tieuDe="Các đề xuất khác">{cacDeXuatKhac.map((deXuat) => <div className="de-xuat-thu-gon" key={deXuat.id}><strong><LienKetNguoiDung id={deXuat.technician.id}>{deXuat.technician.fullName}</LienKetNguoiDung> · {dinhDangTien(deXuat.price)}</strong><NhanTrangThai>{NHAN_TRANG_THAI_DE_XUAT[deXuat.status]}</NhanTrangThai></div>)}</KhungNoiDung>}
       </div>
     </div>
   </div>;

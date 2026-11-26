@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai } from '../../components/Ui.jsx';
+import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai, LienKetNguoiDung } from '../../components/Ui.jsx';
 import { layChiTietDeXuat, chapNhanDeXuat } from '../../api/proposalApi.js';
 import { chuyenDenManHinh } from '../../navigation/screenRoutes.js';
 import { layThongDiepLoi } from '../../api/httpClient.js';
@@ -62,7 +62,7 @@ export default function TrangXemDeXuat({ thamSo }) {
         </KhungNoiDung>
         <KhungNoiDung tieuDe="Thông tin kỹ thuật viên">
           <div className="luoi-truong-nhap">
-            <div><span className="nhan-mo-ta">Họ tên</span><strong>{deXuat.technician.fullName}</strong></div>
+            <div><span className="nhan-mo-ta">Họ tên</span><strong><LienKetNguoiDung id={deXuat.technician.id}>{deXuat.technician.fullName}</LienKetNguoiDung></strong></div>
             <div><span className="nhan-mo-ta">Đánh giá</span><strong>{dinhDangDiem(deXuat.technician.ratingAvg)}</strong></div>
           </div>
         </KhungNoiDung>

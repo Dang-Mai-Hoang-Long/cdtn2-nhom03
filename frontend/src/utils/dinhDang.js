@@ -29,6 +29,13 @@ export function dinhDangThoiGian(giaTri) {
   return `${hai(thoiDiem.getDate())}/${hai(thoiDiem.getMonth() + 1)}/${thoiDiem.getFullYear()} · ${hai(thoiDiem.getHours())}:${hai(thoiDiem.getMinutes())}`;
 }
 
+export function dinhDangNgay(giaTri) {
+  if (!giaTri) return '—';
+  const thoiDiem = new Date(giaTri);
+  if (Number.isNaN(thoiDiem.getTime())) return '—';
+  return `${hai(thoiDiem.getDate())}/${hai(thoiDiem.getMonth() + 1)}/${thoiDiem.getFullYear()}`;
+}
+
 export function dinhDangTien(soTien) {
   return `${Number(soTien).toLocaleString('vi-VN')} đ`;
 }

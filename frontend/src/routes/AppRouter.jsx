@@ -21,6 +21,7 @@ import TrangSuaDeXuat from '../pages/technician/ProposalEditPage.jsx';
 import TrangCongViecDuocChon from '../pages/technician/TechnicianDashboardPage.jsx';
 import TrangDanhGiaKhachHang from '../pages/technician/TechnicianReviewPage.jsx';
 import TrangQuanLyTaiKhoan from '../pages/admin/UserManagementPage.jsx';
+import TrangHoSoNguoiDung from '../pages/shared/UserProfilePage.jsx';
 
 const trangTheoMaManHinh = {
   '01': TrangDangNhap,
@@ -40,6 +41,7 @@ const trangTheoMaManHinh = {
   '16': TrangQuanLyTaiKhoan,
   '17': TrangSuaYeuCau,
   '18': TrangSuaDeXuat,
+  '19': TrangHoSoNguoiDung,
 };
 
 function docViTriHienTai() {

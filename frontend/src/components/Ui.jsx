@@ -57,7 +57,7 @@ export function ThongKe({ cacMuc, rutGon = false }) {
 
 export function TomTatYeuCau({ yeuCau }) {
   const lienHe = yeuCau.customer
-    ? [yeuCau.customer.fullName, yeuCau.customer.phone].filter(Boolean).join(' · ')
+    ? <><LienKetNguoiDung id={yeuCau.customer.id}>{yeuCau.customer.fullName}</LienKetNguoiDung>{yeuCau.customer.phone && ` · ${yeuCau.customer.phone}`}</>
     : '—';
   return <div className="tom-tat-yeu-cau"><div className="luoi-truong-nhap">
     <div><span className="nhan-mo-ta">Loại dịch vụ</span><strong>{yeuCau.category}</strong></div>
@@ -77,8 +77,25 @@ export function TienTrinh({ trangThai }) {
   return <div className="tien-trinh">{cacBuoc.map((buoc, viTri) => <div key={buoc} className={viTri <= buocHienTai ? 'hoan-thanh' : ''}><span>{viTri < buocHienTai || trangThai === 'COMPLETED' ? '✓' : viTri + 1}</span><strong>{buoc}</strong></div>)}</div>;
 }
 
+// Mỗi trạng thái một sắc thái: chờ đề xuất (xanh), đã chọn kỹ thuật viên (vàng), hoàn thành (đen), đã đóng (viền xám).
+const SAC_THAI_YEU_CAU = { WAITING_PROPOSAL: '', SELECTED: 'nhan-chon', COMPLETED: 'nhan-dam', CLOSED: 'nhan-nhat' };
+
 export function NhanTrangThaiYeuCau({ trangThai }) {
-  return <NhanTrangThai sacThai={trangThai === 'COMPLETED' ? 'nhan-dam' : ''}>{NHAN_TRANG_THAI_YEU_CAU[trangThai] ?? trangThai}</NhanTrangThai>;
+  return <NhanTrangThai sacThai={SAC_THAI_YEU_CAU[trangThai] ?? ''}>{NHAN_TRANG_THAI_YEU_CAU[trangThai] ?? trangThai}</NhanTrangThai>;
+}
+
+// Liên kết tới hồ sơ một người dùng (màn hình 19). Không có mã thì chỉ hiện tên.
+export function LienKetNguoiDung({ id, children }) {
+  if (!id) return children;
+  return <a className="lien-ket-van-ban" href={layDuongDanManHinh('19', { id })}>{children}</a>;
+}
+
+// Điểm 1 đến 5 bằng năm ngôi sao; giá trị bằng chữ nằm ở aria-label nên không chỉ dựa vào hình hay màu.
+export function HienThiSao({ diem }) {
+  const soSao = Math.round(Number(diem));
+  return <span className="hang-sao-hien-thi" role="img" aria-label={`${String(diem).replace('.', ',')} trên 5 sao`}>
+    {[1, 2, 3, 4, 5].map((viTri) => <svg key={viTri} viewBox="0 0 24 24" className={viTri <= soSao ? 'sao-day' : 'sao-rong'} aria-hidden="true"><path d="M12 3.5l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z" /></svg>)}
+  </span>;
 }
 
 export function PhanTrang({ phanTrang, onChuyenTrang }) {

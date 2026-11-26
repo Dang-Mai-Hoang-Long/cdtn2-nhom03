@@ -32,6 +32,8 @@ Cột "Nguồn" ghi tài liệu hoặc mã commit (7 ký tự) để truy lại.
 | B9 | Tham số danh sách | Mọi API danh sách có `sort`; tin của kỹ thuật viên lọc theo `status` | `sort` chỉ ở hai API danh sách tin; `GET /api/requests` bỏ qua `status`; danh sách tài khoản có thêm `q` | Khớp thực tế | 7ffe0cd |
 | B10 | Mã số quá lớn | (không nêu) | Mã vượt 2147483647 trả `404` (như mã không tồn tại) | Trước đây trả 500 | BUG-03 (d49d654) |
 | B11 | Giá đề xuất và số điện thoại | (không giới hạn rõ) | Giá tối thiểu 0,1 (khớp `DECIMAL(15,1)`); số điện thoại tối đa 20 ký tự (khớp `VARCHAR(20)`) | Trước đây trả 500 | BUG-01 (caa7c2d), BUG-02 (6c1ffd2) |
+| B12 | Xem hồ sơ người dùng | (không có API) | Thêm `GET /api/users/{id}` cho mọi vai trò đã đăng nhập: phần công khai gồm tên, vai trò, điểm trung bình, số đánh giá, phân bố sao, số công việc hoàn thành, ngày tham gia; `email`, `phone`, `isLocked` chỉ cho quản trị viên và chính chủ; tài khoản quản trị viên trả `404` cho người dùng thường | Giao diện cần trang hồ sơ để xem đánh giá và thông tin tài khoản mà không lộ số điện thoại ngoài BR15 | api-contract mục 2.3.8 |
+| B13 | Sửa thông tin tài khoản | (không có API) | Thêm `PATCH /api/users/me`: tự sửa `fullName` và `phone` (cùng quy tắc kiểm tra như đăng ký, gửi trường nào sửa trường đó); email, mật khẩu, vai trò, `isLocked`, `ratingAvg` không sửa được và bị bỏ qua; không có đường sửa theo mã nên không sửa được tài khoản người khác | Người dùng cần chỉnh họ tên và số điện thoại khi thông tin liên hệ thay đổi; email là định danh đăng nhập nên giữ nguyên | api-contract mục 2.3.8 |
 
 ## C. Nghiệp vụ và phân quyền
 
@@ -75,6 +77,8 @@ Quyết định đi kèm (người dùng chưa nêu rõ, đã chọn mặc đị
 | D5 | Đích khi bấm thông báo | (không nêu) | Theo loại và vai trò: đề xuất mới mở chi tiết đề xuất (khách hàng); được chọn và hoàn thành mở công việc được chọn; không được chọn mở chi tiết tin; đánh giá mở theo dõi công việc (khách hàng) hoặc công việc được chọn (kỹ thuật viên) | Mỗi thông báo dẫn tới nơi cần xem | eae5177 |
 | D6 | "Công việc được chọn" | (không nêu) | Lấy từ `GET /api/proposals/my?status=ACCEPTED`, không có API riêng | Tránh thêm API | project-notes (Sprint 3), a700f90 |
 | D7 | Dữ liệu minh họa của wireframe | `demoData.js` | Đã xóa; dữ liệu mẫu nằm ở `seeds/` | Không màn hình nào còn dùng | 55c4c3c |
+| D8 | Hồ sơ người dùng | (không có màn hình) | Thêm màn hình **19** (`users/:id`, địa chỉ `#/users/{id}`) dùng chung mọi vai trò: thông tin tài khoản, điểm đánh giá với phân bố sao và danh sách đánh giá đã nhận (5 mục mỗi trang). Mở từ tên người dùng ở danh sách đề xuất, chi tiết đề xuất, theo dõi công việc, chi tiết tin và công việc được chọn; từ tên người đánh giá; từ "Xem chi tiết" ở bảng tài khoản của quản trị viên; từ thẻ tài khoản ở đầu trang ("Tài khoản của tôi" trên điện thoại) | Người dùng cần xem đánh giá và thông tin tài khoản của nhau | `frontend/src/pages/shared/UserProfilePage.jsx` |
+| D9 | Sửa thông tin tài khoản | (không có) | Nút "Sửa thông tin" trên hồ sơ của chính mình mở biểu mẫu họ tên và số điện thoại (email hiển thị chỉ đọc); lỗi hiện dưới từng ô; lưu xong tên ở đầu trang đổi ngay mà không cần đăng nhập lại | Cùng màn hình 19 với hồ sơ người dùng | `frontend/src/pages/shared/UserProfilePage.jsx` |
 
 ## E. Công cụ, môi trường và dữ liệu mẫu
 

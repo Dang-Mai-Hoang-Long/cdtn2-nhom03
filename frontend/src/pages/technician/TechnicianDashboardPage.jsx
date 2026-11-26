@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai, TomTatYeuCau, TienTrinh, NhanTrangThaiYeuCau } from '../../components/Ui.jsx';
+import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai, TomTatYeuCau, TienTrinh, NhanTrangThaiYeuCau, LienKetNguoiDung } from '../../components/Ui.jsx';
 import { layChiTietYeuCau } from '../../api/requestApi.js';
 import { layDanhSachDeXuatCuaToi } from '../../api/proposalApi.js';
 import { layDuongDanManHinh } from '../../navigation/screenRoutes.js';
@@ -61,7 +61,7 @@ export default function TrangCongViecDuocChon({ thamSo }) {
         <KhungNoiDung tieuDe="Liên hệ khách hàng">
           <NhanTrangThai sacThai="nhan-nhat">Chỉ hiển thị sau khi được chọn</NhanTrangThai>
           <dl className="danh-sach-vai-tro">
-            <dt>Khách hàng</dt><dd>{yeuCau.customer.fullName}</dd>
+            <dt>Khách hàng</dt><dd><LienKetNguoiDung id={yeuCau.customer.id}>{yeuCau.customer.fullName}</LienKetNguoiDung></dd>
             <dt>Số điện thoại</dt><dd>{yeuCau.customer.phone ?? '—'}</dd>
             <dt>Khu vực</dt><dd>{yeuCau.location}</dd>
           </dl>

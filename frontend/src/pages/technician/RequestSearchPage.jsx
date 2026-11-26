@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TieuDeTrang, KhungNoiDung, Nut, TruongNhap, ThongBao, DangTai, PhanTrang, NhanTrangThaiYeuCau } from '../../components/Ui.jsx';
+import { TieuDeTrang, KhungNoiDung, Nut, TruongNhap, ThongBao, DangTai, PhanTrang } from '../../components/Ui.jsx';
 import { layDuongDanManHinh } from '../../navigation/screenRoutes.js';
 import { layDanhSachYeuCauDangCho } from '../../api/requestApi.js';
 import { layThongDiepLoi } from '../../api/httpClient.js';
@@ -52,11 +52,20 @@ export default function TrangTimYeuCau() {
         {!ketQua && !loi && <DangTai />}
         {ketQua && <div className="so-luong-ket-qua">{ketQua.phanTrang.totalElements} tin đang nhận đề xuất <span>{moTaBoLoc}</span></div>}
         {ketQua && ketQua.danhSach.length === 0 && <ThongBao>{boLoc.category || boLoc.location ? 'Không tìm thấy tin phù hợp' : 'Hiện không có tin sửa chữa nào'}</ThongBao>}
-        {ketQua?.danhSach.map((tin) => <KhungNoiDung key={tin.id} className="the-ket-qua">
-          <div className="dau-the-de-xuat"><div><strong>{dinhDangMaTin(tin.id)} · {tin.title}</strong><span>{tin.category} · {tin.location}</span></div><NhanTrangThaiYeuCau trangThai={tin.status} /></div>
-          <p>{tin.description}</p>
-          <p className="mo-ta-phu">Mong muốn: {dinhDangThoiGian(tin.preferredTime)} · {tin.proposalCount} đề xuất</p>
-          <div className="can-deu-hai-ben"><span>Đăng lúc {dinhDangThoiGian(tin.createdAt)}</span><a className="lien-ket-van-ban" href={layDuongDanManHinh('10', { id: tin.id })}>Xem chi tiết</a></div>
+        {ketQua?.danhSach.map((tin) => <KhungNoiDung key={tin.id} className="the-ket-qua phieu">
+          <div className="cuong-phieu">
+            <div><span>Mã tin</span><strong>{dinhDangMaTin(tin.id)}</strong></div>
+            <div><span>Đề xuất</span><strong>{tin.proposalCount}</strong></div>
+          </div>
+          <div className="than-phieu">
+            <h3><a href={layDuongDanManHinh('10', { id: tin.id })}>{tin.title}</a></h3>
+            <p className="loai-phieu">{tin.category} tại {tin.location}</p>
+            <p className="mo-ta-phieu">{tin.description}</p>
+            <div className="chan-phieu">
+              <span><strong>Mong muốn {dinhDangThoiGian(tin.preferredTime)}</strong><small>Đăng {dinhDangThoiGian(tin.createdAt)}</small></span>
+              <a className="lien-ket-van-ban" href={layDuongDanManHinh('10', { id: tin.id })}>Xem chi tiết {dinhDangMaTin(tin.id)}</a>
+            </div>
+          </div>
         </KhungNoiDung>)}
         <PhanTrang phanTrang={ketQua?.phanTrang} onChuyenTrang={datTrang} />
       </div>

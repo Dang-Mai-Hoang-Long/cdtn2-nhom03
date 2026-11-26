@@ -68,4 +68,37 @@ async function capNhatTrangThaiKhoa(id, isLocked) {
   return chuyenNguoiDung(rows[0]);
 }
 
-module.exports = { chuyenNguoiDung, timTheoId, timTheoEmailKemMatKhau, tao, timDanhSachChoQuanTri, capNhatTrangThaiKhoa };
+// Chỉ ghi các trường được truyền (null nghĩa là giữ nguyên giá trị cũ).
+async function capNhatThongTin(id, { fullName, phone }) {
+  const { rows } = await truyVan(
+    'UPDATE users SET full_name = COALESCE($2, full_name), phone = COALESCE($3, phone) WHERE id = $1 RETURNING *',
+    [id, fullName, phone],
+  );
+  return chuyenNguoiDung(rows[0]);
+}
+
+// Số liệu trên hồ sơ: số đánh giá nhận được, số lượng từng mức sao (đủ khóa 1 đến 5, mức không có thì bằng 0)
+// và số công việc đã hoàn thành (khách hàng: tin của mình; kỹ thuật viên: tin đã chọn đề xuất của mình).
+async function thongKeHoSo(nguoiDung) {
+  const { rows: dongSao } = await truyVan('SELECT rating, count(*)::int AS so_luong FROM review WHERE to_user_id = $1 GROUP BY rating', [nguoiDung.id]);
+  const phanBoSao = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  dongSao.forEach((dong) => { phanBoSao[dong.rating] = dong.so_luong; });
+  const soDanhGia = Object.values(phanBoSao).reduce((tong, soLuong) => tong + soLuong, 0);
+
+  let soHoanThanh = 0;
+  if (nguoiDung.role === 'TECHNICIAN') {
+    const { rows } = await truyVan(
+      `SELECT count(*)::int AS tong FROM repair_request r
+       JOIN proposal p ON p.id = r.selected_proposal_id
+       WHERE r.status = 'COMPLETED' AND p.technician_id = $1`,
+      [nguoiDung.id],
+    );
+    soHoanThanh = rows[0].tong;
+  } else if (nguoiDung.role === 'CUSTOMER') {
+    const { rows } = await truyVan("SELECT count(*)::int AS tong FROM repair_request WHERE status = 'COMPLETED' AND customer_id = $1", [nguoiDung.id]);
+    soHoanThanh = rows[0].tong;
+  }
+  return { reviewCount: soDanhGia, ratingCounts: phanBoSao, completedCount: soHoanThanh };
+}
+
+module.exports = { chuyenNguoiDung, timTheoId, timTheoEmailKemMatKhau, tao, timDanhSachChoQuanTri, capNhatTrangThaiKhoa, capNhatThongTin, thongKeHoSo };

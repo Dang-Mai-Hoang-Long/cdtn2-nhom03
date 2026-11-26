@@ -5,6 +5,7 @@ const dinhTuyenDeXuat = require('./proposal.routes');
 const dinhTuyenDanhGia = require('./review.routes');
 const dinhTuyenThongBao = require('./notification.routes');
 const dinhTuyenQuanTri = require('./admin.routes');
+const dinhTuyenNguoiDung = require('./user.routes');
 
 const dinhTuyenApi = express.Router();
 
@@ -15,5 +16,6 @@ dinhTuyenApi.use('/proposals', dinhTuyenDeXuat);
 dinhTuyenApi.use('/reviews', dinhTuyenDanhGia);
 dinhTuyenApi.use('/notifications', dinhTuyenThongBao);
 dinhTuyenApi.use('/admin', dinhTuyenQuanTri);
+dinhTuyenApi.use('/users', dinhTuyenNguoiDung);
 
 module.exports = dinhTuyenApi;

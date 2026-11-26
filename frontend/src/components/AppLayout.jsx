@@ -1,5 +1,5 @@
 import React from 'react';
-import { layDuongDanManHinh, manHinhTheoMucMenu, MAN_HINH_CHINH_THEO_VAI_TRO, chuyenDenManHinh } from '../navigation/screenRoutes.js';
+import { layDuongDanManHinh, manHinhTheoMucMenu, MAN_HINH_CHINH_THEO_VAI_TRO, chuyenDenManHinh, NHOM_MOI_VAI_TRO, MUC_DIEU_HUONG_THEO_VAI_TRO } from '../navigation/screenRoutes.js';
 import { dangXuat } from '../api/authApi.js';
 import { xoaPhienDangNhap } from '../api/phienDangNhap.js';
 import { NHAN_VAI_TRO } from '../utils/dinhDang.js';
@@ -30,12 +30,20 @@ export function KhungUngDung({ manHinh, phien, children }) {
         : ['12', '18'].includes(maManHinh) ? 'Đề xuất của tôi'
           : maManHinh === '14' ? 'Công việc được chọn' : manHinh?.tieuDe;
   const trangChinh = phien ? MAN_HINH_CHINH_THEO_VAI_TRO[phien.user.role] : '01';
+  // Màn hình dùng chung (hồ sơ người dùng) không có mục riêng: dùng thanh điều hướng theo vai trò của người xem.
+  const mucDieuHuong = manHinh?.nhomVaiTro === NHOM_MOI_VAI_TRO
+    ? (phien ? MUC_DIEU_HUONG_THEO_VAI_TRO[phien.user.role] : [])
+    : (manHinh?.mucDieuHuong ?? []);
+  const duongDanTaiKhoan = phien ? layDuongDanManHinh('19', { id: phien.user.id }) : '';
+  const dangXemTaiKhoanCuaToi = maManHinh === '19' && window.location.hash === duongDanTaiKhoan;
 
   return <div className="khung-ung-dung">
     <header className="dau-trang">
       <a className="thuong-hieu" href={layDuongDanManHinh(trangChinh)}>Sửa chữa tại nhà</a>
-      {!laTrangTaiKhoan && manHinh.mucDieuHuong.length > 0 && <nav className="dieu-huong-chinh" aria-label="Điều hướng chính">
-        {manHinh.mucDieuHuong.map((nhan) => <LienKetDieuHuong key={nhan} nhan={nhan} mucHienTai={mucDieuHuongHienTai} />)}
+      {!laTrangTaiKhoan && mucDieuHuong.length > 0 && <nav className="dieu-huong-chinh" aria-label="Điều hướng chính">
+        {mucDieuHuong.map((nhan) => <LienKetDieuHuong key={nhan} nhan={nhan} mucHienTai={mucDieuHuongHienTai} />)}
+        {/* Trên điện thoại thẻ tài khoản ở góc phải bị ẩn, nên có thêm mục này trong thanh điều hướng. */}
+        {phien && <a className={`lien-ket-dieu-huong lien-ket-tai-khoan-nho ${dangXemTaiKhoanCuaToi ? 'dang-la-muc-hien-tai' : ''}`} href={duongDanTaiKhoan}>Tài khoản của tôi</a>}
       </nav>}
       {laTrangTaiKhoan && !phien && <nav className="dieu-huong-chinh dieu-huong-tai-khoan" aria-label="Tài khoản">
         <LienKetDieuHuong nhan="Đăng nhập" mucHienTai={maManHinh === '01' ? 'Đăng nhập' : ''} />
@@ -43,10 +51,10 @@ export function KhungUngDung({ manHinh, phien, children }) {
       </nav>}
       {phien && <div className="thao-tac-dau-trang">
         <ChuongThongBao vaiTro={NHAN_VAI_TRO[phien.user.role]} maVaiTro={phien.user.role} />
-        <div className="the-tai-khoan">
+        <a className="the-tai-khoan" href={duongDanTaiKhoan} title="Xem tài khoản của tôi">
           <strong>{phien.user.fullName}</strong>
           <span>{NHAN_VAI_TRO[phien.user.role]}</span>
-        </div>
+        </a>
         <button className="nut nut-phu nut-dang-xuat" type="button" onClick={xuLyDangXuat}>Đăng xuất</button>
       </div>}
     </header>
