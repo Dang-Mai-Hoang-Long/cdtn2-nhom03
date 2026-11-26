@@ -6,6 +6,12 @@ types.setTypeParser(types.builtins.NUMERIC, (giaTri) => (giaTri === null ? null 
 
 const pool = new Pool({ connectionString: cauHinh.databaseUrl });
 
+// Kết nối rảnh trong pool bị cắt (khởi động lại hoặc dừng PostgreSQL, mạng đứt) phát ra sự kiện 'error'.
+// Không có trình lắng nghe thì Node thoát cả tiến trình; ghi log (chỉ thông điệp, không ghi chuỗi kết nối) rồi để pool tự tạo kết nối mới ở lần truy vấn sau.
+pool.on('error', (loi) => {
+  console.error('Kết nối CSDL bị gián đoạn:', loi.message);
+});
+
 function truyVan(cauLenh, thamSo) {
   return pool.query(cauLenh, thamSo);
 }
