@@ -16,7 +16,9 @@ export const danhSachManHinh = [
   { maManHinh: '18', duongDan: 'technician/proposals/:id/edit', tieuDe: 'Sửa đề xuất', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
   { maManHinh: '14', duongDan: 'technician/work/:id/review', tieuDe: 'Đánh giá khách hàng', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
   { maManHinh: '13', duongDan: 'technician/work/:id', tieuDe: 'Công việc được chọn', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
-  { maManHinh: '16', duongDan: 'admin/users', tieuDe: 'Quản lý tài khoản', vaiTro: 'Quản trị viên', nhomVaiTro: 'Quản trị viên', mucDieuHuong: ['Quản lý tài khoản'] },
+  { maManHinh: '16', duongDan: 'admin/users', tieuDe: 'Quản lý tài khoản', vaiTro: 'Quản trị viên', nhomVaiTro: 'Quản trị viên', mucDieuHuong: ['Quản lý tài khoản', 'Thống kê'] },
+  // Tab đang xem nằm trong tham số ?tab= trên đường dẫn.
+  { maManHinh: '15', duongDan: 'admin/analytics', tieuDe: 'Thống kê', vaiTro: 'Quản trị viên', nhomVaiTro: 'Quản trị viên', mucDieuHuong: ['Quản lý tài khoản', 'Thống kê'] },
   // Màn hình dùng chung: cần đăng nhập, mọi vai trò đều vào được; thanh điều hướng theo vai trò của người xem.
   { maManHinh: '19', duongDan: 'users/:id', tieuDe: 'Hồ sơ người dùng', vaiTro: 'Mọi vai trò', nhomVaiTro: 'Mọi vai trò', mucDieuHuong: [] },
 ];
@@ -25,7 +27,7 @@ export const NHOM_MOI_VAI_TRO = 'Mọi vai trò';
 export const MUC_DIEU_HUONG_THEO_VAI_TRO = {
   CUSTOMER: ['Tin của tôi', 'Đăng tin'],
   TECHNICIAN: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'],
-  ADMIN: ['Quản lý tài khoản'],
+  ADMIN: ['Quản lý tài khoản', 'Thống kê'],
 };
 
 export const manHinhTheoMucMenu = {
@@ -35,6 +37,7 @@ export const manHinhTheoMucMenu = {
   'Đề xuất của tôi': '12',
   'Công việc được chọn': '13',
   'Quản lý tài khoản': '16',
+  'Thống kê': '15',
 };
 
 export const VAI_TRO_THEO_NHOM = { 'Khách hàng': 'CUSTOMER', 'Kỹ thuật viên': 'TECHNICIAN', 'Quản trị viên': 'ADMIN' };

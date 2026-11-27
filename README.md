@@ -144,5 +144,6 @@ Sprint 3 (11 user story còn lại) cũng đã có backend, giao diện nối AP
 | US20 | Thông báo khi đề xuất được chấp nhận | `GET /api/notifications`, `/unread-count`, `PATCH /api/notifications/:id/read` |
 | Mở rộng | Xem hồ sơ người dùng: thông tin tài khoản, điểm và danh sách đánh giá đã nhận | `GET /api/users/:id`, `GET /api/reviews/user/:userId` |
 | Mở rộng | Tự sửa họ tên và số điện thoại của tài khoản (email, mật khẩu, vai trò không đổi được) | `PATCH /api/users/me` |
+| Mở rộng | Trang **Thống kê** của quản trị viên (`#/admin/analytics`): tổng quan, tăng trưởng, người dùng, hoạt động, hệ thống, báo cáo (xuất CSV, Excel, PDF), cảnh báo. Cần chạy `npm run migrate` để tạo bảng nhật ký | `GET /api/admin/analytics/...` (api-contract mục 2.3.9) |
 
 Cả 23 user story đã nối API thật; không còn màn hình dùng dữ liệu minh họa.

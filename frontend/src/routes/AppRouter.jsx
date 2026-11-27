@@ -21,6 +21,7 @@ import TrangSuaDeXuat from '../pages/technician/ProposalEditPage.jsx';
 import TrangCongViecDuocChon from '../pages/technician/TechnicianDashboardPage.jsx';
 import TrangDanhGiaKhachHang from '../pages/technician/TechnicianReviewPage.jsx';
 import TrangQuanLyTaiKhoan from '../pages/admin/UserManagementPage.jsx';
+import TrangThongKe from '../pages/admin/analytics/AnalyticsPage.jsx';
 import TrangHoSoNguoiDung from '../pages/shared/UserProfilePage.jsx';
 
 const trangTheoMaManHinh = {
@@ -38,6 +39,7 @@ const trangTheoMaManHinh = {
   '12': TrangDeXuatCuaToi,
   '13': TrangCongViecDuocChon,
   '14': TrangDanhGiaKhachHang,
+  '15': TrangThongKe,
   '16': TrangQuanLyTaiKhoan,
   '17': TrangSuaYeuCau,
   '18': TrangSuaDeXuat,
