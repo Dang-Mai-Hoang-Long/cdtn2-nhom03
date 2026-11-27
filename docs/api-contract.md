@@ -84,7 +84,7 @@ Backend dùng đúng **22 mã** sau. Các mã dùng chung nhiều tình huống 
 | **FORBIDDEN**                 | 403      | Sai vai trò (BR01) (`Bạn không có quyền thực hiện thao tác này`); khóa/mở khóa tài khoản quản trị viên                                                                                                                |
 | **ACCOUNT_LOCKED**            | 403      | Đăng nhập đúng mật khẩu nhưng tài khoản bị khóa; hoặc mọi API cần đăng nhập mà tài khoản đang bị khóa (BR02, kiểm tra lại ở mỗi yêu cầu)                                                                              |
 | **NOT_OWNER**                 | 403      | Không phải chủ sở hữu hoặc không tham gia: tin của người khác, đề xuất không phải của mình/không thuộc tin của mình, thông báo của người khác, đánh giá công việc không tham gia (BR03, BR09, BR11, BR13)             |
-| **NOT_FOUND**                 | 404      | Đường dẫn không tồn tại (ngoài các API trong tài liệu này)                                                                                                                                                           |
+| **NOT_FOUND**                 | 404      | Đường dẫn không tồn tại (ngoài các API trong tài liệu này); loại báo cáo hoặc cảnh báo không có (mục 2.3.9)                                                                                                         |
 | **USER_NOT_FOUND**            | 404      | Không tìm thấy người dùng (`GET /api/users/{id}`, `GET /api/reviews/user/{userId}`, khóa/mở khóa tài khoản)                                                                                                                                 |
 | **REQUEST_NOT_FOUND**         | 404      | Không tìm thấy tin sửa chữa                                                                                                                                                                                          |
 | **PROPOSAL_NOT_FOUND**        | 404      | Không tìm thấy đề xuất                                                                                                                                                                                               |
@@ -553,9 +553,29 @@ Quản trị viên hoặc chính chủ nhận thêm `"email"`, `"phone"`, `"isLo
 
 Gửi trường nào thì sửa trường đó; cần ít nhất một trong hai, thiếu cả hai trả `400 VALIDATION_ERROR` với `details: [{ "field": "body", ... }]`. Giá trị được cắt khoảng trắng hai đầu trước khi lưu, ký tự đặc biệt giữ nguyên văn. Email (dùng để đăng nhập), mật khẩu, vai trò, `isLocked`, `ratingAvg` **không sửa được**: gửi kèm thì bị bỏ qua. Response 200: người dùng sau khi sửa, cùng cấu trúc `GET /api/auth/me` (không có mật khẩu). Chưa đăng nhập nhận `401 UNAUTHORIZED`; tài khoản bị khóa nhận `403 ACCOUNT_LOCKED` (BR02).
 
+#### **2.3.9. AnalyticsController – /api/admin/analytics (chỉ quản trị viên)**
+
+| **Method** | **Endpoint** | **Mô tả** | **Success** | **Error Code thường gặp** |
+| ---------- | ------------ | --------- | ----------- | ------------------------- |
+| **GET** | /api/admin/analytics/overview | Tám chỉ số tổng quan, chuỗi theo mốc thời gian, tin theo trạng thái, 5 hoạt động gần nhất | 200 | VALIDATION_ERROR, FORBIDDEN |
+| **GET** | /api/admin/analytics/growth | Tăng trưởng người dùng, người hoạt động, giá trị công việc, giao dịch, nội dung | 200 | VALIDATION_ERROR, FORBIDDEN |
+| **GET** | /api/admin/analytics/users | DAU, WAU, MAU, giữ chân, rời bỏ, tăng trưởng, mới/quay lại, theo vai trò, trạng thái, khu vực, thiết bị, hệ điều hành | 200 | VALIDATION_ERROR, FORBIDDEN |
+| **GET** | /api/admin/analytics/activity | Đăng nhập/đăng xuất, hoạt động theo vai trò, tạo/cập nhật/đóng, chức năng dùng nhiều, người hoạt động nhiều, bản đồ nhiệt, số đo API, nhật ký gần đây | 200 | VALIDATION_ERROR, FORBIDDEN |
+| **GET** | /api/admin/analytics/system | CPU, RAM, ổ đĩa, lưu lượng API, thời gian phản hồi, tỷ lệ lỗi, thời gian chạy, CSDL, kết nối, lịch sử mẫu, cảnh báo vượt ngưỡng | 200 | FORBIDDEN |
+| **GET** | /api/admin/analytics/alerts | Cảnh báo và nhận định kèm mức độ, thời điểm, trạng thái xử lý, hành động đề xuất | 200 | FORBIDDEN |
+| **PATCH** | /api/admin/analytics/alerts/{key} | Đổi trạng thái xử lý: body `{ "status": "NEW" \| "ACKNOWLEDGED" \| "RESOLVED" }` | 200 | VALIDATION_ERROR, NOT_FOUND, FORBIDDEN |
+| **GET** | /api/admin/analytics/reports/{type} | Báo cáo chi tiết có tìm, lọc, sắp xếp, phân trang | 200 | VALIDATION_ERROR, NOT_FOUND, FORBIDDEN |
+| **GET** | /api/admin/analytics/reports/{type}/export | Tải file `format=csv` (mặc định) hoặc `format=xlsx` theo cùng bộ lọc, tối đa 10.000 dòng | 200 | VALIDATION_ERROR, NOT_FOUND, FORBIDDEN |
+
+**Tham số thời gian** (overview, growth, users, activity, reports): `range` = `today` | `7d` | `30d` (mặc định) | `90d` | `12m` | `custom`; với `custom` thêm `from`, `to` dạng `YYYY-MM-DD` (tối đa 731 ngày). Mốc ngày tính theo giờ Việt Nam. Kỳ so sánh là khoảng cùng độ dài liền trước. Phản hồi có `range` gồm `from`, `to`, `previousFrom`, `previousTo`, `bucket` (`hour` | `day` | `month`) và `labels`. Riêng báo cáo nhận thêm `range=all` (không lọc thời gian).
+
+**Báo cáo:** `type` = `users` | `revenue` | `transactions` | `activity` | `system` | `errors` | `performance`. Query: `q`, `sort` (khóa cột), `dir` (`asc` | `desc`), `page`, `size`, các khóa lọc do phản hồi khai báo trong `filters`, và `print=1` để lấy tối đa 2000 dòng cho việc in. `data` gồm `title`, `columns` (khóa, nhãn, kiểu, nhãn giá trị), `filters`, `sort`, `summary`, `rows`; `meta` như mục 2.6. `system` và `performance` chỉ có số đo từ khi backend khởi động.
+
+**Định nghĩa số liệu:** giao dịch = đề xuất được chấp nhận; giá trị công việc = giá đề xuất được chọn của tin đã hoàn thành (nền tảng không thu tiền nên không phải doanh thu); thời điểm chấp nhận và hoàn thành lấy từ thông báo `PROPOSAL_ACCEPTED` và `REQUEST_COMPLETED`; người dùng hoạt động = khách hàng hoặc kỹ thuật viên (không tính quản trị viên) đã đăng tin, gửi đề xuất, đánh giá, chấp nhận, xác nhận hoàn thành hoặc có thao tác được ghi trong nhật ký (đăng nhập, sửa, đóng…); lỗi hệ thống = phản hồi 500 đã ghi nhật ký, kể cả lúc mất CSDL (ghi bù khi CSDL chạy lại, mất nếu backend khởi động lại trước đó). Dự án không thu thập quốc gia và địa chỉ IP.
+
 ### 2.4. Entities chính
 
-Các thực thể dữ liệu tương ứng với bảng trong cơ sở dữ liệu (API dùng camelCase). Tên bảng người dùng trong CSDL là `users`.
+Các thực thể dữ liệu tương ứng với bảng trong cơ sở dữ liệu (API dùng camelCase). Tên bảng người dùng trong CSDL là `users`. Hai bảng chỉ phục vụ trang thống kê (`migrations/003`): `activity_log` (người dùng, vai trò, hành động, đối tượng, kết quả, mã HTTP, mẫu đường dẫn, loại thiết bị, hệ điều hành, thời điểm; **không** lưu địa chỉ IP, chuỗi User-Agent, email nhập vào hay nội dung yêu cầu) và `alert_state` (khóa cảnh báo, trạng thái xử lý, người cập nhật).
 
 **User** (không bao giờ trả `passwordHash`)
 

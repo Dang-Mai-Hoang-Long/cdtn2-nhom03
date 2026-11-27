@@ -5,7 +5,7 @@
 //   node scripts/kiem-tra-bao-mat.js                 chạy tất cả
 //   node scripts/kiem-tra-bao-mat.js --giu-tin-xss   giữ lại tin thử XSS để mở trên giao diện (xóa tay sau khi xem)
 //   node scripts/kiem-tra-bao-mat.js --ghi=ketqua.txt  ghi thêm kết quả ra tệp
-//   node scripts/kiem-tra-bao-mat.js --phan=TC-34,LOG  chỉ chạy các phần nêu tên (TC-34 TC-35 TC-36 TC-37 TC-38 LOG); LOG kiểm nhật ký của các phần đã chạy
+//   node scripts/kiem-tra-bao-mat.js --phan=A01,LOG  chỉ chạy các phần nêu tên (A01 A02 A04 A05 A07 LOG); LOG kiểm nhật ký của các phần đã chạy
 // Script tự bật hai backend riêng (cổng 3101 bình thường, cổng 3102 trỏ CSDL đã chết) nên không đụng backend đang chạy ở cổng 3000.
 // Dữ liệu đụng tới (khóa/mở khóa ktv3, tài khoản thử, tin thử) được trả về như cũ khi script kết thúc.
 // Không phải bộ test của dự án (npm test): script này gọi HTTP thật tới server thật và sửa dữ liệu phát triển.
@@ -92,8 +92,8 @@ async function chay() {
   in_(`Dữ liệu thử: khach1 (id ${khach1.user.id}) có tin ${tinKhach1}; khach2 (id ${khach2.user.id}) có tin ${tinKhach2} và tin đã hoàn thành ${tinXongKhach2}; đề xuất của ktv1: ${dxCuaKtv1}; đề xuất trên tin của khach1: ${dxTrenTinKhach1}; thông báo của khach1: ${tbCuaKhach1}`);
   let r;
 
-  if (chon('TC-34')) {
-  in_('\n### TC-34  A01:2025 KIỂM SOÁT TRUY CẬP THEO CHỦ SỞ HỮU');
+  if (chon('A01')) {
+  in_('\n### A01:2025 KIỂM SOÁT TRUY CẬP THEO CHỦ SỞ HỮU');
   r = await goi(API, 'GET', `/requests/${tinKhach2}`, khach1.token); in_(`khach1 xem tin của khach2 (GET /requests/${tinKhach2}) -> ${tom(r)}`);
   ghi('khách A xem chi tiết tin của khách B -> 403 NOT_OWNER', r.status === 403 && r.body.code === 'NOT_OWNER');
   r = await goi(API, 'PATCH', `/requests/${tinKhach2}`, khach1.token, { title: 'Bị sửa trái phép' }); in_(`khach1 SỬA tin của khach2 -> ${tom(r)}`);
@@ -134,8 +134,8 @@ async function chay() {
   await sql("DELETE FROM users WHERE email = 'tam-leo-thang@demo.vn'");
 
   }
-  if (chon('TC-35')) {
-  in_('\n### TC-35  A02:2025 CẤU HÌNH SAI (lỗi, CORS, tiêu đề phản hồi)');
+  if (chon('A02')) {
+  in_('\n### A02:2025 CẤU HÌNH SAI (lỗi, CORS, tiêu đề phản hồi)');
   const kiemLo = (ten, x) => { const lo = /(\bat\s+\S+\.js|node_modules|stack|ECONN|postgres:\/\/|password|SELECT |INSERT |UPDATE |relation |column |pg_|syntax error|constraint|[A-Z]:\\|\/home\/|\/app\/)/i.exec(x.txt); ghi(`${ten}: phản hồi không chứa vết ngăn xếp, tên bảng/cột, SQL hay chuỗi kết nối`, !lo, lo?.[0]); };
   r = await goi(API, 'POST', '/auth/login', null, undefined, '{"email": "a@b.vn", "password": '); in_(`JSON hỏng -> ${tom(r)} | ${r.txt}`); kiemLo('JSON hỏng', r);
   ghi('JSON hỏng -> 400', r.status === 400);
@@ -153,8 +153,8 @@ async function chay() {
   ghi('preflight từ nguồn lạ cũng không được phản chiếu và không phải *', pre.headers.get('access-control-allow-origin') !== 'http://evil.example' && pre.headers.get('access-control-allow-origin') !== '*');
 
   }
-  if (chon('TC-36')) {
-  in_('\n### TC-36  A04:2025 MẬT MÃ HỌC (mật khẩu đã băm)');
+  if (chon('A04')) {
+  in_('\n### A04:2025 MẬT MÃ HỌC (mật khẩu đã băm)');
   const th = await mot("SELECT count(*)::int AS tong, count(*) FILTER (WHERE password_hash ~ '^[$]2[aby][$]10[$][./A-Za-z0-9]{53}$')::int AS bcrypt, count(*) FILTER (WHERE password_hash LIKE '%' || $1 || '%')::int AS doc FROM users", [MAT_KHAU_DEMO]);
   in_(`CSDL: ${th.tong} tài khoản; ${th.bcrypt} chuỗi băm bcrypt dạng $2b$10$...; ${th.doc} dòng chứa mật khẩu đọc được`);
   ghi('mọi mật khẩu trong CSDL là chuỗi băm bcrypt (không đọc được)', th.tong === th.bcrypt && th.tong > 0 && th.doc === 0);
@@ -174,8 +174,8 @@ async function chay() {
   in_(`ghi chú: tài khoản demo dùng CHUNG một chuỗi băm vì seed băm một lần cho mọi tài khoản; tài khoản đăng ký thật không bị vậy`);
 
   }
-  if (chon('TC-37')) {
-  in_('\n### TC-37  A05:2025 TIÊM MÃ (SQL và XSS)');
+  if (chon('A05')) {
+  in_('\n### A05:2025 TIÊM MÃ (SQL và XSS)');
   const tongGoc = (await goi(API, 'GET', '/requests', ktv1.token)).body?.meta?.totalElements;
   in_(`tổng tin đang chờ theo API khi KHÔNG lọc: ${tongGoc}`);
   const soBangTruoc = (await mot("SELECT count(*)::int AS n FROM information_schema.tables WHERE table_schema = 'public'")).n;
@@ -205,8 +205,8 @@ async function chay() {
   }
 
   }
-  if (chon('TC-38')) {
-  in_('\n### TC-38  A07:2025 LỖI XÁC THỰC (token, đăng nhập, khóa tài khoản)');
+  if (chon('A07')) {
+  in_('\n### A07:2025 LỖI XÁC THỰC (token, đăng nhập, khóa tài khoản)');
   r = await goi(API, 'GET', '/auth/me'); in_(`không gửi token -> ${tom(r)}`);
   ghi('không token -> 401 UNAUTHORIZED', r.status === 401 && r.body.code === 'UNAUTHORIZED');
   const [h, p, s] = khach1.token.split('.');

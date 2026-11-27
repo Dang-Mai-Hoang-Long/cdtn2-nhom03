@@ -28,6 +28,8 @@ Ngoài tiêu chí chấp nhận còn kiểm giá trị biên, dữ liệu sai, b
 | Chức năng ngoài phạm vi theo SRS (thanh toán thật, ứng dụng native, chat real-time) | SRS §1.1.2 mục 9–11 (Won't have). |
 | Tương thích trình duyệt / thiết bị, đa ngôn ngữ, khả năng truy cập | Thuộc giao diện; ngoài phạm vi. |
 
+> **Cập nhật 2026-11-26:** bảng trên là phạm vi của lần kiểm thử 1. Sau đó giao diện React (trên trình duyệt), hiệu năng NFR1, phân quyền NFR2, khả dụng NFR3 (mô phỏng) và Docker đã được kiểm, kết quả ở [test-report.md](test-report.md) §9; các kiểm tra này không tính thêm test case.
+
 **Kỹ thuật chọn dữ liệu:** phân vùng tương đương —
 vai trò (chưa đăng nhập / khách hàng / kỹ thuật viên / quản trị viên), quan hệ sở hữu (chủ tin / người khác), trạng thái tin (Chờ đề xuất / Đã chọn kỹ thuật viên / Hoàn thành / Đã đóng),
 trạng thái đề xuất (PENDING / ACCEPTED / REJECTED / WITHDRAWN), token (không có / sai kiểu / giả / ký bằng khóa khác / hết hạn / payload bị sửa / userId không tồn tại / tài khoản bị khóa / hợp lệ) —
