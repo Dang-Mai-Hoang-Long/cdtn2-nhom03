@@ -266,8 +266,8 @@ Không phải bug đã chốt. **DEV** = hành vi khác tiêu chí chấp nhận
 
 | Mục | Quyết định | Lý do và minh chứng |
 |---|---|---|
-| DEV-01 | Chấp nhận; sửa tiêu chí US03 thành "đăng xuất xóa phiên ở phía người dùng, token hết hạn sau 1 ngày" | Thu hồi token cần thêm trạng thái phía máy chủ ở mọi lần xác thực. Rủi ro đã giảm: hạn token cấu hình được (`JWT_EXPIRES_IN`), khóa tài khoản có hiệu lực ngay (kiểm tra A07), giao diện xóa token (kiểm tra giao diện đăng xuất). TC-03: FAIL theo tiêu chí gốc, PASS theo tiêu chí đã cập nhật |
-| DEV-02 | Chấp nhận; sửa tiêu chí US15 thành "chủ tin hoặc kỹ thuật viên đã gửi đề xuất đó" | Chuông thông báo cần mở đề xuất. Người khác vẫn bị `403` (kiểm tra A01: kỹ thuật viên B xem đề xuất của A). TC-15: PASS theo tiêu chí đã cập nhật |
+| DEV-01 | Chấp nhận; sửa tiêu chí US03 thành "đăng xuất xóa phiên ở phía người dùng, token hết hạn sau 1 ngày" | Thu hồi token cần thêm trạng thái phía máy chủ ở mọi lần xác thực. Rủi ro đã giảm: hạn token cấu hình được (`JWT_EXPIRES_IN`), khóa tài khoản có hiệu lực ngay (kiểm tra A07), giao diện xóa token (kiểm tra giao diện đăng xuất). Tiêu chí US03 đã sửa trong [product-backlog-nhom03.md](product-backlog-nhom03.md); TC-03 kiểm lại ngày 2026-11-26: PASS ([test-report.md](test-report.md) §9.8; ghi FAIL theo tiêu chí gốc ở lần 1 và lần 2) |
+| DEV-02 | Chấp nhận; sửa tiêu chí US15 thành "chủ tin hoặc kỹ thuật viên đã gửi đề xuất đó" | Chuông thông báo cần mở đề xuất. Người khác vẫn bị `403` (kiểm tra A01: kỹ thuật viên B xem đề xuất của A). Tiêu chí US15 đã sửa trong [product-backlog-nhom03.md](product-backlog-nhom03.md); TC-15 kiểm lại ngày 2026-11-26: PASS ([test-report.md](test-report.md) §9.8; ghi FAIL theo tiêu chí gốc ở lần 1 và lần 2) |
 | DEV-03 | Giữ `WITHDRAWN`; tiêu chí US23 đổi theo | Tên đã dùng ở API, CSDL, giao diện; [api-contract.md](api-contract.md) đã liệt kê đủ tập trạng thái đề xuất |
 | UI-01 | Xác minh trên trình duyệt và giữ chuyển hướng im lặng | kiểm tra giao diện phân quyền (Chrome 158, bản Docker): sai vai trò và chưa đăng nhập đều được chuyển thẳng về màn chính của vai trò hoặc `#/login`, không hiện nội dung bị cấm. Màn bị cấm không có lối đi trên thanh điều hướng của vai trò đó; quyền thật do backend chặn (`403`, kiểm tra A01 và bước gọi thẳng API trong kiểm tra giao diện phân quyền) |
 | TD-01 | Ghi nhận hạn chế đã biết | `npm test` luôn chạy cả bộ theo thứ tự cố định nên ổn định (157/157 ở mọi lần chạy ngày 26/11); chỉ người chạy riêng một suite phải kèm suite tiền đề |
@@ -284,7 +284,7 @@ Không phải bug đã chốt. **DEV** = hành vi khác tiêu chí chấp nhận
 - **Phát hiện bởi:** TC-03 bước B3 — S-03-3 ([TC-03-fail.png](screenshots/TC-03-fail.png)); làm TC-03 FAIL. Chạy lại ngày 2026-11-20 trên `main@76b2752`: S-03-3 vẫn FAIL (bước FAIL duy nhất của 129 bước).
 - **Triệu chứng:** tiêu chí US03 viết "Hệ thống kết thúc phiên". Sau `POST /api/auth/logout`, gọi lại `GET /api/auth/me` bằng chính token đó vẫn trả `200`.
 - **Nguyên nhân gốc:** JWT không lưu phiên ở server; `dangXuat` chỉ trả thành công ([auth.controller.js:22-25](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/blob/76b2752/src/controllers/auth.controller.js#L22-L25)) và middleware chỉ kiểm chữ ký, hạn dùng, người dùng còn tồn tại và chưa bị khóa ([auth.middleware.js](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/blob/76b2752/src/middlewares/auth.middleware.js)). Giao diện xóa token ở trình duyệt.
-- **Cách xử lý:** chấp nhận và sửa tiêu chí US03 trong backlog; nếu muốn đúng tiêu chí thì thêm danh sách thu hồi token hoặc cột `tokenVersion` trong bảng `users`.
+- **Cách xử lý:** chấp nhận và sửa tiêu chí US03 trong backlog (đã sửa ngày 2026-11-26: đăng xuất xóa phiên ở phía người dùng, token hết hạn sau 1 ngày); TC-03 kiểm lại theo tiêu chí mới: PASS. Muốn thu hồi token ngay thì thêm danh sách thu hồi hoặc cột `tokenVersion` trong bảng `users`.
 - **File ảnh hưởng:** `src/controllers/auth.controller.js`, `src/middlewares/auth.middleware.js`, tiêu chí US03 trong [product-backlog-nhom03.md](product-backlog-nhom03.md).
 
 ## DEV-02. Kỹ thuật viên đã gửi đề xuất cũng xem được chi tiết đề xuất
@@ -293,7 +293,7 @@ Không phải bug đã chốt. **DEV** = hành vi khác tiêu chí chấp nhận
 - **Phát hiện bởi:** TC-15 bước B3 ([TC-15-fail.png](screenshots/TC-15-fail.png)); làm TC-15 FAIL (kết luận do đối chiếu tiêu chí, test tự động vẫn PASS).
 - **Triệu chứng:** tiêu chí US15 "Chỉ chủ tin mới được xem". Thực tế kỹ thuật viên gửi đề xuất gọi `GET /api/proposals/{id}` nhận `200`; khách hàng khác và kỹ thuật viên không liên quan nhận `403 NOT_OWNER` (đúng).
 - **Nguyên nhân gốc:** `layChiTietDeXuat` cho phép cả chủ tin lẫn người gửi đề xuất ([proposal.service.js:88-96](https://github.com/Dang-Mai-Hoang-Long/cdtn2-nhom03/blob/76b2752/src/services/proposal.service.js#L88-L96)).
-- **Cách xử lý:** chấp nhận và sửa tiêu chí thành "chủ tin hoặc kỹ thuật viên đã gửi đề xuất".
+- **Cách xử lý:** chấp nhận và sửa tiêu chí thành "chủ tin hoặc kỹ thuật viên đã gửi đề xuất" (đã sửa ngày 2026-11-26 trong backlog); TC-15 kiểm lại theo tiêu chí mới: PASS.
 - **File ảnh hưởng:** `src/services/proposal.service.js`, tiêu chí US15 trong [product-backlog-nhom03.md](product-backlog-nhom03.md).
 
 ## DEV-03. Trạng thái đề xuất đã rút là `WITHDRAWN`, tiêu chí ghi `DA_RUT`
