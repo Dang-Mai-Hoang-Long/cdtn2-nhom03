@@ -12,7 +12,7 @@ const { gopKeHoach } = require('./ke-hoach');
 const { thucThiKeHoach } = require('./thuc-thi');
 const { MAT_KHAU_DEMO } = require('./hang-so');
 
-const CAC_BANG_UNG_DUNG = 'users, repair_request, proposal, review, notification';
+const CAC_BANG_UNG_DUNG = 'users, repair_request, proposal, review, notification, activity_log, alert_state';
 const NHAN_VAI_TRO = { ADMIN: 'Quản trị viên', CUSTOMER: 'Khách hàng', TECHNICIAN: 'Kỹ thuật viên' };
 
 function kiemTraMoiTruong() {

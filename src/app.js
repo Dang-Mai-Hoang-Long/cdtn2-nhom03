@@ -3,6 +3,7 @@ const cors = require("cors");
 const cauHinh = require("./config/env");
 const dinhTuyenApi = require("./routes");
 const { xuLyKhongTimThayDuongDan, xuLyLoi } = require("./utils/error-handler");
+const { theoDoiYeuCau } = require("./middlewares/theo-doi.middleware");
 
 const app = express();
 
@@ -10,6 +11,8 @@ const app = express();
 app.disable("x-powered-by");
 
 app.use(cors({ origin: cauHinh.clientUrl }));
+// Đo thời gian phản hồi và ghi nhật ký hoạt động cho trang thống kê; đặt trước express.json để tính cả thân lỗi.
+app.use(theoDoiYeuCau);
 app.use(express.json());
 
 // Route kiểm tra trạng thái backend
