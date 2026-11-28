@@ -17,7 +17,6 @@ export const danhSachManHinh = [
   { maManHinh: '14', duongDan: 'technician/work/:id/review', tieuDe: 'Đánh giá khách hàng', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
   { maManHinh: '13', duongDan: 'technician/work/:id', tieuDe: 'Công việc được chọn', vaiTro: 'Kỹ thuật viên', nhomVaiTro: 'Kỹ thuật viên', mucDieuHuong: ['Tìm việc sửa chữa', 'Đề xuất của tôi', 'Công việc được chọn'] },
   { maManHinh: '16', duongDan: 'admin/users', tieuDe: 'Quản lý tài khoản', vaiTro: 'Quản trị viên', nhomVaiTro: 'Quản trị viên', mucDieuHuong: ['Quản lý tài khoản', 'Thống kê'] },
-  // Tab đang xem nằm trong tham số ?tab= trên đường dẫn.
   { maManHinh: '15', duongDan: 'admin/analytics', tieuDe: 'Thống kê', vaiTro: 'Quản trị viên', nhomVaiTro: 'Quản trị viên', mucDieuHuong: ['Quản lý tài khoản', 'Thống kê'] },
   // Màn hình dùng chung: cần đăng nhập, mọi vai trò đều vào được; thanh điều hướng theo vai trò của người xem.
   { maManHinh: '19', duongDan: 'users/:id', tieuDe: 'Hồ sơ người dùng', vaiTro: 'Mọi vai trò', nhomVaiTro: 'Mọi vai trò', mucDieuHuong: [] },

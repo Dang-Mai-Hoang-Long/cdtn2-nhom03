@@ -1,82 +1,138 @@
+// Nội dung trang Thống kê: bốn số liệu chính ở trên (người dùng, tin sửa chữa, việc hoàn thành, giá trị công việc),
+// bên dưới là bốn biểu đồ hợp với dạng dữ liệu: giao dịch (cột, hai số đếm mỗi cột), giá trị công việc (đường, xu hướng
+// theo thời gian), người dùng theo vai trò (tròn, các phần của một tổng), tin theo trạng thái (thanh ngang, so nhóm).
 import React from 'react';
-import { useDuLieu } from '../../../components/analytics/useDuLieu.js';
-import { VungDuLieu, TheSoLieu, KhungBieuDo, BangDuLieu } from '../../../components/analytics/Khoi.jsx';
-import { BieuDoDuong, BieuDoVanh, ChuGiai } from '../../../components/analytics/Charts.jsx';
-import { MAU, duongDanThongKe } from '../../../components/analytics/hangSo.js';
-import { so, tienGon, tienDayDu, ngayIsoHien, ghiChuMocCuoi, NHAN_HANH_DONG } from '../../../components/analytics/dinhDang.js';
-import { layTongQuan, thamSoThoiGian } from '../../../api/analyticsApi.js';
-import { dinhDangThoiGian, NHAN_TRANG_THAI_YEU_CAU } from '../../../utils/dinhDang.js';
-import { ThongBao, DangTai, LienKetNguoiDung } from '../../../components/Ui.jsx';
-import DanhSachCanhBao from './AlertList.jsx';
+import { useDuLieu, gopTrangThai } from '../../../components/analytics/useDuLieu.js';
+import { VungDuLieu, KhungBieuDo, NhanThayDoi } from '../../../components/analytics/Khoi.jsx';
+import { BieuDoDuong, BieuDoCot, BieuDoVanh, ThanhNgang, ChuGiai } from '../../../components/analytics/Charts.jsx';
+import { MAU } from '../../../components/analytics/hangSo.js';
+import { so, tienGon, tienDayDu, ngayIsoHien } from '../../../components/analytics/dinhDang.js';
+import { layTongQuan, layTangTruong, layPhanTichNguoiDung, thamSoThoiGian } from '../../../api/analyticsApi.js';
+import { NHAN_VAI_TRO, NHAN_TRANG_THAI_YEU_CAU } from '../../../utils/dinhDang.js';
 
-const MAU_TRANG_THAI = { COMPLETED: MAU.chinh, WAITING_PROPOSAL: MAU.hai, CLOSED: MAU.ba, SELECTED: MAU.bon };
+const MAU_VAI_TRO = { CUSTOMER: MAU.chinh, TECHNICIAN: MAU.hai, ADMIN: MAU.ba };
+// Thứ tự theo vòng đời của tin; tin đang chờ đề xuất là việc cần xử lý nên được tô nổi.
+const THU_TU_TRANG_THAI = ['WAITING_PROPOSAL', 'SELECTED', 'COMPLETED', 'CLOSED'];
+const SO_COT_TOI_DA = 15;
+const CAO_BIEU_DO = 180;
+const tong = (day) => day.reduce((a, b) => a + b, 0);
 
-function cacThe(d, coSoSanh) {
-  const the = Object.fromEntries(d.cards.map((c) => [c.key, c]));
-  const ghiNhatKy = `Ghi từ ${dinhDangThoiGian(d.loggingSince)}`;
-  const kyTruoc = (c, f = so) => (coSoSanh ? `Kỳ trước: ${f(c.previous)}` : '');
-  return [
-    { key: 'totalUsers', ten: 'Tổng người dùng', giaTri: so(the.totalUsers.value), ghiChu: `+${so(the.totalUsers.added)} trong kỳ`, lienKet: duongDanThongKe('nguoi-dung') },
-    { key: 'newUsers', ten: 'Người dùng mới', giaTri: so(the.newUsers.value), ghiChu: kyTruoc(the.newUsers), lienKet: duongDanThongKe('bao-cao', { loai: 'users' }) },
-    { key: 'activeUsers', ten: 'Người dùng hoạt động', giaTri: so(the.activeUsers.value), ghiChu: 'Khách hàng, kỹ thuật viên đã đăng tin, đề xuất, đánh giá hoặc đăng nhập', lienKet: duongDanThongKe('hoat-dong') },
-    { key: 'transactions', ten: 'Giao dịch', giaTri: so(the.transactions.value), ghiChu: `Đề xuất được chấp nhận; ${so(the.transactions.completed)} việc hoàn thành`, lienKet: duongDanThongKe('bao-cao', { loai: 'transactions' }) },
-    { key: 'completedValue', ten: 'Giá trị công việc', giaTri: <span title={tienDayDu(the.completedValue.value)}>{tienGon(the.completedValue.value)}</span>, ghiChu: 'Việc đã hoàn thành, không phải doanh thu nền tảng', lienKet: duongDanThongKe('bao-cao', { loai: 'revenue' }) },
-    { key: 'totalContent', ten: 'Tổng nội dung', giaTri: so(the.totalContent.value), ghiChu: `${so(the.totalContent.breakdown.requests)} tin, ${so(the.totalContent.breakdown.proposals)} đề xuất, ${so(the.totalContent.breakdown.reviews)} đánh giá`, lienKet: duongDanThongKe('tang-truong') },
-    {
-      key: 'pendingTasks', ten: 'Việc chờ xử lý', giaTri: so(the.pendingTasks.value), boQuaSoSanh: true, sacThai: the.pendingTasks.requestsOverdue > 0 ? 'can-chu-y' : '',
-      ghiChu: `Tin chờ đề xuất (hiện tại), ${so(the.pendingTasks.requestsOverdue)} quá giờ hẹn; ${so(the.pendingTasks.proposalsPending)} đề xuất chờ chọn`, lienKet: duongDanThongKe('canh-bao'),
-    },
-    { key: 'systemErrors', ten: 'Lỗi hệ thống', giaTri: so(the.systemErrors.value), tangLaXau: true, sacThai: the.systemErrors.value > 0 ? 'loi' : '', ghiChu: `Phản hồi 500, gồm cả lúc mất CSDL (ghi bù khi chạy lại). ${ghiNhatKy}`, lienKet: duongDanThongKe('bao-cao', { loai: 'errors' }) },
-  ].map((t) => ({ ...t, spark: the[t.key].series, thayDoi: t.boQuaSoSanh ? undefined : the[t.key].change }));
+// Gộp các mốc thời gian liền nhau để cột đủ rộng mà đọc. Gộp từ cuối nên các nhóm gần nhất luôn đủ mốc.
+function gopMoc(nhan) {
+  const buoc = Math.max(1, Math.ceil(nhan.length / SO_COT_TOI_DA));
+  const nhom = [];
+  for (let cuoi = nhan.length; cuoi > 0; cuoi -= buoc) nhom.unshift([Math.max(0, cuoi - buoc), cuoi]);
+  return {
+    buoc,
+    nhan: nhom.map(([a]) => nhan[a]),
+    nhanDay: nhom.map(([a, b]) => (b - a > 1 ? `${nhan[a]} – ${nhan[b - 1]}` : nhan[a])),
+    gop: (day) => nhom.map(([a, b]) => tong(day.slice(a, b))),
+  };
 }
 
-export default function TabTongQuan({ boLoc, canhBao }) {
-  const thamSo = thamSoThoiGian(boLoc);
-  const trangThai = useDuLieu(() => layTongQuan(thamSo), JSON.stringify(thamSo));
+// Viết khoảng đang xem thành lời. trong: ghép vào cuối câu; nay, truoc: tên trong chú giải và câu so sánh.
+function tenKhoang({ key, from, to }) {
+  if (key === 'today') return { trong: 'hôm nay', nay: 'Hôm nay', truoc: 'hôm qua cùng giờ' };
+  if (key === 'custom') {
+    const soNgay = Math.round((Date.parse(to) - Date.parse(from)) / 86400000) + 1;
+    return { trong: 'trong khoảng đã chọn', nay: 'Khoảng đã chọn', truoc: `${soNgay} ngày trước đó` };
+  }
+  const dai = { '7d': '7 ngày', '30d': '30 ngày', '90d': '90 ngày', '12m': '12 tháng' }[key];
+  return { trong: `trong ${dai} qua`, nay: `${dai} qua`, truoc: `${dai} trước đó` };
+}
+const vietHoa = (chu) => chu.charAt(0).toUpperCase() + chu.slice(1);
 
-  return <VungDuLieu {...trangThai}>{(d) => {
-    const khoang = `${ngayIsoHien(d.range.from)} đến ${ngayIsoHien(d.range.to)}`;
-    const so1 = d.requestsTrend.current.reduce((a, b) => a + b, 0);
-    const so2 = d.requestsTrend.previous.reduce((a, b) => a + b, 0);
-    const chuoi = [{ ten: 'Kỳ này', mau: MAU.chinh, giaTri: d.requestsTrend.current, vung: true }];
-    if (boLoc.compare) chuoi.push({ ten: 'Kỳ trước', mau: MAU.kyTruoc, giaTri: d.requestsTrend.previous, dut: true });
-    const moCanhBao = canhBao.duLieu?.alerts.filter((a) => a.status !== 'RESOLVED') ?? [];
+// Mỗi ô: tên, con số, một câu nói số đó là gì, và dòng bổ sung (số mới đăng, hoặc tăng giảm so với khoảng trước).
+function TheSo({ ten, giaTri, dayDu, giaiThich, them }) {
+  return <div className="tk-the-so">
+    <dt>{ten}</dt>
+    <dd>
+      <strong title={dayDu}>{giaTri}</strong>
+      <span>{giaiThich}</span>
+      {them && <span>{them}</span>}
+    </dd>
+  </div>;
+}
+
+export default function TongQuan({ boLoc }) {
+  const thamSo = thamSoThoiGian(boLoc);
+  const khoa = JSON.stringify(thamSo);
+  const tongQuan = useDuLieu(() => layTongQuan(thamSo), khoa);
+  const tangTruong = useDuLieu(() => layTangTruong(thamSo), khoa);
+  const nguoiDung = useDuLieu(() => layPhanTichNguoiDung(thamSo), khoa);
+
+  return <VungDuLieu {...gopTrangThai({ tongQuan, tangTruong, nguoiDung })}>{({ tongQuan: d, tangTruong: t, nguoiDung: n }) => {
+    const the = Object.fromEntries(d.cards.map((c) => [c.key, c]));
+    const donViO = t.range.bucket === 'hour' ? 'giờ' : t.range.bucket === 'month' ? 'tháng' : 'ngày';
+    const moc = gopMoc(t.range.labels);
+    // Mỗi cột, mỗi điểm ứng với bao nhiêu giờ, ngày hay tháng.
+    const moiO = `${moc.buoc} ${donViO}`;
+    const ghiTheo = moc.buoc > 1 ? `; ${donViO} ghi bên dưới là ${donViO} đầu tiên` : '';
+    const khoangXem = tenKhoang(d.range);
+
+    // Tổng số tin và tổng tài khoản được đếm đến cuối khoảng đang chọn; khoảng đã qua thì ghi rõ ngày đó.
+    const denNay = Math.abs(Date.now() - Date.parse(t.range.end)) < 5 * 60000;
+    const denNgay = ngayIsoHien(d.range.to);
+    const xong = t.transactions.total.completed;
+    // Dòng so sánh, chỉ khi đang bật. Khoảng trước bằng 0 thì không tính được tỷ lệ.
+    const soSanh = (nay, truoc) => {
+      if (!boLoc.compare) return null;
+      if (!truoc) return `${vietHoa(khoangXem.truoc)} chưa có số liệu`;
+      return <><NhanThayDoi thayDoi={(nay - truoc) / truoc} /> so với {khoangXem.truoc}</>;
+    };
+
+    const giaoDich = [
+      { ten: 'Đề xuất được chấp nhận', mau: MAU.chinh, giaTri: moc.gop(t.transactions.accepted.current) },
+      { ten: 'Việc đã hoàn thành', mau: MAU.hai, giaTri: moc.gop(t.transactions.completed.current) },
+    ];
+    const giaTri = [{ ten: vietHoa(khoangXem.nay), mau: MAU.chinh, giaTri: moc.gop(t.completedValue.current), vung: true }];
+    if (boLoc.compare) giaTri.push({ ten: vietHoa(khoangXem.truoc), mau: MAU.kyTruoc, giaTri: moc.gop(t.completedValue.previous), dut: true });
+    const bangChuoi = (chuoi, dinhDang) => ({ cot: ['Thời gian', ...chuoi.map((c) => c.ten)], dong: moc.nhanDay.map((ten, i) => [ten, ...chuoi.map((c) => dinhDang(c.giaTri[i]))]) });
+    const khongCo = (chuoi) => chuoi.every((c) => c.giaTri.every((v) => v === 0));
+
+    const vaiTro = n.byRole.map((r) => ({ ten: NHAN_VAI_TRO[r.key], soLuong: r.count, mau: MAU_VAI_TRO[r.key] }));
+    const trangThaiTin = THU_TU_TRANG_THAI.map((ma) => ({
+      ten: NHAN_TRANG_THAI_YEU_CAU[ma], soLuong: d.requestStatus.find((s) => s.key === ma)?.count ?? 0, mauRieng: ma === 'WAITING_PROPOSAL' ? MAU.hai : MAU.kyTruoc,
+    }));
+
+    const quaHen = the.pendingTasks.requestsOverdue;
 
     return <div className="tk-cot">
-      <p className="tk-khoang-hien">Kỳ đang xem: {khoang}{boLoc.compare ? `, so với ${ngayIsoHien(d.range.previousFrom)} đến ${ngayIsoHien(d.range.previousTo)}` : ''}.{ghiChuMocCuoi(d.range)}</p>
-      <section className="tk-luoi-the" aria-label="Chỉ số tổng quan">
-        {cacThe(d, boLoc.compare).map(({ key, boQuaSoSanh, ...the }) => <TheSoLieu key={key} bieuTuong={key} coSoSanh={boLoc.compare} {...the} />)}
-      </section>
-
-      <div className="tk-hai-cot">
-        <KhungBieuDo tieuDe="Tin sửa chữa mới" moTa={`Số tin đăng theo ${d.range.bucket === 'hour' ? 'giờ' : d.range.bucket === 'month' ? 'tháng' : 'ngày'}.`} donVi="tin"
-          chuThich={boLoc.compare && <ChuGiai muc={[{ ten: 'Kỳ này', mau: MAU.chinh, kieu: 'duong', giaTri: so(so1) }, { ten: 'Kỳ trước', mau: MAU.kyTruoc, kieu: 'dut', giaTri: so(so2) }]} />}
-          trongRong={so1 + (boLoc.compare ? so2 : 0) === 0 ? 'Chưa có tin nào trong khoảng thời gian này.' : ''}
-          bang={{ cot: ['Mốc', 'Kỳ này', ...(boLoc.compare ? ['Kỳ trước'] : [])], dong: d.range.labels.map((n, i) => [n, so(d.requestsTrend.current[i]), ...(boLoc.compare ? [so(d.requestsTrend.previous[i])] : [])]) }}>
-          <BieuDoDuong nhan={d.range.labels} chuoi={chuoi} moTa={`Tin mới: kỳ này ${so1}${boLoc.compare ? `, kỳ trước ${so2}` : ''}`} />
+      <h2 className="chi-cho-trinh-doc">Số liệu chính</h2>
+      <dl className="tk-day-so">
+        <TheSo ten="Người dùng" giaTri={so(the.totalUsers.value)}
+          giaiThich={denNay ? 'Tổng số tài khoản đang có' : `Tổng số tài khoản đến ngày ${denNgay}`}
+          them={`Mới đăng ký ${khoangXem.trong}: ${so(the.totalUsers.added)}`} />
+        <TheSo ten="Tin sửa chữa" giaTri={so(the.totalContent.breakdown.requests)}
+          giaiThich={denNay ? 'Tổng số tin khách đã đăng' : `Tổng số tin đăng đến ngày ${denNgay}`}
+          them={`Mới đăng ${khoangXem.trong}: ${so(tong(d.requestsTrend.current))}`} />
+        <TheSo ten="Việc hoàn thành" giaTri={so(xong.current)}
+          giaiThich={`Khách xác nhận xong ${khoangXem.trong}`}
+          them={soSanh(xong.current, xong.previous)} />
+        <TheSo ten="Giá trị công việc" giaTri={tienGon(the.completedValue.value)} dayDu={tienDayDu(the.completedValue.value)}
+          giaiThich={`Tổng giá việc xong ${khoangXem.trong}`}
+          them={soSanh(the.completedValue.value, the.completedValue.previous)} />
+      </dl>
+      <div className="tk-luoi-bieu-do tk-bon-bieu-do">
+        <KhungBieuDo tieuDe="Giao dịch" moTa={`Mỗi cặp cột là số của ${moiO}${ghiTheo}.`}
+          chuThich={<ChuGiai muc={giaoDich} />} trongRong={khongCo(giaoDich) ? 'Không có giao dịch trong khoảng thời gian này.' : ''} bang={bangChuoi(giaoDich, so)}>
+          <BieuDoCot nhan={moc.nhan} nhanDay={moc.nhanDay} chuoi={giaoDich} nhom cao={CAO_BIEU_DO} moTa="Đề xuất được chấp nhận và việc hoàn thành theo thời gian" />
         </KhungBieuDo>
 
-        <section className="tk-khung">
-          <div className="tk-khung-dau"><div><h2>Cảnh báo cần chú ý</h2><p>{canhBao.duLieu ? `${moCanhBao.length} cảnh báo chưa xử lý xong.` : 'Đang kiểm tra…'}</p></div><a className="lien-ket-van-ban" href={duongDanThongKe('canh-bao')}>Xem tất cả</a></div>
-          {!canhBao.duLieu && !canhBao.loi && <DangTai />}
-          <ThongBao loai="loi">{canhBao.loi}</ThongBao>
-          {canhBao.duLieu && moCanhBao.length === 0 && <p className="tk-trong">Không có cảnh báo nào đang mở.</p>}
-          {moCanhBao.length > 0 && <DanhSachCanhBao cacCanhBao={moCanhBao.slice(0, 3)} onCapNhat={canhBao.taiLai} gon />}
-        </section>
-      </div>
+        <KhungBieuDo tieuDe="Giá trị theo thời gian" moTa={`Mỗi điểm cộng giá các việc xong trong ${moiO}. Không phải doanh thu.`}
+          chuThich={<ChuGiai muc={giaTri.map((c) => ({ ten: c.ten, mau: c.mau, kieu: c.dut ? 'dut' : 'duong' }))} />}
+          trongRong={khongCo(giaTri) ? 'Chưa có việc hoàn thành trong khoảng thời gian này.' : ''} bang={bangChuoi(giaTri, tienDayDu)}>
+          <BieuDoDuong nhan={moc.nhan} nhanDay={moc.nhanDay} chuoi={giaTri} dinhDang={tienGon} cao={CAO_BIEU_DO} moTa="Giá trị công việc hoàn thành theo thời gian" />
+        </KhungBieuDo>
 
-      <div className="tk-hai-cot">
-        <section className="tk-khung">
-          <div className="tk-khung-dau"><div><h2>Hoạt động gần đây</h2><p>5 việc mới nhất trên toàn hệ thống.</p></div><a className="lien-ket-van-ban" href={duongDanThongKe('bao-cao', { loai: 'activity' })}>Xem nhật ký</a></div>
-          <BangDuLieu tenBang="Hoạt động gần đây" dong={d.recent}
-            cot={[{ key: 'createdAt', label: 'Thời điểm' }, { key: 'userName', label: 'Người dùng' }, { key: 'action', label: 'Thao tác' }, { key: 'target', label: 'Đối tượng' }]}
-            hien={(c, r) => c.key === 'createdAt' ? dinhDangThoiGian(r.createdAt) : c.key === 'action' ? NHAN_HANH_DONG[r.action] ?? r.action : c.key === 'userName' ? <LienKetNguoiDung id={r.userId}>{r.userName}</LienKetNguoiDung> : r.target} />
-        </section>
+        <KhungBieuDo tieuDe="Người dùng theo vai trò" moTa={denNay ? 'Tất cả tài khoản đang có, chia theo vai trò.' : `Tài khoản tạo đến ${denNgay}, chia theo vai trò.`}
+          trongRong={vaiTro.length === 0 ? 'Chưa có tài khoản nào.' : ''} bang={{ cot: ['Vai trò', 'Tài khoản'], dong: vaiTro.map((m) => [m.ten, so(m.soLuong)]) }}>
+          <BieuDoVanh moTa="Tài khoản theo vai trò" donVi="tài khoản" muc={vaiTro} anTong />
+        </KhungBieuDo>
 
-        <KhungBieuDo tieuDe="Tin theo trạng thái" moTa="Toàn bộ tin hiện có, không theo khoảng thời gian." donVi="tin"
-          bang={{ cot: ['Trạng thái', 'Số tin'], dong: d.requestStatus.map((s) => [NHAN_TRANG_THAI_YEU_CAU[s.key], so(s.count)]) }}
-          trongRong={d.requestStatus.length === 0 ? 'Chưa có tin sửa chữa nào.' : ''}>
-          <BieuDoVanh moTa="Tin theo trạng thái" donVi="tin" muc={d.requestStatus.map((s) => ({ ten: NHAN_TRANG_THAI_YEU_CAU[s.key] ?? s.key, soLuong: s.count, mau: MAU_TRANG_THAI[s.key] ?? MAU.kyTruoc }))} />
+        <KhungBieuDo tieuDe="Tin theo trạng thái" moTa={`Tất cả tin theo tình trạng hiện nay. ${quaHen ? `${so(quaHen)} tin chờ đề xuất đã qua giờ khách hẹn.` : 'Không tin chờ đề xuất nào quá giờ hẹn.'}`}
+          trongRong={d.requestStatus.length === 0 ? 'Chưa có tin sửa chữa nào.' : ''} bang={{ cot: ['Trạng thái', 'Số tin'], dong: trangThaiTin.map((m) => [m.ten, so(m.soLuong)]) }}>
+          <ThanhNgang muc={trangThaiTin} dinhDang={(v) => `${so(v)} tin`} />
         </KhungBieuDo>
       </div>
     </div>;
