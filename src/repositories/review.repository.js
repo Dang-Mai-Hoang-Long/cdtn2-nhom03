@@ -60,4 +60,18 @@ async function timTheoNguoiDuocDanhGia(toUserId, { viTriBatDau, kichThuoc }) {
   };
 }
 
-module.exports = { chuyenDanhGia, tao, daDanhGia, capNhatDiemTrungBinh, timTheoNguoiDuocDanhGia };
+// Đánh giá một người nhận được ở một công việc (chỉ bên còn lại được gửi nên nhiều nhất một dòng), không có thì null.
+async function timNhanDuocTheoTin(requestId, toUserId) {
+  const { rows } = await truyVan(
+    `SELECT rv.*, u.full_name AS from_full_name, u.role AS from_role
+     FROM review rv
+     JOIN users u ON u.id = rv.from_user_id
+     WHERE rv.request_id = $1 AND rv.to_user_id = $2`,
+    [requestId, toUserId],
+  );
+  const dong = rows[0];
+  if (!dong) return null;
+  return { ...chuyenDanhGia(dong), fromUser: { id: dong.from_user_id, fullName: dong.from_full_name, role: dong.from_role } };
+}
+
+module.exports = { chuyenDanhGia, tao, daDanhGia, capNhatDiemTrungBinh, timTheoNguoiDuocDanhGia, timNhanDuocTheoTin };

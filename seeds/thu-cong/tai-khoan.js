@@ -32,8 +32,8 @@ const TAI_KHOAN = [
   { khoa: 'ktv5', email: 'ktv5@demo.vn', fullName: 'Dương Văn Tài', phone: '+84 902 000 006', role: 'TECHNICIAN' },
   // ktv6 chủ yếu nhận đánh giá thấp (1-2 sao): thử hiển thị điểm trung bình thấp.
   { khoa: 'ktv6', email: 'ktv6@demo.vn', fullName: 'Bùi Quang Vinh', phone: '0902000007', role: 'TECHNICIAN' },
-  // ktv7 có họ tên dài đúng 100 ký tự (giới hạn của cột users.full_name): thử cắt chữ và xuống dòng.
-  { khoa: 'ktv7', email: 'ktv7@demo.vn', fullName: 'Nguyễn Hoàng Phúc Bảo Quốc Thiên Trường Minh Gia Khánh Anh Đức Tuấn Hải Long Thịnh Vượng Phát Đạt Vũ', phone: '0902000008', role: 'TECHNICIAN' },
+  // ktv7 thêm một kỹ thuật viên cho các tin nhiều đề xuất; có việc hoàn thành đã đánh giá và chưa đánh giá.
+  { khoa: 'ktv7', email: 'ktv7@demo.vn', fullName: 'Nguyễn Hoàng Phúc', phone: '0902000008', role: 'TECHNICIAN' },
 ];
 
 module.exports = TAI_KHOAN;

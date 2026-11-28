@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai, TomTatYeuCau, TienTrinh, NhanTrangThaiYeuCau, LienKetNguoiDung } from '../../components/Ui.jsx';
+import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai, TomTatYeuCau, TienTrinh, NhanTrangThaiYeuCau, LienKetNguoiDung, DanhGiaNhanDuoc } from '../../components/Ui.jsx';
 import { layChiTietYeuCau, xacNhanHoanThanh } from '../../api/requestApi.js';
 import { layDanhSachDeXuatCuaYeuCau } from '../../api/proposalApi.js';
 import { layThongDiepLoi } from '../../api/httpClient.js';
@@ -49,6 +49,7 @@ export default function TrangTheoDoiYeuCau({ thamSo }) {
     <ThongBao loai="thanh-cong">{thanhCong}</ThongBao>
     <ThongBao loai="loi">{loi}</ThongBao>
     {yeuCau.status === 'WAITING_PROPOSAL' && <ThongBao>Tin chưa chọn kỹ thuật viên. <a className="lien-ket-van-ban" href={`#/customer/requests/${yeuCau.id}`}>Xem các đề xuất</a></ThongBao>}
+    <DanhGiaNhanDuoc danhGia={yeuCau.receivedReview} />
     <div className="hai-cot">
       <KhungNoiDung tieuDe="Thông tin yêu cầu"><TomTatYeuCau yeuCau={yeuCau} /></KhungNoiDung>
       <div className="cot-noi-dung">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { dinhDangThoiGian, NHAN_TRANG_THAI_YEU_CAU } from '../utils/dinhDang.js';
+import { dinhDangThoiGian, NHAN_TRANG_THAI_YEU_CAU, NHAN_VAI_TRO } from '../utils/dinhDang.js';
 import { layDuongDanManHinh } from '../navigation/screenRoutes.js';
 
 export function TieuDeTrang({ tieuDe, phuDe, hanhDong }) {
@@ -96,6 +96,19 @@ export function HienThiSao({ diem }) {
   return <span className="hang-sao-hien-thi" role="img" aria-label={`${String(diem).replace('.', ',')} trên 5 sao`}>
     {[1, 2, 3, 4, 5].map((viTri) => <svg key={viTri} viewBox="0 0 24 24" className={viTri <= soSao ? 'sao-day' : 'sao-rong'} aria-hidden="true"><path d="M12 3.5l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z" /></svg>)}
   </span>;
+}
+
+// Đánh giá bên kia gửi cho người đang xem ở công việc này: nơi thông báo "Đánh giá mới" dẫn tới.
+export function DanhGiaNhanDuoc({ danhGia }) {
+  if (!danhGia) return null;
+  const tieuDe = `${NHAN_VAI_TRO[danhGia.fromUser.role] ?? 'Bên kia'} đánh giá bạn`;
+  return <KhungNoiDung tieuDe={tieuDe} className="khung-danh-gia-nhan">
+    <article className="danh-gia-muc">
+      <div className="dau-danh-gia"><HienThiSao diem={danhGia.rating} /><time dateTime={danhGia.createdAt}>{dinhDangThoiGian(danhGia.createdAt)}</time></div>
+      <p className="noi-dung-danh-gia">{danhGia.comment || 'Không có nhận xét.'}</p>
+      <p className="nguon-danh-gia">Từ <LienKetNguoiDung id={danhGia.fromUser.id}>{danhGia.fromUser.fullName}</LienKetNguoiDung></p>
+    </article>
+  </KhungNoiDung>;
 }
 
 export function PhanTrang({ phanTrang, onChuyenTrang }) {

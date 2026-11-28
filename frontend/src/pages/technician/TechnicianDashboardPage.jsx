@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai, TomTatYeuCau, TienTrinh, NhanTrangThaiYeuCau, LienKetNguoiDung } from '../../components/Ui.jsx';
+import { TieuDeTrang, KhungNoiDung, Nut, NhanTrangThai, ThongBao, DangTai, TomTatYeuCau, TienTrinh, NhanTrangThaiYeuCau, LienKetNguoiDung, DanhGiaNhanDuoc } from '../../components/Ui.jsx';
 import { layChiTietYeuCau } from '../../api/requestApi.js';
 import { layDanhSachDeXuatCuaToi } from '../../api/proposalApi.js';
 import { layDuongDanManHinh } from '../../navigation/screenRoutes.js';
@@ -55,6 +55,7 @@ export default function TrangCongViecDuocChon({ thamSo }) {
     {yeuCau.status === 'SELECTED' && <ThongBao>Chờ khách hàng xác nhận hoàn thành công việc.</ThongBao>}
     {yeuCau.status === 'COMPLETED' && <ThongBao loai="thanh-cong">{yeuCau.hasReviewed ? 'Khách hàng đã xác nhận hoàn thành công việc. Bạn đã đánh giá khách hàng.' : 'Khách hàng đã xác nhận hoàn thành công việc.'}</ThongBao>}
     {yeuCau.status === 'COMPLETED' && !yeuCau.hasReviewed && <div className="hang-nut"><Nut maManHinhDich="14" thamSoDich={{ id: yeuCau.id }}>Đánh giá khách hàng</Nut></div>}
+    <DanhGiaNhanDuoc danhGia={yeuCau.receivedReview} />
     <div className="hai-cot">
       <KhungNoiDung tieuDe="Yêu cầu sửa chữa"><TomTatYeuCau yeuCau={yeuCau} /></KhungNoiDung>
       <div className="cot-noi-dung">

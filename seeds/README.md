@@ -41,7 +41,7 @@ Mật khẩu chung: `Demo@123` (chỉ dành cho môi trường phát triển).
 | Kỹ thuật viên | `ktv4@demo.vn` | Hồ Thị Mai Anh | Chưa gửi đề xuất nào: màn hình trống |
 | Kỹ thuật viên | `ktv5@demo.vn` | Dương Văn Tài | 15 đề xuất ("Đề xuất của tôi" có trang 2), 7 việc được chọn, nhiều thông báo chưa đọc |
 | Kỹ thuật viên | `ktv6@demo.vn` | Bùi Quang Vinh | Chủ yếu nhận đánh giá 1-2 sao |
-| Kỹ thuật viên | `ktv7@demo.vn` | Nguyễn Hoàng Phúc ... Phát Đạt Vũ | Họ tên dài đúng 100 ký tự |
+| Kỹ thuật viên | `ktv7@demo.vn` | Nguyễn Hoàng Phúc | Có việc hoàn thành hai bên đã đánh giá và việc hoàn thành chưa ai đánh giá |
 | Kỹ thuật viên | `bikhoa@demo.vn` | Đỗ Văn Khóa | Bị khóa: không đăng nhập được, có việc đã hoàn thành; thử mở khóa bằng quản trị viên |
 
 ### Bảng phủ tình huống
