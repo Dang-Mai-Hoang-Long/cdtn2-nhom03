@@ -516,6 +516,7 @@ Mọi đường dẫn khác trả `404 NOT_FOUND` (`Không tìm thấy đường
 | ---------- | --------------- | ------------ | ------------------------------------------------- | ----------- | --------------------------- |
 | **GET**    | /api/users/{id} | mọi vai trò  | Xem hồ sơ một người dùng (thông tin tài khoản và số liệu đánh giá) | 200         | UNAUTHORIZED, USER_NOT_FOUND |
 | **PATCH**  | /api/users/me   | mọi vai trò  | Tự sửa họ tên và số điện thoại của chính mình      | 200         | VALIDATION_ERROR, UNAUTHORIZED, ACCOUNT_LOCKED |
+| **PATCH**  | /api/users/me/password | mọi vai trò | Tự đổi mật khẩu của chính mình | 200 | VALIDATION_ERROR, UNAUTHORIZED, ACCOUNT_LOCKED |
 
 **GET /api/users/{id}** — thông điệp: `Thành công`. Người đã đăng nhập, vai trò nào cũng gọi được; phần nào hiện cho ai do backend quyết định:
 
@@ -552,7 +553,17 @@ Quản trị viên hoặc chính chủ nhận thêm `"email"`, `"phone"`, `"isLo
 | `fullName` | Chuỗi 1 đến 100 ký tự sau khi bỏ khoảng trắng hai đầu |
 | `phone` | Cùng quy tắc khi đăng ký: 9 đến 15 chữ số, cho phép `+`, dấu cách, `.`, `-`; tối đa 20 ký tự sau khi bỏ khoảng trắng hai đầu |
 
-Gửi trường nào thì sửa trường đó; cần ít nhất một trong hai, thiếu cả hai trả `400 VALIDATION_ERROR` với `details: [{ "field": "body", ... }]`. Giá trị được cắt khoảng trắng hai đầu trước khi lưu, ký tự đặc biệt giữ nguyên văn. Email (dùng để đăng nhập), mật khẩu, vai trò, `isLocked`, `ratingAvg` **không sửa được**: gửi kèm thì bị bỏ qua. Response 200: người dùng sau khi sửa, cùng cấu trúc `GET /api/auth/me` (không có mật khẩu). Chưa đăng nhập nhận `401 UNAUTHORIZED`; tài khoản bị khóa nhận `403 ACCOUNT_LOCKED` (BR02).
+Gửi trường nào thì sửa trường đó; cần ít nhất một trong hai, thiếu cả hai trả `400 VALIDATION_ERROR` với `details: [{ "field": "body", ... }]`. Giá trị được cắt khoảng trắng hai đầu trước khi lưu, ký tự đặc biệt giữ nguyên văn. Email (dùng để đăng nhập), mật khẩu, vai trò, `isLocked`, `ratingAvg` **không sửa được** qua API này: gửi kèm thì bị bỏ qua. Response 200: người dùng sau khi sửa, cùng cấu trúc `GET /api/auth/me` (không có mật khẩu). Chưa đăng nhập nhận `401 UNAUTHORIZED`; tài khoản bị khóa nhận `403 ACCOUNT_LOCKED` (BR02).
+
+**PATCH /api/users/me/password** — thông điệp: `Đổi mật khẩu thành công`, `data` là `null`. Người đã đăng nhập tự đổi mật khẩu của **chính mình**. Request Body:
+
+| Trường | Quy tắc |
+| ------ | ------- |
+| `currentPassword` | Mật khẩu đang dùng, không được để trống |
+| `newPassword` | Ít nhất 6 ký tự (như khi đăng ký), không được toàn khoảng trắng, phải khác `currentPassword`. Không cắt khoảng trắng |
+| `confirmPassword` | Phải trùng `newPassword` |
+
+Dữ liệu sai trả `400 VALIDATION_ERROR` với `details` chỉ ra từng trường. Mật khẩu hiện tại không đúng cũng trả `400 VALIDATION_ERROR` (thông điệp `Mật khẩu hiện tại không đúng`, `details` ở `currentPassword`), **không** trả `401` vì `401` nghĩa là hết phiên đăng nhập. Chưa đăng nhập nhận `401 UNAUTHORIZED`; tài khoản bị khóa nhận `403 ACCOUNT_LOCKED`. **Giới hạn:** token đã cấp trước khi đổi mật khẩu (kể cả trên thiết bị khác) không bị thu hồi, còn dùng được tới khi hết hạn (`JWT_EXPIRES_IN`).
 
 #### **2.3.9. AnalyticsController – /api/admin/analytics (chỉ quản trị viên)**
 
@@ -733,7 +744,7 @@ Tóm tắt các điểm contract này khác bản đầu; chi tiết, lý do và
 - `page` bắt đầu từ **1** (bản đầu ghi mặc định 0) và bị kẹp ở 1.000.000 thay vì báo lỗi.
 - Thân yêu cầu lớn hơn 100 KB trả `400 VALIDATION_ERROR`, không phải `413`. Không dùng `204`.
 - `PATCH /api/proposals/{id}/close` là **rút đề xuất** (trạng thái `WITHDRAWN`), không phải đóng tin; đóng tin là `PATCH /api/requests/{id}/close`.
-- Thêm API ngoài bản đầu: `GET /api/proposals/my`, `GET /`, `GET /api/health`, `GET /api/users/{id}` (hồ sơ người dùng) và `PATCH /api/users/me` (tự sửa họ tên, số điện thoại), mục 2.3.8.
+- Thêm API ngoài bản đầu: `GET /api/proposals/my`, `GET /`, `GET /api/health`, `GET /api/users/{id}` (hồ sơ người dùng), `PATCH /api/users/me` (tự sửa họ tên, số điện thoại) và `PATCH /api/users/me/password` (đổi mật khẩu), mục 2.3.8.
 - Thêm trường ngoài bản đầu: `proposalCount`, `hasProposed`, `canPropose`, `myProposalId`, `myProposalStatus`, `hasReviewed`, `receivedReview`, `meta.summary` (admin), `meta.user` (đánh giá).
 - Bản đầu liệt kê `CONTACT_NOT_VISIBLE` là mã lỗi của `GET /api/requests/{id}`; thực tế API vẫn trả `200` và chỉ bỏ trường `customer.phone` khi kỹ thuật viên chưa được chọn.
 - `PATCH /api/requests/{id}` trả `REQUEST_NOT_EDITABLE` (409) khi tin không còn sửa được, không dùng `REQUEST_ALREADY_SELECTED`/`REQUEST_NOT_WAITING` như bảng lỗi bản đầu.

@@ -1,5 +1,5 @@
 // Biểu đồ SVG tự vẽ (không dùng thư viện). Mỗi biểu đồ có chú giải bằng chữ khi nhiều chuỗi, chú thích khi rê chuột hoặc
-// dùng phím mũi tên, và luôn có bản bảng dữ liệu ở thẻ chứa (ChartCard) nên không phụ thuộc vào màu hay chuột.
+// dùng phím mũi tên, và luôn có bản bảng dữ liệu ở khung chứa (KhungBieuDo) nên không phụ thuộc vào màu hay chuột.
 import React, { useId, useState } from 'react';
 import { useBeRong } from './useDuLieu.js';
 import { so } from './dinhDang.js';
@@ -61,7 +61,8 @@ function useChonO(soO) {
   return [o !== null && o < soO ? o : null, datO, phim];
 }
 
-export function BieuDoDuong({ nhan, chuoi, dinhDang = so, moTa, cao = 240 }) {
+// nhanDay: tên đầy đủ của từng mốc cho chú thích, khi nhãn trên trục chỉ là mốc đầu của một nhóm.
+export function BieuDoDuong({ nhan, nhanDay = nhan, chuoi, dinhDang = so, moTa, cao = 240 }) {
   const [ganKhung, beRong] = useBeRong();
   const [o, datO, phim] = useChonO(nhan.length);
   const maGradient = `tk${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -96,13 +97,13 @@ export function BieuDoDuong({ nhan, chuoi, dinhDang = so, moTa, cao = 240 }) {
         {chuoi.map((c) => <circle key={c.ten} cx={x(o)} cy={y(c.giaTri[o])} r="4.5" fill={c.mau} className="tk-diem" />)}
       </g>}
     </svg>}
-    {o !== null && <ChuThich x={x(o)} beRong={beRong} tieuDe={nhan[o]} dong={chuoi.map((c) => ({ ten: c.ten, mau: c.mau, kieu: c.dut ? 'dut' : 'duong', giaTri: dinhDang(c.giaTri[o]) }))} />}
-    <span className="chi-cho-trinh-doc" aria-live="polite">{o !== null ? `${nhan[o]}: ${chuoi.map((c) => `${c.ten} ${dinhDang(c.giaTri[o])}`).join(', ')}` : ''}</span>
+    {o !== null && <ChuThich x={x(o)} beRong={beRong} tieuDe={nhanDay[o]} dong={chuoi.map((c) => ({ ten: c.ten, mau: c.mau, kieu: c.dut ? 'dut' : 'duong', giaTri: dinhDang(c.giaTri[o]) }))} />}
+    <span className="chi-cho-trinh-doc" aria-live="polite">{o !== null ? `${nhanDay[o]}: ${chuoi.map((c) => `${c.ten} ${dinhDang(c.giaTri[o])}`).join(', ')}` : ''}</span>
   </div>;
 }
 
 // Cột chồng (mặc định) hoặc cột nhóm (nhom = true).
-export function BieuDoCot({ nhan, chuoi, nhom = false, dinhDang = so, moTa, cao = 240 }) {
+export function BieuDoCot({ nhan, nhanDay = nhan, chuoi, nhom = false, dinhDang = so, moTa, cao = 240 }) {
   const [ganKhung, beRong] = useBeRong();
   const [o, datO, phim] = useChonO(nhan.length);
   const rongVe = Math.max(10, beRong - LE.trai - LE.phai);
@@ -145,8 +146,8 @@ export function BieuDoCot({ nhan, chuoi, nhom = false, dinhDang = so, moTa, cao 
         </g>;
       })}
     </svg>}
-    {o !== null && <ChuThich x={tamO(o)} beRong={beRong} tieuDe={nhan[o]} dong={chuoi.map((c) => ({ ten: c.ten, mau: c.mau, kieu: 'o', giaTri: dinhDang(c.giaTri[o]) }))} />}
-    <span className="chi-cho-trinh-doc" aria-live="polite">{o !== null ? `${nhan[o]}: ${chuoi.map((c) => `${c.ten} ${dinhDang(c.giaTri[o])}`).join(', ')}` : ''}</span>
+    {o !== null && <ChuThich x={tamO(o)} beRong={beRong} tieuDe={nhanDay[o]} dong={chuoi.map((c) => ({ ten: c.ten, mau: c.mau, kieu: 'o', giaTri: dinhDang(c.giaTri[o]) }))} />}
+    <span className="chi-cho-trinh-doc" aria-live="polite">{o !== null ? `${nhanDay[o]}: ${chuoi.map((c) => `${c.ten} ${dinhDang(c.giaTri[o])}`).join(', ')}` : ''}</span>
   </div>;
 }
 
@@ -161,7 +162,8 @@ export function ThanhNgang({ muc, dinhDang = so, mau = 'var(--tk-s1)' }) {
 }
 
 // Biểu đồ vành khuyên cho tỷ lệ ít nhóm (tối đa 6), tổng ở giữa, chú giải kèm số và phần trăm.
-export function BieuDoVanh({ muc, donVi, moTa }) {
+// anTong: không ghi tổng ở giữa (đã có ở hàng số liệu), chỉ hiện số của phần đang rê chuột.
+export function BieuDoVanh({ muc, donVi, moTa, anTong = false }) {
   const [dangChon, datDangChon] = useState(null);
   const tong = muc.reduce((a, m) => a + m.soLuong, 0);
   const R = 70;
@@ -187,10 +189,12 @@ export function BieuDoVanh({ muc, donVi, moTa }) {
       {tong === 0 && <circle cx="80" cy="80" r="58" className="tk-vanh-rong" />}
       {cung.map((c) => <path key={c.ten} d={c.d} fill={c.mau} opacity={dangChon && dangChon !== c.ten ? 0.45 : 1}
         onPointerEnter={() => datDangChon(c.ten)} onPointerLeave={() => datDangChon(null)}><title>{`${c.ten}: ${so(c.soLuong)} (${tyLe(c.soLuong)})`}</title></path>)}
-      <text x="80" y="78" textAnchor="middle" className="tk-vanh-so">{so(hien ? hien.soLuong : tong)}</text>
-      <text x="80" y="97" textAnchor="middle" className="tk-nhan-truc">{hien ? tyLe(hien.soLuong) : donVi}</text>
+      {(hien || !anTong) && <>
+        <text x="80" y="78" textAnchor="middle" className="tk-vanh-so">{so(hien ? hien.soLuong : tong)}</text>
+        <text x="80" y="97" textAnchor="middle" className="tk-nhan-truc">{hien ? tyLe(hien.soLuong) : donVi}</text>
+      </>}
     </svg>
-    <ChuGiai muc={muc.map((m) => ({ ten: m.ten, mau: m.mau, giaTri: `${so(m.soLuong)} · ${tyLe(m.soLuong)}` }))} />
+    <ChuGiai muc={muc.map((m) => ({ ten: m.ten, mau: m.mau, giaTri: `${so(m.soLuong)} ${donVi} (${tyLe(m.soLuong)})` }))} />
   </div>;
 }
 
@@ -254,16 +258,4 @@ export function DongHo({ ten, phanTram, nguong, chiTiet }) {
     </svg>
     <p>{chiTiet}</p>
   </div>;
-}
-
-// Đường xu hướng nhỏ trong thẻ số liệu.
-export function DuongNho({ giaTri }) {
-  if (!giaTri || giaTri.length < 2) return null;
-  const lon = Math.max(...giaTri);
-  const nho = Math.min(...giaTri);
-  const khoang = lon - nho || 1;
-  const diem = giaTri.map((v, i) => `${((i * 96) / (giaTri.length - 1)).toFixed(1)},${(26 - ((v - nho) / khoang) * 24).toFixed(1)}`).join(' ');
-  return <svg className="tk-duong-nho" viewBox="0 0 96 28" width="96" height="28" aria-hidden="true">
-    <polyline points={diem} fill="none" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-  </svg>;
 }

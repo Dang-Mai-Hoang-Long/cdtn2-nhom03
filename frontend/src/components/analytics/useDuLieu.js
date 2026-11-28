@@ -35,6 +35,17 @@ export function useDuLieu(tai, khoa, { chuKy = 0, bat = true } = {}) {
   return { ...trangThai, taiLai };
 }
 
+// Gộp nhiều lần tải thành một trạng thái cho VungDuLieu: chỉ có dữ liệu khi tất cả đều đã có.
+export function gopTrangThai(cacLanTai) {
+  const ds = Object.entries(cacLanTai);
+  return {
+    duLieu: ds.every(([, t]) => t.duLieu) ? Object.fromEntries(ds.map(([ten, t]) => [ten, t.duLieu])) : null,
+    loi: ds.find(([, t]) => t.loi)?.[1].loi ?? '',
+    dangTai: ds.some(([, t]) => t.dangTai),
+    taiLai: () => ds.forEach(([, t]) => t.taiLai()),
+  };
+}
+
 // Bề rộng thật của một phần tử, để vẽ biểu đồ SVG đúng điểm ảnh (chữ không bị co giãn).
 export function useBeRong() {
   const [beRong, datBeRong] = useState(0);

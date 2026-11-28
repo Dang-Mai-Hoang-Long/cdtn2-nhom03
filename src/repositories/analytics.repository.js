@@ -228,7 +228,7 @@ async function thaoTacTheoO(khoang) {
   const gop = (dieuKien) => gopTheoO({ moc: khoang.boundaries, cte: CTE_SU_KIEN, nguon: 'su_kien', dieuKien });
   const [create, update, close] = await Promise.all([
     gop("action IN ('REGISTER', 'CREATE_REQUEST', 'CREATE_PROPOSAL', 'CREATE_REVIEW')"),
-    gop("action IN ('UPDATE_REQUEST', 'UPDATE_PROPOSAL', 'UPDATE_PROFILE', 'ACCEPT_PROPOSAL', 'COMPLETE_REQUEST', 'LOCK_USER', 'UNLOCK_USER')"),
+    gop("action IN ('UPDATE_REQUEST', 'UPDATE_PROPOSAL', 'UPDATE_PROFILE', 'CHANGE_PASSWORD', 'ACCEPT_PROPOSAL', 'COMPLETE_REQUEST', 'LOCK_USER', 'UNLOCK_USER')"),
     gop("action IN ('CLOSE_REQUEST', 'WITHDRAW_PROPOSAL')"),
   ]);
   return { create, update, close };

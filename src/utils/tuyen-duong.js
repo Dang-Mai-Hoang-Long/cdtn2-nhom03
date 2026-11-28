@@ -30,6 +30,7 @@ const CAC_TUYEN = [
   ['PATCH', '/api/notifications/:id/read'],
   ['GET', '/api/users/:id'],
   ['PATCH', '/api/users/me', 'UPDATE_PROFILE', 'user'],
+  ['PATCH', '/api/users/me/password', 'CHANGE_PASSWORD', 'user'],
   ['GET', '/api/admin/users'],
   ['PATCH', '/api/admin/users/:id/lock', 'LOCK_USER', 'user'],
   ['PATCH', '/api/admin/users/:id/unlock', 'UNLOCK_USER', 'user'],

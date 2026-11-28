@@ -2,7 +2,7 @@ const express = require('express');
 const dieuKhienNguoiDung = require('../controllers/user.controller');
 const { xacThuc } = require('../middlewares/auth.middleware');
 const { kiemTraDuLieu } = require('../middlewares/validate.middleware');
-const { kiemTraCapNhatHoSo } = require('../validators/user.validator');
+const { kiemTraCapNhatHoSo, kiemTraDoiMatKhau } = require('../validators/user.validator');
 
 const dinhTuyenNguoiDung = express.Router();
 
@@ -10,6 +10,7 @@ const dinhTuyenNguoiDung = express.Router();
 dinhTuyenNguoiDung.use(xacThuc);
 // Chỉ sửa được tài khoản của chính mình (không có đường dẫn sửa theo mã người dùng).
 dinhTuyenNguoiDung.patch('/me', kiemTraDuLieu(kiemTraCapNhatHoSo), dieuKhienNguoiDung.capNhatThongTinCaNhan);
+dinhTuyenNguoiDung.patch('/me/password', kiemTraDuLieu(kiemTraDoiMatKhau), dieuKhienNguoiDung.doiMatKhau);
 dinhTuyenNguoiDung.get('/:id', dieuKhienNguoiDung.layHoSoNguoiDung);
 
 module.exports = dinhTuyenNguoiDung;

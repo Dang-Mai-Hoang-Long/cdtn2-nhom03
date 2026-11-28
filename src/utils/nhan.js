@@ -21,6 +21,7 @@ const NHAN_HANH_DONG = {
   WITHDRAW_PROPOSAL: 'Rút đề xuất',
   CREATE_REVIEW: 'Đánh giá',
   UPDATE_PROFILE: 'Sửa hồ sơ',
+  CHANGE_PASSWORD: 'Đổi mật khẩu',
   LOCK_USER: 'Khóa tài khoản',
   UNLOCK_USER: 'Mở khóa tài khoản',
   EXPORT_REPORT: 'Xuất báo cáo',
