@@ -143,7 +143,8 @@ Sprint 3 (11 user story còn lại) cũng đã có backend, giao diện nối AP
 | US18, US19 | Đánh giá hai chiều | `POST /api/reviews`, `GET /api/reviews/user/:userId` |
 | US20 | Thông báo khi đề xuất được chấp nhận | `GET /api/notifications`, `/unread-count`, `PATCH /api/notifications/:id/read` |
 | Mở rộng | Xem hồ sơ người dùng: thông tin tài khoản, điểm và danh sách đánh giá đã nhận | `GET /api/users/:id`, `GET /api/reviews/user/:userId` |
-| Mở rộng | Tự sửa họ tên và số điện thoại của tài khoản (email, mật khẩu, vai trò không đổi được) | `PATCH /api/users/me` |
-| Mở rộng | Trang **Thống kê** của quản trị viên (`#/admin/analytics`): tổng quan, tăng trưởng, người dùng, hoạt động, hệ thống, báo cáo (xuất CSV, Excel, PDF), cảnh báo. Cần chạy `npm run migrate` để tạo bảng nhật ký | `GET /api/admin/analytics/...` (api-contract mục 2.3.9) |
+| Mở rộng | Tự sửa họ tên và số điện thoại của tài khoản (email và vai trò không đổi được) | `PATCH /api/users/me` |
+| Mở rộng | Đổi mật khẩu của chính mình: mật khẩu hiện tại, mật khẩu mới và nhập lại mật khẩu mới | `PATCH /api/users/me/password` |
+| Mở rộng | Trang **Thống kê** của quản trị viên (`#/admin/analytics`): một trang gồm bốn số liệu và bốn biểu đồ, lọc theo khoảng thời gian. Cần chạy `npm run migrate` để tạo bảng nhật ký | `GET /api/admin/analytics/overview`, `/growth`, `/users`; các API còn lại ở api-contract mục 2.3.9 chưa có màn hình |
 
 Cả 23 user story đã nối API thật; không còn màn hình dùng dữ liệu minh họa.
