@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { TieuDeTrang, KhungNoiDung, Nut, TruongNhap, ThongBao, DangTai, PhanTrang, HienThiSao, LienKetNguoiDung } from '../../components/Ui.jsx';
-import { layHoSoNguoiDung, capNhatThongTinCaNhan } from '../../api/userApi.js';
+import { layHoSoNguoiDung, capNhatThongTinCaNhan, doiMatKhau } from '../../api/userApi.js';
 import { layDanhGiaCuaNguoiDung } from '../../api/reviewApi.js';
 import { luuPhienDangNhap } from '../../api/phienDangNhap.js';
 import { layThongDiepLoi, layLoiTheoTruong } from '../../api/httpClient.js';
@@ -23,8 +23,9 @@ export default function TrangHoSoNguoiDung({ thamSo, phien }) {
   const [danhGia, datDanhGia] = useState(null);
   const [loiDanhGia, datLoiDanhGia] = useState('');
   const [trang, datTrang] = useState(1);
-  // Chỉ chính chủ mới sửa được thông tin của mình (họ tên và số điện thoại; email dùng để đăng nhập nên không đổi).
-  const [dangSua, datDangSua] = useState(false);
+  // Chỉ chính chủ mới sửa được thông tin của mình (họ tên và số điện thoại; email dùng để đăng nhập nên không đổi)
+  // và đổi mật khẩu. Mỗi lúc chỉ mở một biểu mẫu: 'thong-tin', 'mat-khau' hoặc null.
+  const [bieuMau, datBieuMau] = useState(null);
   const [dangLuu, datDangLuu] = useState(false);
   const [loiSua, datLoiSua] = useState('');
   const [loiTruong, datLoiTruong] = useState({});
@@ -49,15 +50,15 @@ export default function TrangHoSoNguoiDung({ thamSo, phien }) {
     return () => { daHuy = true; };
   }, [hoSo?.id, trang]);
 
-  function batDauSua() {
+  function moBieuMau(loai) {
     datThongBaoSua('');
     datLoiSua('');
     datLoiTruong({});
-    datDangSua(true);
+    datBieuMau(loai);
   }
 
   function huySua() {
-    datDangSua(false);
+    datBieuMau(null);
     datLoiSua('');
     datLoiTruong({});
   }
@@ -73,8 +74,27 @@ export default function TrangHoSoNguoiDung({ thamSo, phien }) {
       datHoSo((truoc) => ({ ...truoc, fullName: nguoiDungMoi.fullName, phone: nguoiDungMoi.phone }));
       // Cập nhật cả phiên đăng nhập để tên ở đầu trang đổi theo ngay.
       luuPhienDangNhap(phien.token, { ...phien.user, fullName: nguoiDungMoi.fullName, phone: nguoiDungMoi.phone });
-      datDangSua(false);
+      datBieuMau(null);
       datThongBaoSua('Đã cập nhật thông tin tài khoản.');
+    } catch (loiGoi) {
+      datLoiTruong(layLoiTheoTruong(loiGoi));
+      datLoiSua(layThongDiepLoi(loiGoi));
+    } finally {
+      datDangLuu(false);
+    }
+  }
+
+  async function xuLyDoiMatKhau(suKien) {
+    suKien.preventDefault();
+    const duLieu = Object.fromEntries(new FormData(suKien.currentTarget));
+    datDangLuu(true);
+    datLoiSua('');
+    datLoiTruong({});
+    try {
+      await doiMatKhau(duLieu);
+      // Đóng biểu mẫu thì các ô mật khẩu bị gỡ khỏi trang.
+      datBieuMau(null);
+      datThongBaoSua('Đã đổi mật khẩu. Lần đăng nhập sau hãy dùng mật khẩu mới.');
     } catch (loiGoi) {
       datLoiTruong(layLoiTheoTruong(loiGoi));
       datLoiSua(layThongDiepLoi(loiGoi));
@@ -102,8 +122,20 @@ export default function TrangHoSoNguoiDung({ thamSo, phien }) {
     <div className="hai-cot luoi-chi-tiet">
       <div className="cot-noi-dung">
         <KhungNoiDung tieuDe={laChinhChu ? 'Thông tin tài khoản của bạn' : 'Thông tin tài khoản'}>
-          {laChinhChu && dangSua
-            ? <form onSubmit={xuLyLuu} noValidate>
+          {laChinhChu && bieuMau === 'mat-khau'
+            ? <form key="mat-khau" onSubmit={xuLyDoiMatKhau} noValidate>
+              <ThongBao loai="loi">{loiSua}</ThongBao>
+              <TruongNhap nhan="Mật khẩu hiện tại" ten="currentPassword" loaiTruong="password" batBuoc autoComplete="current-password" loi={loiTruong.currentPassword} />
+              <TruongNhap nhan="Mật khẩu mới" ten="newPassword" loaiTruong="password" batBuoc autoComplete="new-password" loi={loiTruong.newPassword} />
+              <TruongNhap nhan="Nhập lại mật khẩu mới" ten="confirmPassword" loaiTruong="password" batBuoc autoComplete="new-password" loi={loiTruong.confirmPassword} />
+              <p className="mo-ta-phu">Mật khẩu mới cần ít nhất 6 ký tự.</p>
+              <div className="hang-nut">
+                <Nut loaiNut="submit" disabled={dangLuu}>{dangLuu ? 'Đang lưu…' : 'Đổi mật khẩu'}</Nut>
+                <Nut laNutPhu onClick={huySua} disabled={dangLuu}>Hủy</Nut>
+              </div>
+            </form>
+            : laChinhChu && bieuMau === 'thong-tin'
+            ? <form key="thong-tin" onSubmit={xuLyLuu} noValidate>
               <ThongBao loai="loi">{loiSua}</ThongBao>
               <TruongNhap nhan="Họ tên" ten="fullName" giaTri={hoSo.fullName} batBuoc maxLength={100} autoComplete="name" loi={loiTruong.fullName} />
               <TruongNhap nhan="Số điện thoại" ten="phone" loaiTruong="tel" giaTri={hoSo.phone} batBuoc autoComplete="tel" loi={loiTruong.phone} />
@@ -127,7 +159,10 @@ export default function TrangHoSoNguoiDung({ thamSo, phien }) {
             {coThongTinRieng && <div className="truong-nhap-rong"><span className="nhan-mo-ta">Số điện thoại</span><strong>{hoSo.phone}</strong></div>}
           </div>
           {!coThongTinRieng && <p className="mo-ta-phu">Email và số điện thoại chỉ hiển thị cho chính chủ và quản trị viên.</p>}
-          {laChinhChu && <div className="hang-nut"><Nut laNutPhu onClick={batDauSua}>Sửa thông tin</Nut></div>}
+          {laChinhChu && <div className="hang-nut">
+            <Nut laNutPhu onClick={() => moBieuMau('thong-tin')}>Sửa thông tin</Nut>
+            <Nut laNutPhu onClick={() => moBieuMau('mat-khau')}>Đổi mật khẩu</Nut>
+          </div>}
             </>}
         </KhungNoiDung>
         {hoSo.role !== 'ADMIN' && <KhungNoiDung tieuDe="Điểm đánh giá">

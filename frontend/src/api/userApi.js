@@ -12,3 +12,8 @@ export async function capNhatThongTinCaNhan(duLieu) {
   const { data } = await httpClient.patch('/users/me', duLieu);
   return data.data;
 }
+
+// Tự đổi mật khẩu: duLieu gồm currentPassword, newPassword, confirmPassword.
+export async function doiMatKhau(duLieu) {
+  await httpClient.patch('/users/me/password', duLieu);
+}

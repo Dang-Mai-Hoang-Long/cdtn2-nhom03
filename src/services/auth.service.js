@@ -48,4 +48,15 @@ async function dangNhap({ email, password }) {
   return { token: taoToken(nguoiDung), user: thongTinNguoiDung };
 }
 
-module.exports = { dangKy, dangNhap, taoToken };
+// Người dùng tự đổi mật khẩu của mình, phải nhập đúng mật khẩu hiện tại. Sai thì trả 400 chứ không phải 401, vì giao diện
+// coi 401 là hết phiên và đăng xuất. Token đã cấp trước đó vẫn dùng được tới khi hết hạn (JWT không thu hồi).
+async function doiMatKhau(nguoiDung, { currentPassword, newPassword }) {
+  const { passwordHash } = await khoNguoiDung.timTheoEmailKemMatKhau(nguoiDung.email);
+  if (!(await bcrypt.compare(currentPassword, passwordHash))) {
+    const thongDiep = 'Mật khẩu hiện tại không đúng';
+    throw new LoiUngDung(400, 'VALIDATION_ERROR', thongDiep, [{ field: 'currentPassword', message: thongDiep }]);
+  }
+  await khoNguoiDung.capNhatMatKhau(nguoiDung.id, await bcrypt.hash(newPassword, SO_VONG_BAM_MAT_KHAU));
+}
+
+module.exports = { dangKy, dangNhap, doiMatKhau, taoToken };

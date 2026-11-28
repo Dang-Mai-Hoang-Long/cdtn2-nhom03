@@ -77,6 +77,10 @@ async function capNhatThongTin(id, { fullName, phone }) {
   return chuyenNguoiDung(rows[0]);
 }
 
+async function capNhatMatKhau(id, passwordHash) {
+  await truyVan('UPDATE users SET password_hash = $2 WHERE id = $1', [id, passwordHash]);
+}
+
 // Số liệu trên hồ sơ: số đánh giá nhận được, số lượng từng mức sao (đủ khóa 1 đến 5, mức không có thì bằng 0)
 // và số công việc đã hoàn thành (khách hàng: tin của mình; kỹ thuật viên: tin đã chọn đề xuất của mình).
 async function thongKeHoSo(nguoiDung) {
@@ -101,4 +105,4 @@ async function thongKeHoSo(nguoiDung) {
   return { reviewCount: soDanhGia, ratingCounts: phanBoSao, completedCount: soHoanThanh };
 }
 
-module.exports = { chuyenNguoiDung, timTheoId, timTheoEmailKemMatKhau, tao, timDanhSachChoQuanTri, capNhatTrangThaiKhoa, capNhatThongTin, thongKeHoSo };
+module.exports = { chuyenNguoiDung, timTheoId, timTheoEmailKemMatKhau, tao, timDanhSachChoQuanTri, capNhatTrangThaiKhoa, capNhatThongTin, capNhatMatKhau, thongKeHoSo };

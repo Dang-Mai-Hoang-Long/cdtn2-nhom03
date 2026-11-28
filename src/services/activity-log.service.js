@@ -54,7 +54,7 @@ async function taoBanGhi({ req, maHttp, tuyen, thanTraVe }) {
     return { ...banGhi, userId: taiKhoan?.id ?? null, userRole: taiKhoan?.role ?? null, targetId: taiKhoan?.id ?? null, status: 'SUCCESS' };
   }
   if (hanhDong.startsWith('CREATE_')) banGhi.targetId = docMaDoiTuong(duLieu?.id);
-  if (hanhDong === 'LOGOUT' || hanhDong === 'UPDATE_PROFILE') banGhi.targetId = banGhi.userId;
+  if (hanhDong === 'LOGOUT' || hanhDong === 'UPDATE_PROFILE' || hanhDong === 'CHANGE_PASSWORD') banGhi.targetId = banGhi.userId;
   if (hanhDong === 'EXPORT_REPORT' && CAC_LOAI_BAO_CAO.has(tuyen.maDoiTuong)) banGhi.route = banGhi.route.replace(':id', tuyen.maDoiTuong);
   return { ...banGhi, status: 'SUCCESS' };
 }

@@ -65,6 +65,7 @@ export const NHAN_HANH_DONG = {
   REGISTER: 'Tạo tài khoản', LOGIN: 'Đăng nhập', LOGOUT: 'Đăng xuất', CREATE_REQUEST: 'Đăng tin', UPDATE_REQUEST: 'Sửa tin',
   CLOSE_REQUEST: 'Đóng tin', COMPLETE_REQUEST: 'Xác nhận hoàn thành', CREATE_PROPOSAL: 'Gửi đề xuất', UPDATE_PROPOSAL: 'Sửa đề xuất',
   ACCEPT_PROPOSAL: 'Chấp nhận đề xuất', WITHDRAW_PROPOSAL: 'Rút đề xuất', CREATE_REVIEW: 'Đánh giá', UPDATE_PROFILE: 'Sửa hồ sơ',
+  CHANGE_PASSWORD: 'Đổi mật khẩu',
   LOCK_USER: 'Khóa tài khoản', UNLOCK_USER: 'Mở khóa tài khoản', EXPORT_REPORT: 'Xuất báo cáo', UPDATE_ALERT: 'Cập nhật cảnh báo',
   ACCESS_DENIED: 'Bị từ chối quyền', SERVER_ERROR: 'Lỗi máy chủ',
 };

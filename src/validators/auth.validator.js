@@ -56,4 +56,4 @@ function kiemTraDangNhap(duLieu) {
   return danhSachLoi;
 }
 
-module.exports = { kiemTraDangKy, kiemTraDangNhap, laChuoiCoNoiDung, loiHoTen, loiSoDienThoai };
+module.exports = { kiemTraDangKy, kiemTraDangNhap, laChuoiCoNoiDung, loiHoTen, loiSoDienThoai, DO_DAI_MAT_KHAU_TOI_THIEU };
