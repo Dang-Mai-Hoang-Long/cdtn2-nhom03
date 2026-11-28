@@ -42,13 +42,12 @@ function tenKhoang({ key, from, to }) {
 }
 const vietHoa = (chu) => chu.charAt(0).toUpperCase() + chu.slice(1);
 
-// Mỗi ô: tên, con số, một câu nói số đó là gì, và dòng bổ sung (số mới đăng, hoặc tăng giảm so với khoảng trước).
-function TheSo({ ten, giaTri, dayDu, giaiThich, them }) {
+// Mỗi ô: tên, con số và một dòng bổ sung (số mới đăng, hoặc tăng giảm so với khoảng trước).
+function TheSo({ ten, giaTri, dayDu, them }) {
   return <div className="tk-the-so">
     <dt>{ten}</dt>
     <dd>
       <strong title={dayDu}>{giaTri}</strong>
-      <span>{giaiThich}</span>
       {them && <span>{them}</span>}
     </dd>
   </div>;
@@ -70,8 +69,9 @@ export default function TongQuan({ boLoc }) {
     const ghiTheo = moc.buoc > 1 ? `; ${donViO} ghi bên dưới là ${donViO} đầu tiên` : '';
     const khoangXem = tenKhoang(d.range);
 
-    // Tổng số tin và tổng tài khoản được đếm đến cuối khoảng đang chọn; khoảng đã qua thì ghi rõ ngày đó.
-    const denNay = Math.abs(Date.now() - Date.parse(t.range.end)) < 5 * 60000;
+    // Tài khoản được đếm đến cuối khoảng đang chọn; khoảng đã qua thì biểu đồ vai trò ghi rõ ngày đó.
+    // Khoảng kéo đến hiện tại là khoảng chưa hết ngày cuối (xét theo dữ liệu, không theo giờ lúc vẽ lại).
+    const denNay = Date.parse(t.range.end) < Date.parse(`${t.range.to}T00:00:00+07:00`) + 86400000;
     const denNgay = ngayIsoHien(d.range.to);
     const xong = t.transactions.total.completed;
     // Dòng so sánh, chỉ khi đang bật. Khoảng trước bằng 0 thì không tính được tỷ lệ.
@@ -101,16 +101,12 @@ export default function TongQuan({ boLoc }) {
       <h2 className="chi-cho-trinh-doc">Số liệu chính</h2>
       <dl className="tk-day-so">
         <TheSo ten="Người dùng" giaTri={so(the.totalUsers.value)}
-          giaiThich={denNay ? 'Tổng số tài khoản đang có' : `Tổng số tài khoản đến ngày ${denNgay}`}
           them={`Mới đăng ký ${khoangXem.trong}: ${so(the.totalUsers.added)}`} />
         <TheSo ten="Tin sửa chữa" giaTri={so(the.totalContent.breakdown.requests)}
-          giaiThich={denNay ? 'Tổng số tin khách đã đăng' : `Tổng số tin đăng đến ngày ${denNgay}`}
           them={`Mới đăng ${khoangXem.trong}: ${so(tong(d.requestsTrend.current))}`} />
         <TheSo ten="Việc hoàn thành" giaTri={so(xong.current)}
-          giaiThich={`Khách xác nhận xong ${khoangXem.trong}`}
           them={soSanh(xong.current, xong.previous)} />
         <TheSo ten="Giá trị công việc" giaTri={tienGon(the.completedValue.value)} dayDu={tienDayDu(the.completedValue.value)}
-          giaiThich={`Tổng giá việc xong ${khoangXem.trong}`}
           them={soSanh(the.completedValue.value, the.completedValue.previous)} />
       </dl>
       <div className="tk-luoi-bieu-do tk-bon-bieu-do">
