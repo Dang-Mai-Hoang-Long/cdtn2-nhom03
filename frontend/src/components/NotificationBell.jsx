@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { layDanhSachThongBao, demThongBaoChuaDoc, danhDauDaDoc } from '../api/notificationApi.js';
 import { layChiTietDeXuat } from '../api/proposalApi.js';
-import { chuyenDenManHinh } from '../navigation/screenRoutes.js';
+import { chuyenDenManHinh, layDuongDanManHinh } from '../navigation/screenRoutes.js';
 import { dinhDangThoiGian } from '../utils/dinhDang.js';
 
 const THOI_GIAN_CAP_NHAT_MS = 60000;
@@ -24,12 +24,14 @@ async function moNoiDungThongBao(thongBao, maVaiTro) {
   const { type, relatedId } = thongBao;
   if (!relatedId) return;
   const laKhachHang = maVaiTro === 'CUSTOMER';
+  // Gắn mã thông báo vào đường dẫn để khi đang đứng sẵn ở trang đích, trang vẫn tải lại và hiện nội dung mới.
+  const moManHinh = (maManHinh, id) => { window.location.hash = `${layDuongDanManHinh(maManHinh, { id })}?thongBao=${thongBao.id}`; };
   try {
-    if (type === 'NEW_PROPOSAL') chuyenDenManHinh('06', { id: relatedId });
-    else if (type === 'PROPOSAL_ACCEPTED') chuyenDenManHinh('13', { id: await layMaTinCuaDeXuat(relatedId) });
-    else if (type === 'PROPOSAL_REJECTED') chuyenDenManHinh('10', { id: await layMaTinCuaDeXuat(relatedId) });
-    else if (type === 'REQUEST_COMPLETED') chuyenDenManHinh('13', { id: relatedId });
-    else if (type === 'REVIEW_RECEIVED') chuyenDenManHinh(laKhachHang ? '07' : '13', { id: relatedId });
+    if (type === 'NEW_PROPOSAL') moManHinh('06', relatedId);
+    else if (type === 'PROPOSAL_ACCEPTED') moManHinh('13', await layMaTinCuaDeXuat(relatedId));
+    else if (type === 'PROPOSAL_REJECTED') moManHinh('10', await layMaTinCuaDeXuat(relatedId));
+    else if (type === 'REQUEST_COMPLETED') moManHinh('13', relatedId);
+    else if (type === 'REVIEW_RECEIVED') moManHinh(laKhachHang ? '07' : '13', relatedId);
   } catch {
     chuyenDenManHinh(laKhachHang ? '03' : '12');
   }

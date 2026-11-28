@@ -2,6 +2,7 @@ const { chayTrongGiaoDich, truyVan } = require('../db');
 const khoYeuCau = require('../repositories/request.repository');
 const khoNguoiDung = require('../repositories/user.repository');
 const khoDeXuat = require('../repositories/proposal.repository');
+const khoDanhGia = require('../repositories/review.repository');
 const dichVuThongBao = require('./notification.service');
 const { LoiUngDung } = require('../utils/error-handler');
 const { docMaSo } = require('../utils/ma-so');
@@ -59,10 +60,13 @@ async function layChiTietYeuCau(nguoiDung, id) {
   // hasReviewed: người đang xem đã gửi đánh giá cho công việc này chưa (US18, US19 - BR14).
   const { rows: dongDanhGia } = await truyVan('SELECT 1 FROM review WHERE request_id = $1 AND from_user_id = $2', [yeuCau.id, nguoiDung.id]);
   const hasReviewed = dongDanhGia.length > 0;
+  // receivedReview: đánh giá bên kia gửi cho người đang xem ở công việc này (thông báo "Đánh giá mới" mở tới đây).
+  // Người không tham gia công việc không nhận được đánh giá nào nên luôn là null.
+  const receivedReview = await khoDanhGia.timNhanDuocTheoTin(yeuCau.id, nguoiDung.id);
 
   if (nguoiDung.role === VAI_TRO.KHACH_HANG) {
     kiemTraChuTin(yeuCau, nguoiDung);
-    return { ...yeuCau, customer: { id: khachHang.id, fullName: khachHang.fullName, phone: khachHang.phone }, hasReviewed };
+    return { ...yeuCau, customer: { id: khachHang.id, fullName: khachHang.fullName, phone: khachHang.phone }, hasReviewed, receivedReview };
   }
 
   // Kỹ thuật viên xem được tin ở mọi trạng thái (theo tiêu chí chấp nhận US12),
@@ -85,6 +89,7 @@ async function layChiTietYeuCau(nguoiDung, id) {
     myProposalStatus: deXuatCuaToi?.status ?? null,
     canPropose: yeuCau.status === TRANG_THAI_YEU_CAU.CHO_DE_XUAT && !hasProposed,
     hasReviewed,
+    receivedReview,
   };
 }
 

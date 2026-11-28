@@ -258,10 +258,10 @@ Tham số `status` bị bỏ qua ở API này.
 
 **GET /api/requests/{id}** — thông tin tin, cộng thêm tùy vai trò:
 
-- **KH (chủ tin):** `customer: { id, fullName, phone }` và `hasReviewed`. Khách hàng khác nhận `403 NOT_OWNER`.
-- **KTV:** xem được tin ở **mọi trạng thái**. `customer: { id, fullName }`; trường `customer.phone` **chỉ có** khi kỹ thuật viên này là người được chọn (BR15). Thêm: `hasProposed` (có đề xuất đang hiệu lực), `myProposalId`, `myProposalStatus` (đề xuất mới nhất của mình trên tin, hoặc `null`), `canPropose` (tin đang chờ và chưa có đề xuất đang hiệu lực), `hasReviewed`.
+- **KH (chủ tin):** `customer: { id, fullName, phone }`, `hasReviewed` và `receivedReview`. Khách hàng khác nhận `403 NOT_OWNER`.
+- **KTV:** xem được tin ở **mọi trạng thái**. `customer: { id, fullName }`; trường `customer.phone` **chỉ có** khi kỹ thuật viên này là người được chọn (BR15). Thêm: `hasProposed` (có đề xuất đang hiệu lực), `myProposalId`, `myProposalStatus` (đề xuất mới nhất của mình trên tin, hoặc `null`), `canPropose` (tin đang chờ và chưa có đề xuất đang hiệu lực), `hasReviewed`, `receivedReview`.
 
-`hasReviewed` là người xem đã gửi đánh giá cho công việc này chưa (BR14).
+`hasReviewed` là người xem đã gửi đánh giá cho công việc này chưa (BR14). `receivedReview` là đánh giá bên kia gửi cho người xem ở công việc này: `{ id, requestId, fromUserId, toUserId, rating, comment, createdAt, fromUser: { id, fullName, role } }`, hoặc `null` khi chưa có hay người xem không tham gia công việc.
 
 Response 200 (KTV được chọn):
 
@@ -284,7 +284,8 @@ Response 200 (KTV được chọn):
     "myProposalId": 4,
     "myProposalStatus": "ACCEPTED",
     "canPropose": false,
-    "hasReviewed": false
+    "hasReviewed": false,
+    "receivedReview": null
   },
   "message": "Thành công"
 }
@@ -591,7 +592,7 @@ id, email, passwordHash, fullName, phone, role, isLocked, ratingAvg, createdAt
 id, customerId, title, description, category, location, preferredTime, status, selectedProposalId, createdAt
 ```
 
-Các API danh sách và chi tiết thêm các trường tính toán (`proposalCount`, `customer`, `hasProposed`, `canPropose`, `myProposalId`, `myProposalStatus`, `hasReviewed`) như mô tả ở mục 2.3.2.
+Các API danh sách và chi tiết thêm các trường tính toán (`proposalCount`, `customer`, `hasProposed`, `canPropose`, `myProposalId`, `myProposalStatus`, `hasReviewed`, `receivedReview`) như mô tả ở mục 2.3.2.
 
 **Proposal**
 
@@ -733,7 +734,7 @@ Tóm tắt các điểm contract này khác bản đầu; chi tiết, lý do và
 - Thân yêu cầu lớn hơn 100 KB trả `400 VALIDATION_ERROR`, không phải `413`. Không dùng `204`.
 - `PATCH /api/proposals/{id}/close` là **rút đề xuất** (trạng thái `WITHDRAWN`), không phải đóng tin; đóng tin là `PATCH /api/requests/{id}/close`.
 - Thêm API ngoài bản đầu: `GET /api/proposals/my`, `GET /`, `GET /api/health`, `GET /api/users/{id}` (hồ sơ người dùng) và `PATCH /api/users/me` (tự sửa họ tên, số điện thoại), mục 2.3.8.
-- Thêm trường ngoài bản đầu: `proposalCount`, `hasProposed`, `canPropose`, `myProposalId`, `myProposalStatus`, `hasReviewed`, `meta.summary` (admin), `meta.user` (đánh giá).
+- Thêm trường ngoài bản đầu: `proposalCount`, `hasProposed`, `canPropose`, `myProposalId`, `myProposalStatus`, `hasReviewed`, `receivedReview`, `meta.summary` (admin), `meta.user` (đánh giá).
 - Bản đầu liệt kê `CONTACT_NOT_VISIBLE` là mã lỗi của `GET /api/requests/{id}`; thực tế API vẫn trả `200` và chỉ bỏ trường `customer.phone` khi kỹ thuật viên chưa được chọn.
 - `PATCH /api/requests/{id}` trả `REQUEST_NOT_EDITABLE` (409) khi tin không còn sửa được, không dùng `REQUEST_ALREADY_SELECTED`/`REQUEST_NOT_WAITING` như bảng lỗi bản đầu.
 - `sort` chỉ có ở hai API danh sách tin (bản đầu ghi mọi API danh sách đều hỗ trợ); `GET /api/requests` bỏ qua `status`; `GET /api/admin/users` có thêm tham số `q`.

@@ -1386,6 +1386,13 @@ a.the-tai-khoan:hover strong {
   font-size: 14px;
   overflow-wrap: anywhere;
 }
+/* Đánh giá nhận được trên trang công việc: tách khỏi nút ở trên và hai cột ở dưới. */
+section.khung-noi-dung.khung-danh-gia-nhan {
+  margin: 16px 0;
+}
+.khung-danh-gia-nhan .danh-gia-muc {
+  padding-bottom: 0;
+}
 
 /* ---------- Hover chỉ cho con trỏ chuột ---------- */
 @media (hover: hover) and (pointer: fine) {
